@@ -4,7 +4,6 @@ const Usuario = require('../models/Usuario');
 const Estacion = require('../models/Estacion');
 const Itinerario = require('../models/Itinerario');
 const ItinerarioEstacion = require('../models/ItinerarioEstacion');
-const bcrypt = require('bcrypt');
 const logger = require('../logger').logger;
 const { ROLES } = require('../config/roles');
 
@@ -18,38 +17,15 @@ async function seed() {
     await seedUsers();
     await seedEstaciones();
     await seedItinerarios();
+    
+    logger.info(logLocation + 'Seed completado exitosamente');
 }
 
 async function seedEstaciones() {
     try {
-        
-
-        // Verificar si ya existe un usuario administrador
-        const adminExists = await Usuario.findOne({
-            where: {
-                email: 'admin@fgitinerarios.com'
-            }
-        });
-
-        if (!adminExists) {
-            // Crear usuario admin por defecto
-            await Usuario.create({
-                nombre: 'Administrador',
-                email: 'admin@fgitinerarios.com',
-                password: 'Admin123!',
-                rol: ROLES.ADMIN,
-                activo: true
-            });
-            logger.info(logLocation + 'Usuario administrador creado correctamente');
-        } else {
-            logger.info(logLocation + 'El usuario administrador ya existe');
-        }
-
-        // Verificar si ya existen estaciones
         const estacionesExistentes = await Estacion.count();
         
         if (estacionesExistentes === 0) {
-            // Crear estaciones iniciales
             const estaciones = [
                 {
                     nombre: 'Granja',
@@ -98,11 +74,9 @@ async function seedEstaciones() {
             await Estacion.bulkCreate(estaciones);
             logger.info(logLocation + 'Estaciones iniciales creadas');
         }
-
-        logger.info(logLocation + 'Seed completado exitosamente');
     } catch (error) {
         logger.error(logLocation + 'Error en seed: ' + error);
-        throw error; // Re-lanzar el error para que pueda ser manejado por el servidor
+        throw error;
     }
 }
 async function seedUsers() {
@@ -125,12 +99,10 @@ async function seedUsers() {
                 activo: true
             });
             logger.info(logLocation + 'Usuario administrador creado correctamente');
-        } else {
-            logger.info(logLocation + 'El usuario administrador ya existe');
         }
     } catch (error) {
         logger.error(logLocation + 'Error en seed: ' + error);
-        throw error; // Re-lanzar el error para que pueda ser manejado por el servidor
+        throw error;
     }
 }
 
@@ -260,8 +232,6 @@ async function seedItinerarios() {
             }
 
             logger.info(logLocation + 'Itinerarios de ejemplo creados correctamente');
-        } else {
-            logger.info(logLocation + 'Ya existen itinerarios en la base de datos');
         }
     } catch (error) {
         logger.error(logLocation + 'Error en seed de itinerarios: ' + error);
@@ -269,5 +239,4 @@ async function seedItinerarios() {
     }
 }
 
-// Exportar la función seed
 module.exports = seed; 

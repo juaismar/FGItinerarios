@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const { inicializarConexion, ejecutarSeed, cerrarConexion, getSequelize } = require('./db/database');
 const logger = require('./logger').logger;
 
@@ -26,16 +25,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Servir archivos estáticos desde la carpeta public
-app.use(express.static(path.join(__dirname, 'public')));
-
 // Rutas API
-const itinerariosRoutes = require('./controllers/itinerarios');
-const usuariosRoutes = require('./controllers/usuarios');
+const apiRouter = require('./router');
 
 // Definir rutas API antes de las rutas del cliente
-app.use('/api/itinerarios', itinerariosRoutes);
-app.use('/api/usuarios', usuariosRoutes);
+app.use('/', apiRouter);
 
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {
@@ -46,11 +40,6 @@ app.use((err, req, res, next) => {
     error: err.message,
     stack: err.stack
   });
-});
-
-// Ruta para servir el index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
