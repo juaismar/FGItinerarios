@@ -30,8 +30,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas API
-const itinerariosRoutes = require('./routes/itinerarios');
-const usuariosRoutes = require('./routes/usuarios');
+const itinerariosRoutes = require('./controllers/itinerarios');
+const usuariosRoutes = require('./controllers/usuarios');
 
 // Definir rutas API antes de las rutas del cliente
 app.use('/api/itinerarios', itinerariosRoutes);

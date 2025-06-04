@@ -27,7 +27,7 @@ FGItinerarios/
 ├── config/         # Configuraciones de la aplicación
 ├── middleware/     # Middleware de Express
 ├── models/         # Modelos de datos
-├── routes/         # Rutas de la API
+├── controllers/    # Controladores de la API
 ├── database.js     # Configuración de la base de datos
 ├── logger.js       # Configuración del sistema de logs
 └── server.js       # Punto de entrada de la aplicación
