@@ -208,6 +208,37 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
+            cargarEstaciones()
+                .then(() => {
+                    inicializarTablas();
+                })
+                .catch(() => {
+                    inicializarTablas();
+                });
+        });
+
+        function cargarEstaciones() {
+            return fetch('/api/estaciones')
+                .then(response => response.json())
+                .then(estaciones => {
+                    const select = document.getElementById('station-select');
+                    select.innerHTML = ''; // Limpiar opciones existentes
+                    
+                    estaciones.forEach(estacion => {
+                        const option = document.createElement('option');
+                        option.value = estacion.codigo;
+                        option.textContent = estacion.nombre;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar estaciones:', error);
+                });
+        }
+
+
+
+        function inicializarTablas() {
             $('#salidas').DataTable({
                 paging: false,
                 searching: false,
@@ -230,13 +261,15 @@
             $('td').filter(function() {
                 return $(this).text().trim().toUpperCase() === 'RETRASO';
             }).addClass('retraso');
-        });
+        }
+
         // Pantalla completa automática
         document.addEventListener('DOMContentLoaded', () => {
             if (document.documentElement.requestFullscreen) {
                 document.documentElement.requestFullscreen();
             }
         });
+
         // Reloj en tiempo real
         function updateClock() {
             const now = new Date();
