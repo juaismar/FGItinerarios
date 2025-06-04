@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGItinerarios - Panel de Planificación</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header>
+                <h1>Panel de Planificación</h1>
+                <button onclick="cerrarSesion()" class="btn btn-secondary">Cerrar Sesión</button>
+            </header>
+            <div id="contenido">
+                <p>Cargando...</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Verificar autenticación y rol
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+
+        // Función para cerrar sesión
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        }
+
+        // Cargar datos del usuario y mostrar contenido
+        fetch('/api/usuarios/perfil', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('No autorizado');
+            }
+            return response.json();
+        })
+        .then(usuario => {
+            if (usuario.rol !== 'planificador') {
+                throw new Error('No tienes permisos de planificador');
+            }
+            document.getElementById('contenido').innerHTML = `
+                <h2>Bienvenido, ${usuario.nombre}</h2>
+                <p>Email: ${usuario.email}</p>
+                <p>Rol: ${usuario.rol}</p>
+                <div class="planificador-actions">
+                    <h3>Acciones de Planificación</h3>
+                    <button onclick="crearItinerario()" class="btn btn-primary">Crear Itinerario</button>
+                    <button onclick="verItinerarios()" class="btn btn-primary">Ver Itinerarios</button>
+                    <button onclick="gestionarRecursos()" class="btn btn-primary">Gestionar Recursos</button>
+                </div>
+            `;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            window.location.href = '/';
+        });
+
+        function crearItinerario() {
+            // Implementar creación de itinerarios
+            alert('Función en desarrollo');
+        }
+
+        function verItinerarios() {
+            // Implementar visualización de itinerarios
+            alert('Función en desarrollo');
+        }
+
+        function gestionarRecursos() {
+            // Implementar gestión de recursos
+            alert('Función en desarrollo');
+        }
+    </script>
+</body>
+</html> 
