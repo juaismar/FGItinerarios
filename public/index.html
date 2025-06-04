@@ -62,17 +62,7 @@ async function handleLogin(event) {
             // Guardar el token
             localStorage.setItem('token', data.token);
             
-            // Redirigir según el rol
-            switch(data.usuario.rol) {
-                case 'admin':
-                    window.location.href = '/home_admin.html';
-                    break;
-                case 'planificador':
-                    window.location.href = '/home_planificador.html';
-                    break;
-                default:
-                    window.location.href = '/home_visor.html';
-            }
+            verificarSesion()
         } else {
             alert(data.mensaje || 'Error en el login');
         }
