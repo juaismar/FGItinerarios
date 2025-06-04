@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Itinerarios</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .table-container {
+            padding: 20px;
+        }
+        .header-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .btn-action {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header-container">
+            <h2><i class="fas fa-route"></i> Gestión de Itinerarios</h2>
+            <p class="text-muted">Administra los itinerarios del sistema</p>
+        </div>
+
+        <div class="table-container">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <button class="btn btn-primary" id="btnNuevoItinerario">
+                            <i class="fas fa-plus"></i> Nuevo Itinerario
+                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary" id="btnRefresh">
+                                <i class="fas fa-sync-alt"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <table id="tablaItinerarios" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Tipo</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Planificador</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para nuevo/editar itinerario -->
+    <div class="modal fade" id="modalItinerario" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Itinerario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formItinerario">
+                        <div class="mb-3">
+                            <label class="form-label">Número</label>
+                            <input type="text" class="form-control" id="numero" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Origen</label>
+                            <input type="text" class="form-control" id="origen" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Destino</label>
+                            <input type="text" class="form-control" id="destino" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo" required>
+                                <option value="NACIONAL">Nacional</option>
+                                <option value="INTERNACIONAL">Internacional</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha</label>
+                            <input type="datetime-local" class="form-control" id="fecha" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" id="estado" required>
+                                <option value="PENDIENTE">Pendiente</option>
+                                <option value="EN_PROGRESO">En Progreso</option>
+                                <option value="COMPLETADO">Completado</option>
+                                <option value="CANCELADO">Cancelado</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Inicializar DataTable
+            const tabla = $('#tablaItinerarios').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                },
+                ajax: {
+                    url: '/itinerarios/paginated',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    { data: 'numero' },
+                    { data: 'origen' },
+                    { data: 'destino' },
+                    { data: 'tipo' },
+                    { 
+                        data: 'fecha',
+                        render: function(data) {
+                            return new Date(data).toLocaleString('es-ES');
+                        }
+                    },
+                    { 
+                        data: 'estado',
+                        render: function(data) {
+                            const estados = {
+                                'PENDIENTE': '<span class="badge bg-warning">Pendiente</span>',
+                                'EN_PROGRESO': '<span class="badge bg-info">En Progreso</span>',
+                                'COMPLETADO': '<span class="badge bg-success">Completado</span>',
+                                'CANCELADO': '<span class="badge bg-danger">Cancelado</span>'
+                            };
+                            return estados[data] || data;
+                        }
+                    },
+                    { 
+                        data: 'Usuario',
+                        render: function(data) {
+                            return data ? data.nombre : 'N/A';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data) {
+                            return `
+                                <button class="btn btn-sm btn-info btn-action" onclick="editarItinerario(${data.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-action" onclick="eliminarItinerario(${data.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            `;
+                        }
+                    }
+                ],
+                order: [[4, 'desc']], // Ordenar por fecha descendente
+                pageLength: 10,
+                responsive: true
+            });
+
+            // Botón de actualizar
+            $('#btnRefresh').click(function() {
+                tabla.ajax.reload();
+            });
+
+            // Botón nuevo itinerario
+            $('#btnNuevoItinerario').click(function() {
+                $('#formItinerario')[0].reset();
+                $('#modalItinerario').modal('show');
+            });
+
+            // Guardar itinerario
+            $('#btnGuardar').click(function() {
+                const formData = {
+                    numero: $('#numero').val(),
+                    origen: $('#origen').val(),
+                    destino: $('#destino').val(),
+                    tipo: $('#tipo').val(),
+                    fecha: $('#fecha').val(),
+                    estado: $('#estado').val()
+                };
+
+                // Aquí iría la lógica para guardar el itinerario
+                // Por ahora solo cerramos el modal y recargamos la tabla
+                $('#modalItinerario').modal('hide');
+                tabla.ajax.reload();
+            });
+        });
+
+        // Funciones para editar y eliminar
+        function editarItinerario(id) {
+            // Aquí iría la lógica para cargar y editar el itinerario
+            $('#modalItinerario').modal('show');
+        }
+
+        function eliminarItinerario(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este itinerario?')) {
+                // Aquí iría la lógica para eliminar el itinerario
+                $('#tablaItinerarios').DataTable().ajax.reload();
+            }
+        }
+    </script>
+</body>
+</html> 

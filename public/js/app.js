@@ -55,7 +55,7 @@ async function handleLogin(event) {
 // Función para acceder como visor
 function accederComoVisor() {
     // Redirigir a la vista de visor
-    window.location.href = '/visor.html';
+    window.location.href = '/home_visor.html';
 }
 
 // Verificar si ya hay una sesión activa
@@ -79,16 +79,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Redirigir según el rol
             switch(usuario.rol) {
                 case 'admin':
-                    window.location.href = '/admin.html';
+                    window.location.href = '/home_admin.html';
                     break;
                 case 'planificador':
-                    window.location.href = '/planificador.html';
+                    window.location.href = '/home_planificador.html';
                     break;
                 case 'visor':
-                    window.location.href = '/visor.html';
+                    window.location.href = '/home_visor.html';
                     break;
                 default:
-                    window.location.href = '/control.html';
+                    window.location.href = '/home_visor.html';
             }
         })
         .catch(error => {
