@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visor Ferroviario - Llegadas y Salidas</title>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <title>Racó</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
         html, body {
             height: 100%;
@@ -40,80 +38,18 @@
             letter-spacing: 2px;
             font-weight: 700;
         }
-        .tables {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100vw;
-            margin: 0;
-            padding: 0;
-        }
-        table.dataTable {
-            background: #232a36;
-            color: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            width: 50vw !important;
-            min-width: 0;
-            margin: 0;
-            font-size: 1.25em;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-        }
-        table.dataTable thead th {
-            background: #2d3a4b;
-            color: #fff;
-            font-weight: 700;
-            font-size: 1.1em;
-        }
-        table.dataTable tbody tr {
-            background: #232a36;
-        }
-        table.dataTable tbody tr:nth-child(even) {
-            background: #1b2029;
-        }
-        table.dataTable tbody tr:hover {
-            background: #31405a;
-        }
-        caption {
-            caption-side: top;
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #ffb300;
-            margin-bottom: 8px;
-            background: transparent;
-        }
-        .dataTables_wrapper .dataTables_filter input {
-            background: #232a36;
-            color: #fff;
-            border: 1px solid #444;
-        }
-        .dataTables_wrapper .dataTables_length select {
-            background: #232a36;
-            color: #fff;
-            border: 1px solid #444;
-        }
-        .dataTables_wrapper .dataTables_paginate .paginate_button {
-            background: #232a36;
-            color: #fff !important;
-            border: 1px solid #444;
-        }
-        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: #ffb300 !important;
-            color: #232a36 !important;
-        }
-        /* Ocultar flechas de ordenación */
-        th.sorting:after, th.sorting:before,
-        th.sorting_asc:after, th.sorting_asc:before,
-        th.sorting_desc:after, th.sorting_desc:before {
-            display: none !important;
-        }
         .logo-top-right {
             position: fixed;
             top: 0px;
             right: 0px;
             z-index: 100;
             border-bottom-left-radius: 24px;
+            background: white;
+        }
+        .logo-top-right img {
+            height: 64px;
+            width: auto;
+            display: block;
         }
         .clock-top-left {
             position: fixed;
@@ -130,43 +66,22 @@
             letter-spacing: 2px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.10);
         }
-        .logo-top-right img {
-            height: 64px;
-            width: auto;
-            display: block;
+        table.dataTable {
+            width: 100vw !important;
+            min-width: 0;
+            margin: 0;
+            border-radius: 0;
+            font-size: 1.25em;
+            background: #232a36;
+            color: #fff;
+            box-shadow: none;
+            table-layout: fixed;
         }
-        @media (max-width: 1200px) {
-            .tables {
-                flex-direction: column;
-                align-items: center;
-                gap: 0;
-            }
-            table.dataTable {
-                width: 100vw !important;
-            }
-        }
-        @media (max-width: 700px) {
-            h1 {
-                font-size: 1.3em;
-            }
-            table.dataTable {
-                font-size: 1em;
-            }
-            .logo-top-right {
-                top: 8px;
-                right: 8px;
-                border-bottom-left-radius: 12px;
-            }
-            .logo-top-right img {
-                height: 40px;
-            }
-            .clock-top-left {
-                background: #1976d2;
-                color: #fff;
-                font-size: 1.3em;
-                padding: 6px 12px 6px 8px;
-                border-bottom-right-radius: 12px;
-            }
+        table.dataTable thead th {
+            background: #2d3a4b;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1em;
         }
         table.dataTable tbody td {
             background: #fff;
@@ -186,62 +101,64 @@
             text-align: center;
             letter-spacing: 1px;
         }
+        /* Ocultar flechas de ordenación */
+        th.sorting:after, th.sorting:before,
+        th.sorting_asc:after, th.sorting_asc:before,
+        th.sorting_desc:after, th.sorting_desc:before {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="clock-top-left" id="clock"></div>
-        <div class="logo-top-right" style="background-color: white">
+        <div class="logo-top-right">
             <img src="/img/fglogotr.gif" alt="Logo FG" />
         </div>
         <h1>Racó</h1>
-        <div class="tables">
-            <table id="salidas" class="display">
-                <caption>Salidas</caption>
-                <thead>
-                    <tr>
-                        <th>Hora</th>
-                        <th>Destino</th>
-                        <th>Tren</th>
-                        <th>Nº</th>
-                        <th>Vía</th>
-                        <th>Observaciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>07:25</td><td>Granja</td><td>Romulus 1</td><td>101</td><td>1</td><td>RETRASO</td></tr>
-                    <tr><td>07:25</td><td>Granja</td><td>101</td><td>102</td><td>1</td><td></td></tr>
-                    <tr><td>07:30</td><td>Granja</td><td>Romulus 1</td><td>103</td><td>1</td><td></td></tr>
-                    <tr><td>07:38</td><td>Taller</td><td>M13</td><td>104</td><td>2</td><td>Mantenimiento</td></tr>
-                    <tr><td>07:47</td><td>Granja</td><td>101</td><td>105</td><td>1</td><td></td></tr>
-                </tbody>
-            </table>
-            <table id="llegadas" class="display">
-                <caption>Llegadas</caption>
-                <thead>
-                    <tr>
-                        <th>Hora</th>
-                        <th>Procedencia</th>
-                        <th>Tren</th>
-                        <th>Nº</th>
-                        <th>Vía</th>
-                        <th>Observaciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td>07:10</td><td>Granja</td><td>101</td><td>601</td><td>1</td><td>RETRASO</td></tr>
-                    <tr><td>07:18</td><td>Granja</td><td>Romulus 1</td><td>602</td><td>1</td><td></td></tr>
-                    <tr><td>07:22</td><td>Granja</td><td>101</td><td>603</td><td>1</td><td></td></tr>
-                    <tr><td>07:29</td><td>Taller</td><td>M13</td><td>604</td><td>2</td><td>Mantenimiento</td></tr>
-                    <tr><td>07:40</td><td>Granja</td><td>Romulus 1</td><td>605</td><td>1</td><td></td></tr>
-                </tbody>
-            </table>
-        </div>
+        <table id="salidas" class="display">
+            <caption>Salidas</caption>
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Destino</th>
+                    <th>Tren</th>
+                    <th>Nº</th>
+                    <th>Vía</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>07:25</td><td>Granja</td><td>Romulus 1</td><td>101</td><td>1</td><td>RETRASO</td></tr>
+                <tr><td>07:25</td><td>Granja</td><td>101</td><td>102</td><td>1</td><td></td></tr>
+                <tr><td>07:30</td><td>Granja</td><td>Romulus 1</td><td>103</td><td>1</td><td></td></tr>
+                <tr><td>07:38</td><td>Taller</td><td>M13</td><td>104</td><td>2</td><td>Mantenimiento</td></tr>
+                <tr><td>07:47</td><td>Granja</td><td>101</td><td>105</td><td>1</td><td></td></tr>
+            </tbody>
+        </table>
+        <table id="llegadas" class="display">
+            <caption>Llegadas</caption>
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Procedencia</th>
+                    <th>Tren</th>
+                    <th>Nº</th>
+                    <th>Vía</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>07:10</td><td>Granja</td><td>101</td><td>601</td><td>1</td><td>RETRASO</td></tr>
+                <tr><td>07:18</td><td>Granja</td><td>Romulus 1</td><td>602</td><td>1</td><td></td></tr>
+                <tr><td>07:22</td><td>Granja</td><td>101</td><td>603</td><td>1</td><td></td></tr>
+                <tr><td>07:29</td><td>Taller</td><td>M13</td><td>604</td><td>2</td><td>Mantenimiento</td></tr>
+                <tr><td>07:40</td><td>Granja</td><td>Romulus 1</td><td>605</td><td>1</td><td></td></tr>
+            </tbody>
+        </table>
     </div>
-    <!-- jQuery y DataTables JS -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#salidas').DataTable({
