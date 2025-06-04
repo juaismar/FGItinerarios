@@ -8,13 +8,15 @@ const logLocation = 'router.js: ';
 // Importar controladores
 const itinerariosRoutes = require('./controllers/itinerarios');
 const usuariosRoutes = require('./controllers/usuarios');
+const estacionesRoutes = require('./controllers/estaciones');
 
 // Servir archivos estáticos desde la carpeta public
 router.use(express.static(path.join(__dirname, 'public')));
 
-// Definir rutas API
-router.use('/itinerarios', itinerariosRoutes);
-router.use('/usuarios', usuariosRoutes);
+// Rutas de la API
+router.use('/api/itinerarios', itinerariosRoutes);
+router.use('/api/usuarios', usuariosRoutes);
+router.use('/api/estaciones', estacionesRoutes);
 
 // Ruta para servir el index.html
 router.get('/', (req, res) => {
