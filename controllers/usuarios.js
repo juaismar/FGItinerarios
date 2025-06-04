@@ -3,6 +3,9 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 const { auth } = require('../middleware/auth');
+const logger = require('../logger').logger;
+
+const logLocation = 'usuarios.js: ';
 
 // Registro de usuario
 router.post('/registro', async (req, res) => {
@@ -26,7 +29,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ mensaje: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign({ id: usuario._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET);
 
     res.json({ usuario, token });
   } catch (error) {
