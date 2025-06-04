@@ -5,6 +5,21 @@ const path = require('path');
 
 const logLocation = 'router.js: ';
 
+// Control de peticiones
+router.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    logger.info(`${logLocation}Accediendo a: ${req.method} ${req.originalUrl}`);
+    
+    // Capturar respuestas 404
+    res.on('finish', () => {
+        if (res.statusCode === 404) {
+            logger.warn(`${logLocation}Ruta no encontrada: ${req.method} ${req.originalUrl}`);
+        }
+    });
+    
+    next();
+});
+
 // Importar controladores
 const itinerariosRoutes = require('./controllers/itinerarios');
 const usuariosRoutes = require('./controllers/usuarios');

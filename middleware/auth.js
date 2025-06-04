@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 
-const auth = async (req, res, next) => {
+const verificarToken = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
@@ -24,6 +24,15 @@ const auth = async (req, res, next) => {
   }
 };
 
+const verificarRol = (rol) => {
+  return async (req, res, next) => {
+    if (req.usuario.rol !== rol) {
+      return res.status(403).json({ mensaje: 'Acceso denegado. Se requieren privilegios de administrador.' });
+    }
+    next();
+  };
+};
+
 const esPlanificador = async (req, res, next) => {
   if (req.usuario.rol !== 'planificador' && req.usuario.rol !== 'admin') {
     return res.status(403).json({ mensaje: 'Acceso denegado. Se requieren privilegios de planificador.' });
@@ -31,4 +40,4 @@ const esPlanificador = async (req, res, next) => {
   next();
 };
 
-module.exports = { auth, esPlanificador }; 
+module.exports = { verificarToken, verificarRol, esPlanificador }; 
