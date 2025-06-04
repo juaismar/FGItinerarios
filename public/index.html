@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FGItinerarios</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/auth.js"></script>
 </head>
 <body>
     <div id="app">
@@ -36,10 +37,10 @@
             
         </div>
     </div>
-    <script src="/js/app.js"></script>
 </body>
 </html> 
 <script>
+
 async function handleLogin(event) {
     event.preventDefault();
     
@@ -68,9 +69,6 @@ async function handleLogin(event) {
                     break;
                 case 'planificador':
                     window.location.href = '/home_planificador.html';
-                    break;
-                case 'visor':
-                    window.location.href = '/home_visor.html';
                     break;
                 default:
                     window.location.href = '/home_visor.html';

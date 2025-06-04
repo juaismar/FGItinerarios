@@ -1,13 +1,11 @@
 const ROLES = {
     ADMIN: 'admin',
     PLANIFICADOR: 'planificador',
-    VISOR: 'visor'
 };
 
 const ROLES_DESCRIPCION = {
     [ROLES.ADMIN]: 'Administrador del sistema',
     [ROLES.PLANIFICADOR]: 'Planificador de itinerarios',
-    [ROLES.VISOR]: 'Visor de itinerarios'
 };
 
 const ROLES_PERMISOS = {
@@ -25,9 +23,6 @@ const ROLES_PERMISOS = {
         'crear_itinerario',
         'editar_itinerario',
         'eliminar_itinerario',
-        'ver_itinerarios'
-    ],
-    [ROLES.VISOR]: [
         'ver_itinerarios'
     ]
 };

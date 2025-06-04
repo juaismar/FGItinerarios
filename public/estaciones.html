@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Estaciones</title>
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        .estacion-activa {
+            color: #28a745;
+        }
+        .estacion-inactiva {
+            color: #dc3545;
+        }
+        .btn-icon {
+            padding: 0.25rem 0.5rem;
+            margin: 0 0.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Gestión de Estaciones</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#estacionModal">
+                <i class="fas fa-plus"></i> Nueva Estación
+            </button>
+        </div>
+
+        <!-- Tabla de Estaciones -->
+        <div class="card">
+            <div class="card-body">
+                <table id="tablaEstaciones" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Código</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Se llenará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal para Crear/Editar Estación -->
+        <div class="modal fade" id="estacionModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle">Nueva Estación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="estacionForm">
+                            <input type="hidden" id="estacionId">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="nombre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="codigo" class="form-label">Código</label>
+                                <input type="text" class="form-control" id="codigo" required maxlength="3">
+                            </div>
+                            <div class="mb-3">
+                                <label for="ubicacion" class="form-label">Ubicación</label>
+                                <input type="text" class="form-control" id="ubicacion">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="activa" checked>
+                                <label class="form-check-label" for="activa">Estación Activa</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let tablaEstaciones;
+
+            // Inicializar DataTable
+            tablaEstaciones = $('#tablaEstaciones').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                },
+                columns: [
+                    { data: 'id' },
+                    { data: 'nombre' },
+                    { data: 'codigo' },
+                    { data: 'ubicacion' },
+                    { 
+                        data: 'activa',
+                        render: function(data) {
+                            return data ? 
+                                '<span class="estacion-activa"><i class="fas fa-check-circle"></i> Activa</span>' : 
+                                '<span class="estacion-inactiva"><i class="fas fa-times-circle"></i> Inactiva</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data) {
+                            return `
+                                <button class="btn btn-sm btn-primary btn-icon editar-estacion" data-id="${data.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-icon eliminar-estacion" data-id="${data.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            // Cargar estaciones
+            function cargarEstaciones() {
+                fetch('/api/estaciones')
+                    .then(response => response.json())
+                    .then(estaciones => {
+                        tablaEstaciones.clear().rows.add(estaciones).draw();
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar estaciones:', error);
+                        alert('Error al cargar las estaciones');
+                    });
+            }
+
+            // Cargar estaciones al iniciar
+            cargarEstaciones();
+
+            // Manejar clic en editar
+            $('#tablaEstaciones').on('click', '.editar-estacion', function() {
+                const id = $(this).data('id');
+                const estacion = tablaEstaciones.row($(this).closest('tr')).data();
+                
+                $('#modalTitle').text('Editar Estación');
+                $('#estacionId').val(estacion.id);
+                $('#nombre').val(estacion.nombre);
+                $('#codigo').val(estacion.codigo);
+                $('#ubicacion').val(estacion.ubicacion);
+                $('#activa').prop('checked', estacion.activa);
+                
+                $('#estacionModal').modal('show');
+            });
+
+            // Manejar clic en eliminar
+            $('#tablaEstaciones').on('click', '.eliminar-estacion', function() {
+                const id = $(this).data('id');
+                if (confirm('¿Estás seguro de que deseas eliminar esta estación?')) {
+                    fetch(`/api/estaciones/${id}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            cargarEstaciones();
+                        } else {
+                            throw new Error('Error al eliminar la estación');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al eliminar la estación');
+                    });
+                }
+            });
+
+            // Manejar guardar estación
+            $('#btnGuardar').click(function() {
+                const estacionId = $('#estacionId').val();
+                const estacion = {
+                    nombre: $('#nombre').val(),
+                    codigo: $('#codigo').val().toUpperCase(),
+                    ubicacion: $('#ubicacion').val(),
+                    activa: $('#activa').is(':checked')
+                };
+
+                const method = estacionId ? 'PUT' : 'POST';
+                const url = estacionId ? `/api/estaciones/${estacionId}` : '/api/estaciones';
+
+                fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(estacion)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        $('#estacionModal').modal('hide');
+                        cargarEstaciones();
+                    } else {
+                        throw new Error('Error al guardar la estación');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al guardar la estación');
+                });
+            });
+
+            // Limpiar formulario al abrir modal para nueva estación
+            $('#estacionModal').on('show.bs.modal', function(e) {
+                if (!$(e.relatedTarget).hasClass('editar-estacion')) {
+                    $('#modalTitle').text('Nueva Estación');
+                    $('#estacionForm')[0].reset();
+                    $('#estacionId').val('');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

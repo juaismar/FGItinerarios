@@ -35,7 +35,7 @@ const Usuario = sequelize.define('Usuario', {
     rol: {
         type: DataTypes.ENUM(Object.values(ROLES)),
         allowNull: false,
-        defaultValue: ROLES.VISOR
+        defaultValue: ROLES.PLANIFICADOR
     },
     activo: {
         type: DataTypes.BOOLEAN,
@@ -78,12 +78,6 @@ Object.defineProperty(Usuario.prototype, 'esAdmin', {
 Object.defineProperty(Usuario.prototype, 'esPlanificador', {
     get() {
         return this.rol === ROLES.PLANIFICADOR;
-    }
-});
-
-Object.defineProperty(Usuario.prototype, 'esVisor', {
-    get() {
-        return this.rol === ROLES.VISOR;
     }
 });
 
