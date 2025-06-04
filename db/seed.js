@@ -100,6 +100,24 @@ async function seedUsers() {
             });
             logger.info(logLocation + 'Usuario administrador creado correctamente');
         }
+
+        const planificadorExists = await Usuario.findOne({
+            where: {
+                email: 'planificador@fgitinerarios.com'
+            }
+        });
+
+        if (!planificadorExists) {
+            // Crear usuario admin por defecto
+            await Usuario.create({
+                nombre: 'Planificador',
+                email: 'planificador@fgitinerarios.com',
+                password: 'Planificador123!',
+                rol: ROLES.PLANIFICADOR,
+                activo: true
+            });
+            logger.info(logLocation + 'Usuario planificador creado correctamente');
+        }
     } catch (error) {
         logger.error(logLocation + 'Error en seed: ' + error);
         throw error;
