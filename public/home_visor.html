@@ -3,81 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FGItinerarios - Visor de Itinerarios</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title>Visor Ferroviario - Llegadas y Salidas</title>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            background: #181c24;
+            color: #fff;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin: 32px 0 24px 0;
+            font-size: 2.5em;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        .tables {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+        }
+        table.dataTable {
+            background: #232a36;
+            color: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 50vw !important;
+            min-width: 0;
+            margin: 0;
+            font-size: 1.25em;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+        }
+        table.dataTable thead th {
+            background: #2d3a4b;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        table.dataTable tbody tr {
+            background: #232a36;
+        }
+        table.dataTable tbody tr:nth-child(even) {
+            background: #1b2029;
+        }
+        table.dataTable tbody tr:hover {
+            background: #31405a;
+        }
+        caption {
+            caption-side: top;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ffb300;
+            margin-bottom: 8px;
+            background: transparent;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            background: #232a36;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .dataTables_wrapper .dataTables_length select {
+            background: #232a36;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            background: #232a36;
+            color: #fff !important;
+            border: 1px solid #444;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #ffb300 !important;
+            color: #232a36 !important;
+        }
+        /* Ocultar flechas de ordenación */
+        th.sorting:after, th.sorting:before,
+        th.sorting_asc:after, th.sorting_asc:before,
+        th.sorting_desc:after, th.sorting_desc:before {
+            display: none !important;
+        }
+        .logo-top-right {
+            position: fixed;
+            top: 0px;
+            right: 0px;
+            z-index: 100;
+            border-bottom-left-radius: 24px;
+        }
+        .clock-top-left {
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            z-index: 100;
+            background: #1976d2;
+            color: #fff;
+            font-family: 'Roboto Mono', 'Roboto', monospace;
+            font-size: 2.7em;
+            font-weight: bold;
+            padding: 10px 28px 10px 18px;
+            border-bottom-right-radius: 24px;
+            letter-spacing: 2px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        .logo-top-right img {
+            height: 64px;
+            width: auto;
+            display: block;
+        }
+        @media (max-width: 1200px) {
+            .tables {
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+            }
+            table.dataTable {
+                width: 100vw !important;
+            }
+        }
+        @media (max-width: 700px) {
+            h1 {
+                font-size: 1.3em;
+            }
+            table.dataTable {
+                font-size: 1em;
+            }
+            .logo-top-right {
+                top: 8px;
+                right: 8px;
+                border-bottom-left-radius: 12px;
+            }
+            .logo-top-right img {
+                height: 40px;
+            }
+            .clock-top-left {
+                background: #1976d2;
+                color: #fff;
+                font-size: 1.3em;
+                padding: 6px 12px 6px 8px;
+                border-bottom-right-radius: 12px;
+            }
+        }
+        table.dataTable tbody td {
+            background: #fff;
+            color: #181c24 !important;
+        }
+        table.dataTable td:first-child {
+            background: #43a047 !important;
+            color: #fff !important;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        td.retraso {
+            background: #c62828 !important;
+            color: #fff !important;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <div class="container">
-            <header>
-                <h1>Visor de Itinerarios</h1>
-                <button onclick="cerrarSesion()" class="btn btn-secondary">Cerrar Sesión</button>
-            </header>
-            <div id="contenido">
-                <p>Cargando...</p>
-            </div>
+    <div class="container">
+        <div class="clock-top-left" id="clock"></div>
+        <div class="logo-top-right" style="background-color: white">
+            <img src="/img/fglogotr.gif" alt="Logo FG" />
+        </div>
+        <h1>Racó</h1>
+        <div class="tables">
+            <table id="salidas" class="display">
+                <caption>Salidas</caption>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Destino</th>
+                        <th>Tren</th>
+                        <th>Nº</th>
+                        <th>Vía</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>07:25</td><td>Granja</td><td>Romulus 1</td><td>101</td><td>1</td><td>RETRASO</td></tr>
+                    <tr><td>07:25</td><td>Granja</td><td>101</td><td>102</td><td>1</td><td></td></tr>
+                    <tr><td>07:30</td><td>Granja</td><td>Romulus 1</td><td>103</td><td>1</td><td></td></tr>
+                    <tr><td>07:38</td><td>Taller</td><td>M13</td><td>104</td><td>2</td><td>Mantenimiento</td></tr>
+                    <tr><td>07:47</td><td>Granja</td><td>101</td><td>105</td><td>1</td><td></td></tr>
+                </tbody>
+            </table>
+            <table id="llegadas" class="display">
+                <caption>Llegadas</caption>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Procedencia</th>
+                        <th>Tren</th>
+                        <th>Nº</th>
+                        <th>Vía</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>07:10</td><td>Granja</td><td>101</td><td>601</td><td>1</td><td>RETRASO</td></tr>
+                    <tr><td>07:18</td><td>Granja</td><td>Romulus 1</td><td>602</td><td>1</td><td></td></tr>
+                    <tr><td>07:22</td><td>Granja</td><td>101</td><td>603</td><td>1</td><td></td></tr>
+                    <tr><td>07:29</td><td>Taller</td><td>M13</td><td>604</td><td>2</td><td>Mantenimiento</td></tr>
+                    <tr><td>07:40</td><td>Granja</td><td>Romulus 1</td><td>605</td><td>1</td><td></td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
+    <!-- jQuery y DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
     <script>
-        // Verificar autenticación y rol
-        const token = localStorage.getItem('token');
-        if (!token) {
-            window.location.href = '/';
-        }
-
-        // Función para cerrar sesión
-        function cerrarSesion() {
-            localStorage.removeItem('token');
-            window.location.href = '/';
-        }
-
-        // Cargar datos del usuario y mostrar contenido
-        fetch('/api/usuarios/perfil', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('No autorizado');
-            }
-            return response.json();
-        })
-        .then(usuario => {
-            if (usuario.rol !== 'visor') {
-                throw new Error('No tienes permisos de visor');
-            }
-            document.getElementById('contenido').innerHTML = `
-                <h2>Bienvenido, ${usuario.nombre}</h2>
-                <p>Email: ${usuario.email}</p>
-                <p>Rol: ${usuario.rol}</p>
-                <div class="visor-actions">
-                    <h3>Acciones Disponibles</h3>
-                    <button onclick="verItinerariosActivos()" class="btn btn-primary">Ver Itinerarios Activos</button>
-                    <button onclick="buscarItinerarios()" class="btn btn-primary">Buscar Itinerarios</button>
-                    <button onclick="verEstadisticas()" class="btn btn-primary">Ver Estadísticas</button>
-                </div>
-            `;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            window.location.href = '/';
+        $(document).ready(function() {
+            $('#salidas').DataTable({
+                paging: false,
+                searching: false,
+                info: false,
+                order: [[0, 'asc']],
+                language: {
+                    emptyTable: "No hay salidas programadas"
+                }
+            });
+            $('#llegadas').DataTable({
+                paging: false,
+                searching: false,
+                info: false,
+                order: [[0, 'asc']],
+                language: {
+                    emptyTable: "No hay llegadas programadas"
+                }
+            });
+            // Resaltar los retrasos en rojo
+            $('td').filter(function() {
+                return $(this).text().trim().toUpperCase() === 'RETRASO';
+            }).addClass('retraso');
         });
-
-        function verItinerariosActivos() {
-            // Implementar visualización de itinerarios activos
-            alert('Función en desarrollo');
+        // Pantalla completa automática
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            }
+        });
+        // Reloj en tiempo real
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${h}:${m}:${s}`;
         }
-
-        function buscarItinerarios() {
-            // Implementar búsqueda de itinerarios
-            alert('Función en desarrollo');
-        }
-
-        function verEstadisticas() {
-            // Implementar visualización de estadísticas
-            alert('Función en desarrollo');
-        }
+        setInterval(updateClock, 1000);
+        updateClock();
     </script>
 </body>
 </html>
