@@ -57,7 +57,7 @@
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Gestión de Estaciones</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#estacionModal">
+            <button class="btn btn-primary nueva-estacion">
                 <i class="fas fa-plus"></i> Nueva Estación
             </button>
         </div>
@@ -122,12 +122,29 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function() {
             let tablaEstaciones;
+            let estacionModal;
+
+            // Inicializar el modal
+            estacionModal = new bootstrap.Modal(document.getElementById('estacionModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            // Manejar el cierre del modal
+            document.getElementById('estacionModal').addEventListener('hidden.bs.modal', function () {
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            });
 
             // Inicializar DataTable
             tablaEstaciones = $('#tablaEstaciones').DataTable({
@@ -179,8 +196,6 @@
                 }
             });
 
-
-
             // Cargar estaciones
             function cargarEstaciones() {
                 fetch('/api/estaciones', {
@@ -207,8 +222,23 @@
             // Cargar estaciones al iniciar
             cargarEstaciones();
 
+            // Manejar clic en nueva
+            $('.nueva-estacion').on('click', function() {   
+                console.log('Nueva estación');             
+                $('#modalTitle').text('Nueva Estación');
+                $('#estacionForm')[0].reset();
+                $('#estacionId').val('');
+                $('#nombre').val();
+                $('#codigo').val();
+                $('#ubicacion').val();
+                $('#activa').prop('checked', true);
+                
+                estacionModal.show();
+            });
+
             // Manejar clic en editar
             $('#tablaEstaciones').on('click', '.editar-estacion', function() {
+                console.log('Editar estación');
                 const id = $(this).data('id');
                 const estacion = tablaEstaciones.row($(this).closest('tr')).data();
                 
@@ -219,7 +249,7 @@
                 $('#ubicacion').val(estacion.ubicacion);
                 $('#activa').prop('checked', estacion.activa);
                 
-                $('#estacionModal').modal('show');
+                estacionModal.show();
             });
 
             // Manejar clic en eliminar
@@ -272,7 +302,12 @@
                         return;
                     }
                     if (response.ok) {
-                        $('#estacionModal').modal('hide');
+                        estacionModal.hide();
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
                         cargarEstaciones();
                     } else {
                         throw new Error('Error al guardar la estación');
@@ -284,14 +319,7 @@
                 });
             });
 
-            // Limpiar formulario al abrir modal para nueva estación
-            $('#estacionModal').on('show.bs.modal', function(e) {
-                if (!$(e.relatedTarget).hasClass('editar-estacion')) {
-                    $('#modalTitle').text('Nueva Estación');
-                    $('#estacionForm')[0].reset();
-                    $('#estacionId').val('');
-                }
-            });
+
         });
     </script>
 </body>
