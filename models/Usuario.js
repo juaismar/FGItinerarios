@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db/database');
 const bcrypt = require('bcrypt');
-const { ROLES, ROLES_DESCRIPCION } = require('../config/roles');
+const { ROLES } = require('../config/roles');
 
 const Usuario = sequelize.define('Usuario', {
     id: {

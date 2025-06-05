@@ -66,8 +66,12 @@ function getHeaders() {
     const token = localStorage.getItem('token');
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': getAuthToken()
     };
+}
+function getAuthToken() {
+    const token = localStorage.getItem('token');
+    return `Bearer ${token}`;
 }
 
 // Verificar sesión al cargar la página

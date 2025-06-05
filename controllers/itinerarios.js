@@ -12,7 +12,7 @@ paginate.paginate(Itinerario);
 const logLocation = 'itinerarios.js: ';
 
 // Obtener todos los itinerarios
-router.get('/', verificarAuth(), async (req, res) => {
+router.get('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
         const itinerarios = await Itinerario.findAll({
             order: [['fecha', 'DESC']]
@@ -25,7 +25,7 @@ router.get('/', verificarAuth(), async (req, res) => {
 });
 
 // Nueva ruta paginada para la página de administración
-router.get('/paginated', verificarAuth(), async (req, res) => {
+router.get('/paginated', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
