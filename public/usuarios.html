@@ -107,6 +107,8 @@
                                 <label for="password" class="form-label">Contraseña</label>
                                 <input type="password" class="form-control" id="password">
                                 <small class="text-muted">Dejar en blanco para mantener la contraseña actual al editar</small>
+                                <small class="text-muted">Minimo 6 caracteres</small>
+
                             </div>
                             <div class="mb-3">
                                 <label for="rol" class="form-label">Rol</label>
@@ -236,6 +238,7 @@
 -               $('#password').prop('required', true);
                 $('#nombre').val();
                 $('#email').val();
+                $('#email').prop('editable', true);
                 $('#rol').val('planificador');
                 $('#activo').prop('checked', true);
                 
@@ -251,6 +254,7 @@
                 $('#usuarioId').val(usuario.id);
                 $('#nombre').val(usuario.nombre);
                 $('#email').val(usuario.email);
+                $('#email').prop('editable', false);
                 $('#rol').val(usuario.rol);
                 $('#activo').prop('checked', usuario.activo);
                 $('#password').val('').prop('required', false);

@@ -43,6 +43,19 @@ router.get('/', verificarAuth('admin'), async (req, res) => {
   }
 });
 
+//Crear un nuevo usuario (solo admin)
+router.post('/', verificarAuth('admin'), async (req, res) => {
+  try {
+    const { nombre, email, password, rol } = req.body;
+    const usuario = await Usuario.create({ nombre, email, password, rol });
+    logger.info(logLocation + 'Usuario creado exitosamente:', usuario);
+    res.status(201).json(usuario);
+  } catch (error) {
+    logger.error(logLocation + 'Error al crear usuario:', error);
+    res.status(500).json({ mensaje: 'Error al crear usuario' });
+  }
+});
+
 // Actualizar usuario (solo admin)
 router.put('/:id', verificarAuth('admin'), async (req, res) => {
   try {
