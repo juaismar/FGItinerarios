@@ -17,6 +17,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ mensaje: 'Credenciales inválidas' });
     }
 
+    // Actualizar último acceso
+    await usuario.update({ ultimoAcceso: new Date() });
+
     const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET);
 
     res.json({ usuario, token });
