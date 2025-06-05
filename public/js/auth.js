@@ -61,5 +61,14 @@ function cerrarSesion() {
     window.location.href = '/index.html';
 }
 
+// Función para añadir el token a las peticiones
+function getHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+}
+
 // Verificar sesión al cargar la página
 document.addEventListener('DOMContentLoaded', verificarSesion); 

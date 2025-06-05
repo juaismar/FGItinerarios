@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Itinerario = require('../models/Itinerario');
-const { verificarToken, verificarRol, esPlanificador } = require('../middleware/auth');
+const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
 const { Op } = require('sequelize');
 const paginate = require('sequelize-paginate');
@@ -12,7 +12,7 @@ paginate.paginate(Itinerario);
 const logLocation = 'itinerarios.js: ';
 
 // Obtener todos los itinerarios
-router.get('/', verificarToken, async (req, res) => {
+router.get('/', verificarAuth(), async (req, res) => {
     try {
         const itinerarios = await Itinerario.findAll({
             order: [['fecha', 'DESC']]
@@ -25,75 +25,75 @@ router.get('/', verificarToken, async (req, res) => {
 });
 
 // Nueva ruta paginada para la página de administración
-router.get('/paginated', verificarToken, async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const search = req.query.search || '';
-    const estado = req.query.estado || '';
-    const fechaInicio = req.query.fechaInicio || '';
-    const fechaFin = req.query.fechaFin || '';
+router.get('/paginated', verificarAuth(), async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
+        const estado = req.query.estado || '';
+        const fechaInicio = req.query.fechaInicio || '';
+        const fechaFin = req.query.fechaFin || '';
 
-    // Construir condiciones de búsqueda
-    const where = {};
-    
-    if (search) {
-      where[Op.or] = [
-        { numero: { [Op.iLike]: `%${search}%` } },
-        { origen: { [Op.iLike]: `%${search}%` } },
-        { destino: { [Op.iLike]: `%${search}%` } },
-        { tipo: { [Op.iLike]: `%${search}%` } }
-      ];
+        // Construir condiciones de búsqueda
+        const where = {};
+        
+        if (search) {
+            where[Op.or] = [
+                { numero: { [Op.iLike]: `%${search}%` } },
+                { origen: { [Op.iLike]: `%${search}%` } },
+                { destino: { [Op.iLike]: `%${search}%` } },
+                { tipo: { [Op.iLike]: `%${search}%` } }
+            ];
+        }
+
+        if (estado) {
+            where.estado = estado;
+        }
+
+        if (fechaInicio && fechaFin) {
+            where.fecha = {
+                [Op.between]: [new Date(fechaInicio), new Date(fechaFin)]
+            };
+        } else if (fechaInicio) {
+            where.fecha = {
+                [Op.gte]: new Date(fechaInicio)
+            };
+        } else if (fechaFin) {
+            where.fecha = {
+                [Op.lte]: new Date(fechaFin)
+            };
+        }
+
+        // Usar sequelize-paginate para obtener los resultados paginados
+        const { docs, pages, total } = await Itinerario.paginate({
+            page,
+            paginate: limit,
+            where,
+            include: [{
+                model: require('../models/Usuario'),
+                attributes: ['nombre', 'email']
+            }],
+            order: [['fecha', 'DESC']]
+        });
+
+        logger.info(logLocation + 'Itinerarios paginados obtenidos exitosamente');
+        res.json({
+            data: docs,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: pages
+            }
+        });
+    } catch (error) {
+        logger.error(logLocation + 'Error al obtener itinerarios paginados: ' + error);
+        res.status(500).json({ mensaje: 'Error al obtener itinerarios paginados' });
     }
-
-    if (estado) {
-      where.estado = estado;
-    }
-
-    if (fechaInicio && fechaFin) {
-      where.fecha = {
-        [Op.between]: [new Date(fechaInicio), new Date(fechaFin)]
-      };
-    } else if (fechaInicio) {
-      where.fecha = {
-        [Op.gte]: new Date(fechaInicio)
-      };
-    } else if (fechaFin) {
-      where.fecha = {
-        [Op.lte]: new Date(fechaFin)
-      };
-    }
-
-    // Usar sequelize-paginate para obtener los resultados paginados
-    const { docs, pages, total } = await Itinerario.paginate({
-      page,
-      paginate: limit,
-      where,
-      include: [{
-        model: require('../models/Usuario'),
-        attributes: ['nombre', 'email']
-      }],
-      order: [['fecha', 'DESC']]
-    });
-
-    logger.info(logLocation + 'Itinerarios paginados obtenidos exitosamente');
-    res.json({
-      data: docs,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: pages
-      }
-    });
-  } catch (error) {
-    logger.error(logLocation + 'Error al obtener itinerarios paginados: ' + error);
-    res.status(500).json({ mensaje: 'Error al obtener itinerarios paginados' });
-  }
 });
 
 // Crear nuevo itinerario (solo planificador o admin)
-router.post('/', verificarToken, esPlanificador, async (req, res) => {
+router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
         const itinerario = await Itinerario.create(req.body);
         res.status(201).json(itinerario);
@@ -104,7 +104,7 @@ router.post('/', verificarToken, esPlanificador, async (req, res) => {
 });
 
 // Actualizar itinerario (solo planificador o admin)
-router.put('/:id', verificarToken, esPlanificador, async (req, res) => {
+router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
         const { id } = req.params;
         await Itinerario.update(req.body, { where: { id } });
@@ -116,7 +116,7 @@ router.put('/:id', verificarToken, esPlanificador, async (req, res) => {
 });
 
 // Eliminar itinerario (solo admin)
-router.delete('/:id', verificarToken, verificarRol('admin'), async (req, res) => {
+router.delete('/:id', verificarAuth('admin'), async (req, res) => {
     try {
         const { id } = req.params;
         await Itinerario.destroy({ where: { id } });

@@ -59,28 +59,6 @@ const Usuario = sequelize.define('Usuario', {
     }
 });
 
-// Métodos de instancia
-Usuario.prototype.tieneRol = function(rol) {
-    return this.rol === rol;
-};
-
-Usuario.prototype.descripcionRol = function() {
-    return ROLES_DESCRIPCION[this.rol] || 'Rol desconocido';
-};
-
-// Getters para roles
-Object.defineProperty(Usuario.prototype, 'esAdmin', {
-    get() {
-        return this.rol === ROLES.ADMIN;
-    }
-});
-
-Object.defineProperty(Usuario.prototype, 'esPlanificador', {
-    get() {
-        return this.rol === ROLES.PLANIFICADOR;
-    }
-});
-
 // Método para verificar contraseña
 Usuario.prototype.verificarPassword = async function(password) {
     return bcrypt.compare(password, this.password);

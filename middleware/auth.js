@@ -1,43 +1,54 @@
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 
-const verificarToken = async (req, res, next) => {
-  try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    
-    if (!token) {
-      throw new Error();
-    }
+const verificarAuth = (rolesPermitidos = null) => {
+    return async (req, res, next) => {
+        try {
+          console.log("verificarAuth");
+          
+            // Verificar token
+            const token = req.header('Authorization')?.replace('Bearer ', '');
+            console.log("token");
+            console.log(token);
+            if (!token) {
+                return res.status(401).json({ mensaje: 'Por favor autentíquese.' });
+            }
+            console.log("token");
+            
+            // Decodificar token y obtener usuario
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const usuario = await Usuario.findByPk(decoded.id);
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const usuario = await Usuario.findByPk(decoded.id);
+            if (!usuario) {
+                return res.status(401).json({ mensaje: 'Usuario no encontrado.' });
+            }
 
-    if (!usuario) {
-      throw new Error();
-    }
-
-    req.usuario = usuario;
-    req.token = token;
-    next();
-  } catch (error) {
-    res.status(401).json({ mensaje: 'Por favor autentíquese.' });
-  }
+            console.log("usuario");
+            
+            // Verificar rol si se requiere
+            if (rolesPermitidos) {
+                // Convertir a array si es un solo rol
+                const roles = Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos];
+                
+                if (!roles.includes(usuario.rol)) {
+                    return res.status(403).json({ 
+                        mensaje: `Acceso denegado. Se requieren privilegios de ${roles.join(' o ')}.` 
+                    });
+                }
+            }
+            console.log("next");
+            
+            // Añadir usuario y token a la request
+            req.usuario = usuario;
+            req.token = token;
+            next();
+        } catch (error) {
+            res.status(401).json({ mensaje: 'Por favor autentíquese.' });
+        }
+    };
 };
 
-const verificarRol = (rol) => {
-  return async (req, res, next) => {
-    if (req.usuario.rol !== rol) {
-      return res.status(403).json({ mensaje: 'Acceso denegado. Se requieren privilegios de administrador.' });
-    }
-    next();
-  };
-};
 
-const esPlanificador = async (req, res, next) => {
-  if (req.usuario.rol !== 'planificador' && req.usuario.rol !== 'admin') {
-    return res.status(403).json({ mensaje: 'Acceso denegado. Se requieren privilegios de planificador.' });
-  }
-  next();
-};
-
-module.exports = { verificarToken, verificarRol, esPlanificador }; 
+module.exports = { 
+    verificarAuth
+}; 

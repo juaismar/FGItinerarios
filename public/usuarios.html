@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .usuario-activo {
+            color: #28a745;
+        }
+        .usuario-inactivo {
+            color: #dc3545;
+        }
+        .btn-icon {
+            padding: 0.25rem 0.5rem;
+            margin: 0 0.2rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-editar {
+            background-color: #1976d2;
+            color: white;
+        }
+        .btn-editar:hover {
+            background-color: #1565c0;
+            color: white;
+        }
+        .btn-eliminar {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-eliminar:hover {
+            background-color: #c82333;
+            color: white;
+        }
+        .acciones-cell {
+            white-space: nowrap;
+            text-align: center;
+        }
+        [data-bs-toggle="tooltip"] {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Gestión de Usuarios</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usuarioModal">
+                <i class="fas fa-plus"></i> Nuevo Usuario
+            </button>
+        </div>
+
+        <!-- Tabla de Usuarios -->
+        <div class="card">
+            <div class="card-body">
+                <table id="tablaUsuarios" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Último Acceso</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Se llenará dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal para Crear/Editar Usuario -->
+        <div class="modal fade" id="usuarioModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle">Nuevo Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="usuarioForm">
+                            <input type="hidden" id="usuarioId">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="nombre" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="password">
+                                <small class="text-muted">Dejar en blanco para mantener la contraseña actual al editar</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rol" class="form-label">Rol</label>
+                                <select class="form-select" id="rol" required>
+                                    <option value="admin">Administrador</option>
+                                    <option value="planificador">Planificador</option>
+                                </select>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="activo" checked>
+                                <label class="form-check-label" for="activo">Usuario Activo</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let tablaUsuarios;
+
+            // Función para verificar si el usuario es admin
+            function esAdmin() {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.rol === 'admin';
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            // Función para añadir el token a las peticiones
+            function getHeaders() {
+                const token = localStorage.getItem('token');
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
+            }
+
+            // Verificar permisos al cargar la página
+            if (!esAdmin()) {
+                $('.btn-primary[data-bs-target="#usuarioModal"]').hide();
+                $('.eliminar-usuario').hide();
+            }
+
+            // Inicializar DataTable
+            tablaUsuarios = $('#tablaUsuarios').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                },
+                columns: [
+                    { data: 'id' },
+                    { data: 'nombre' },
+                    { data: 'email' },
+                    { data: 'rol' },
+                    { 
+                        data: 'activo',
+                        render: function(data) {
+                            return data ? 
+                                '<span class="usuario-activo"><i class="fas fa-check-circle"></i> Activo</span>' : 
+                                '<span class="usuario-inactivo"><i class="fas fa-times-circle"></i> Inactivo</span>';
+                        }
+                    },
+                    { 
+                        data: 'ultimoAcceso',
+                        render: function(data) {
+                            return data ? new Date(data).toLocaleString() : 'Nunca';
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'acciones-cell',
+                        render: function(data) {
+                            const botones = `
+                                <button class="btn btn-icon btn-editar editar-usuario" 
+                                        data-id="${data.id}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Editar usuario">
+                                    <i class="fas fa-edit"></i>
+                                </button>`;
+                            
+                            if (esAdmin()) {
+                                botones += `
+                                    <button class="btn btn-icon btn-eliminar eliminar-usuario" 
+                                            data-id="${data.id}"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="Eliminar usuario">
+                                        <i class="fas fa-trash"></i>
+                                    </button>`;
+                            }
+                            
+                            return botones;
+                        }
+                    }
+                ],
+                drawCallback: function() {
+                    // Reinicializar tooltips después de cada redibujado de la tabla
+                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                }
+            });
+
+            // Cargar usuarios
+            function cargarUsuarios() {
+                fetch('/api/usuarios', {
+                    headers: getHeaders()
+                })
+                    .then(response => {
+                        if (response.status === 401) {
+                            window.location.href = '/index.html';
+                            return;
+                        }
+                        return response.json();
+                    })
+                    .then(usuarios => {
+                        if (usuarios) {
+                            tablaUsuarios.clear().rows.add(usuarios).draw();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar usuarios:', error);
+                        alert('Error al cargar los usuarios');
+                    });
+            }
+
+            // Cargar usuarios al iniciar
+            cargarUsuarios();
+
+            // Manejar clic en editar
+            $('#tablaUsuarios').on('click', '.editar-usuario', function() {
+                const id = $(this).data('id');
+                const usuario = tablaUsuarios.row($(this).closest('tr')).data();
+                
+                $('#modalTitle').text('Editar Usuario');
+                $('#usuarioId').val(usuario.id);
+                $('#nombre').val(usuario.nombre);
+                $('#email').val(usuario.email);
+                $('#rol').val(usuario.rol);
+                $('#activo').prop('checked', usuario.activo);
+                $('#password').val('').prop('required', false);
+                
+                $('#usuarioModal').modal('show');
+            });
+
+            // Manejar clic en eliminar
+            $('#tablaUsuarios').on('click', '.eliminar-usuario', function() {
+                if (!esAdmin()) {
+                    alert('No tienes permisos para eliminar usuarios');
+                    return;
+                }
+
+                const id = $(this).data('id');
+                if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+                    fetch(`/api/usuarios/${id}`, {
+                        method: 'DELETE',
+                        headers: getHeaders()
+                    })
+                    .then(response => {
+                        if (response.status === 401) {
+                            window.location.href = '/index.html';
+                            return;
+                        }
+                        if (response.ok) {
+                            cargarUsuarios();
+                        } else {
+                            throw new Error('Error al eliminar el usuario');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al eliminar el usuario');
+                    });
+                }
+            });
+
+            // Manejar guardar usuario
+            $('#btnGuardar').click(function() {
+                if (!esAdmin()) {
+                    alert('No tienes permisos para crear o editar usuarios');
+                    return;
+                }
+
+                const usuarioId = $('#usuarioId').val();
+                const usuario = {
+                    nombre: $('#nombre').val(),
+                    email: $('#email').val(),
+                    rol: $('#rol').val(),
+                    activo: $('#activo').is(':checked')
+                };
+
+                // Solo incluir password si se ha modificado
+                const password = $('#password').val();
+                if (password) {
+                    usuario.password = password;
+                }
+
+                const method = usuarioId ? 'PUT' : 'POST';
+                const url = usuarioId ? `/api/usuarios/${usuarioId}` : '/api/usuarios';
+
+                fetch(url, {
+                    method: method,
+                    headers: getHeaders(),
+                    body: JSON.stringify(usuario)
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    if (response.ok) {
+                        $('#usuarioModal').modal('hide');
+                        cargarUsuarios();
+                    } else {
+                        throw new Error('Error al guardar el usuario');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al guardar el usuario');
+                });
+            });
+
+            // Limpiar formulario al abrir modal para nuevo usuario
+            $('#usuarioModal').on('show.bs.modal', function(e) {
+                if (!$(e.relatedTarget).hasClass('editar-usuario')) {
+                    $('#modalTitle').text('Nuevo Usuario');
+                    $('#usuarioForm')[0].reset();
+                    $('#usuarioId').val('');
+                    $('#password').prop('required', true);
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

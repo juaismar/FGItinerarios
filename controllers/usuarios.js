@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
-const { verificarToken, verificarRol } = require('../middleware/auth');
+const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
 
 const logLocation = 'usuarios.js: ';
@@ -26,12 +26,12 @@ router.post('/login', async (req, res) => {
 });
 
 // Obtener perfil del usuario
-router.get('/perfil', verificarToken, async (req, res) => {
+router.get('/perfil', verificarAuth(), async (req, res) => {
   res.json(req.usuario);
 });
 
 // Obtener todos los usuarios (solo admin)
-router.get('/', verificarToken, verificarRol('admin'), async (req, res) => {
+router.get('/', verificarAuth('admin'), async (req, res) => {
   try {
     const usuarios = await Usuario.findAll({
       attributes: ['id', 'nombre', 'email', 'rol', 'activo', 'ultimoAcceso']
@@ -44,7 +44,7 @@ router.get('/', verificarToken, verificarRol('admin'), async (req, res) => {
 });
 
 // Actualizar usuario (solo admin)
-router.put('/:id', verificarToken, verificarRol('admin'), async (req, res) => {
+router.put('/:id', verificarAuth('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, email, rol, activo } = req.body;
@@ -62,7 +62,7 @@ router.put('/:id', verificarToken, verificarRol('admin'), async (req, res) => {
 });
 
 // Eliminar usuario (solo admin)
-router.delete('/:id', verificarToken, verificarRol('admin'), async (req, res) => {
+router.delete('/:id', verificarAuth('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     await Usuario.destroy({ where: { id } });
