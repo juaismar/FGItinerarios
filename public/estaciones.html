@@ -303,11 +303,6 @@
                     }
                     if (response.ok) {
                         estacionModal.hide();
-                        document.body.classList.remove('modal-open');
-                        const backdrop = document.querySelector('.modal-backdrop');
-                        if (backdrop) {
-                            backdrop.remove();
-                        }
                         cargarEstaciones();
                     } else {
                         throw new Error('Error al guardar la estación');
