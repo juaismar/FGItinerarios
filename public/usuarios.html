@@ -57,7 +57,7 @@
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Gestión de Usuarios</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usuarioModal">
+            <button class="btn btn-primary nuevo-usuario">
                 <i class="fas fa-plus"></i> Nuevo Usuario
             </button>
         </div>
@@ -138,34 +138,13 @@
     <script>
         $(document).ready(function() {
             let tablaUsuarios;
+            let usuarioModal;
 
-            // Función para verificar si el usuario es admin
-            function esAdmin() {
-                const token = localStorage.getItem('token');
-                if (!token) return false;
-                
-                try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    return payload.rol === 'admin';
-                } catch (e) {
-                    return false;
-                }
-            }
-
-            // Función para añadir el token a las peticiones
-            function getHeaders() {
-                const token = localStorage.getItem('token');
-                return {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                };
-            }
-
-            // Verificar permisos al cargar la página
-            if (!esAdmin()) {
-                $('.btn-primary[data-bs-target="#usuarioModal"]').hide();
-                $('.eliminar-usuario').hide();
-            }
+            // Inicializar el modal
+            usuarioModal = new bootstrap.Modal(document.getElementById('usuarioModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
 
             // Inicializar DataTable
             tablaUsuarios = $('#tablaUsuarios').DataTable({
@@ -195,27 +174,21 @@
                         data: null,
                         className: 'acciones-cell',
                         render: function(data) {
-                            const botones = `
+                            return `
                                 <button class="btn btn-icon btn-editar editar-usuario" 
                                         data-id="${data.id}"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
                                         title="Editar usuario">
                                     <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon btn-eliminar eliminar-usuario" 
+                                        data-id="${data.id}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Eliminar usuario">
+                                    <i class="fas fa-trash"></i>
                                 </button>`;
-                            
-                            if (esAdmin()) {
-                                botones += `
-                                    <button class="btn btn-icon btn-eliminar eliminar-usuario" 
-                                            data-id="${data.id}"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="Eliminar usuario">
-                                        <i class="fas fa-trash"></i>
-                                    </button>`;
-                            }
-                            
-                            return botones;
                         }
                     }
                 ],
@@ -254,6 +227,21 @@
             // Cargar usuarios al iniciar
             cargarUsuarios();
 
+            // Manejar clic en nueva
+            $('.nuevo-usuario').on('click', function() {   
+                console.log('Nuevo usuario');             
+                $('#modalTitle').text('Nuevo Usuario');
+-               $('#usuarioForm')[0].reset();
+-               $('#usuarioId').val('');
+-               $('#password').prop('required', true);
+                $('#nombre').val();
+                $('#email').val();
+                $('#rol').val('planificador');
+                $('#activo').prop('checked', true);
+                
+                usuarioModal.show();
+            });
+
             // Manejar clic en editar
             $('#tablaUsuarios').on('click', '.editar-usuario', function() {
                 const id = $(this).data('id');
@@ -267,15 +255,11 @@
                 $('#activo').prop('checked', usuario.activo);
                 $('#password').val('').prop('required', false);
                 
-                $('#usuarioModal').modal('show');
+                usuarioModal.show();
             });
 
             // Manejar clic en eliminar
             $('#tablaUsuarios').on('click', '.eliminar-usuario', function() {
-                if (!esAdmin()) {
-                    alert('No tienes permisos para eliminar usuarios');
-                    return;
-                }
 
                 const id = $(this).data('id');
                 if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
@@ -303,10 +287,6 @@
 
             // Manejar guardar usuario
             $('#btnGuardar').click(function() {
-                if (!esAdmin()) {
-                    alert('No tienes permisos para crear o editar usuarios');
-                    return;
-                }
 
                 const usuarioId = $('#usuarioId').val();
                 const usuario = {
@@ -336,7 +316,7 @@
                         return;
                     }
                     if (response.ok) {
-                        $('#usuarioModal').modal('hide');
+                        usuarioModal.hide();
                         cargarUsuarios();
                     } else {
                         throw new Error('Error al guardar el usuario');
@@ -346,16 +326,6 @@
                     console.error('Error:', error);
                     alert('Error al guardar el usuario');
                 });
-            });
-
-            // Limpiar formulario al abrir modal para nuevo usuario
-            $('#usuarioModal').on('show.bs.modal', function(e) {
-                if (!$(e.relatedTarget).hasClass('editar-usuario')) {
-                    $('#modalTitle').text('Nuevo Usuario');
-                    $('#usuarioForm')[0].reset();
-                    $('#usuarioId').val('');
-                    $('#password').prop('required', true);
-                }
             });
         });
     </script>

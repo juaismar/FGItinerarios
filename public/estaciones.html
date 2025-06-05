@@ -224,7 +224,6 @@
 
             // Manejar clic en nueva
             $('.nueva-estacion').on('click', function() {   
-                console.log('Nueva estación');             
                 $('#modalTitle').text('Nueva Estación');
                 $('#estacionForm')[0].reset();
                 $('#estacionId').val('');
@@ -238,7 +237,6 @@
 
             // Manejar clic en editar
             $('#tablaEstaciones').on('click', '.editar-estacion', function() {
-                console.log('Editar estación');
                 const id = $(this).data('id');
                 const estacion = tablaEstaciones.row($(this).closest('tr')).data();
                 
@@ -313,8 +311,6 @@
                     alert('Error al guardar la estación');
                 });
             });
-
-
         });
     </script>
 </body>
