@@ -30,7 +30,7 @@
 <body>
     <div class="container-fluid">
         <div class="header-container">
-            <h2><i class="fas fa-route"></i> Gestión de Itinerarios</h2>
+            <h2>Gestión de Itinerarios</h2>
             <p class="text-muted">Administra los itinerarios del sistema</p>
         </div>
 
@@ -132,7 +132,7 @@
             // Inicializar DataTable
             const tabla = $('#tablaItinerarios').DataTable({
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                    url: '/datatable_lang/es-ES.json'
                 },
                 ajax: {
                     url: '/itinerarios/paginated',
