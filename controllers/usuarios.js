@@ -4,8 +4,10 @@ const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
 const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
+const { ssp } = require('../db/database');
 
 const logLocation = 'usuarios.js: ';
+router.use(express.json());
 
 // Login
 router.post('/login', async (req, res) => {
@@ -33,17 +35,25 @@ router.get('/perfil', verificarAuth(), async (req, res) => {
   res.json(req.usuario);
 });
 
-// Obtener todos los usuarios (solo admin)
-router.get('/', verificarAuth('admin'), async (req, res) => {
-  try {
-    const usuarios = await Usuario.findAll({
-      attributes: ['id', 'nombre', 'email', 'rol', 'activo', 'ultimoAcceso']
-    });
-    res.json(usuarios);
-  } catch (error) {
-    logger.error(logLocation + 'Error al obtener usuarios:', error);
-    res.status(500).json({ mensaje: 'Error al obtener usuarios' });
-  }
+// Obtener usuarios paginados (solo admin)
+router.get('/paginated', verificarAuth('admin'), async (req, res) => {
+    try {
+        const columns = [
+            { db: 'id', dt: 'id', formatter: null },
+            { db: 'nombre', dt: 'nombre', formatter: null },
+            { db: 'email', dt: 'email', formatter: null },
+            { db: 'rol', dt: 'rol', formatter: null },
+            { db: 'activo', dt: 'activo', formatter: null },
+            { db: 'ultimoAcceso', dt: 'ultimoAcceso', formatter: null }
+        ];
+
+      const result = await ssp.Simple(req.query, 'Usuarios', columns);
+
+      res.json(result);
+    } catch (error) {
+        logger.error(logLocation + 'Error al obtener usuarios paginados:', error);
+        res.status(500).json({ mensaje: 'Error al obtener usuarios' });
+    }
 });
 
 //Crear un nuevo usuario (solo admin)

@@ -148,6 +148,11 @@
 
             // Inicializar DataTable
             tablaEstaciones = $('#tablaEstaciones').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '/api/estaciones/paginated'
+                },
                 language: {
                     url: '/datatable_lang/es-ES.json'
                 },
@@ -196,32 +201,6 @@
                 }
             });
 
-            // Cargar estaciones
-            function cargarEstaciones() {
-                fetch('/api/estaciones', {
-                    headers: getHeaders()
-                })
-                    .then(response => {
-                        if (response.status === 401) {
-                            window.location.href = '/index.html';
-                            return;
-                        }
-                        return response.json();
-                    })
-                    .then(estaciones => {
-                        if (estaciones) {
-                            tablaEstaciones.clear().rows.add(estaciones).draw();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error al cargar estaciones:', error);
-                        alert('Error al cargar las estaciones');
-                    });
-            }
-
-            // Cargar estaciones al iniciar
-            cargarEstaciones();
-
             // Manejar clic en nueva
             $('.nueva-estacion').on('click', function() {   
                 $('#modalTitle').text('Nueva Estación');
@@ -264,7 +243,7 @@
                             return;
                         }
                         if (response.ok) {
-                            cargarEstaciones();
+                            tablaEstaciones.ajax.reload();
                         } else {
                             throw new Error('Error al eliminar la estación');
                         }
@@ -301,7 +280,7 @@
                     }
                     if (response.ok) {
                         estacionModal.hide();
-                        cargarEstaciones();
+                        tablaEstaciones.ajax.reload();
                     } else {
                         throw new Error('Error al guardar la estación');
                     }

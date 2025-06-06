@@ -9,6 +9,7 @@ const entorno = process.env.FGItinerarios_ENV || 'development';
 logger.info(`Iniciando aplicación en entorno: ${entorno}`);
 
 const app = express();
+
 const logLocation = 'server.js: ';
 
 // Configuración de CORS
@@ -27,8 +28,6 @@ app.use(express.json());
 
 // Rutas API
 const apiRouter = require('./router');
-
-// Definir rutas API antes de las rutas del cliente
 app.use('/', apiRouter);
 
 // Middleware de manejo de errores

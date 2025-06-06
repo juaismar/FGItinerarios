@@ -1,6 +1,17 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 const logger = require('../logger').logger;
+const { SSP } = require('js_ssp');
+
+const SSPconfig = { // TODO Inicializar
+  dialect: 'postgres',
+  host: 'localhost',
+  user: 'postgres',
+  password: 'postgres',
+  database: 'fgitinerarios',
+  port: 5432 
+};
+let ssp = new SSP(SSPconfig);
 
 const config = {
   development: {
@@ -50,6 +61,10 @@ const sequelize = new Sequelize(
 // Función para inicializar la conexión
 async function inicializarConexion() {
   try {
+    // TODO Inicializar SSP en mejor lugar
+    //console.log("inicializar ssp")
+    //ssp = new SSP(SSPconfig);
+
     // Probar la conexión
     await sequelize.authenticate();
     logger.info('Conexión a la base de datos establecida correctamente');
@@ -94,6 +109,7 @@ async function cerrarConexion() {
 }
 
 module.exports = {
+  ssp,
   sequelize,
   inicializarConexion,
   ejecutarSeed,

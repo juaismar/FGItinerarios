@@ -153,6 +153,14 @@
                 language: {
                     url: '/datatable_lang/es-ES.json'
                 },
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '/api/usuarios/paginated',
+                    headers: {
+                        'Authorization': getAuthToken()
+                    }
+                },
                 columns: [
                     { data: 'id' },
                     { data: 'nombre' },
@@ -174,28 +182,23 @@
                     },
                     {
                         data: null,
-                        className: 'acciones-cell',
                         render: function(data) {
                             return `
-                                <button class="btn btn-icon btn-editar editar-usuario" 
-                                        data-id="${data.id}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="Editar usuario">
+                                <button class="btn btn-sm btn-primary editar-usuario" data-id="${data.id}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-icon btn-eliminar eliminar-usuario" 
-                                        data-id="${data.id}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="Eliminar usuario">
+                                <button class="btn btn-sm btn-danger eliminar-usuario" data-id="${data.id}">
                                     <i class="fas fa-trash"></i>
-                                </button>`;
+                                </button>
+                            `;
                         }
                     }
                 ],
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+                order: [[1, 'asc']], // Ordenar por nombre por defecto
                 drawCallback: function() {
-                    // Reinicializar tooltips después de cada redibujado de la tabla
+                    // Reinicializar tooltips después de cada redibujado
                     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
                     tooltipTriggerList.map(function (tooltipTriggerEl) {
                         return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -203,38 +206,12 @@
                 }
             });
 
-            // Cargar usuarios
-            function cargarUsuarios() {
-                fetch('/api/usuarios', {
-                    headers: getHeaders()
-                })
-                    .then(response => {
-                        if (response.status === 401) {
-                            window.location.href = '/index.html';
-                            return;
-                        }
-                        return response.json();
-                    })
-                    .then(usuarios => {
-                        if (usuarios) {
-                            tablaUsuarios.clear().rows.add(usuarios).draw();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error al cargar usuarios:', error);
-                        alert('Error al cargar los usuarios');
-                    });
-            }
-
-            // Cargar usuarios al iniciar
-            cargarUsuarios();
-
             // Manejar clic en nueva
             $('.nuevo-usuario').on('click', function() {
                 $('#modalTitle').text('Nuevo Usuario');
--               $('#usuarioForm')[0].reset();
--               $('#usuarioId').val('');
--               $('#password').prop('required', true);
+                $('#usuarioForm')[0].reset();
+                $('#usuarioId').val('');
+                $('#password').prop('required', true);
                 $('#nombre').val();
                 $('#email').val();
                 $('#email').prop('editable', true);
@@ -263,7 +240,6 @@
 
             // Manejar clic en eliminar
             $('#tablaUsuarios').on('click', '.eliminar-usuario', function() {
-
                 const id = $(this).data('id');
                 if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
                     fetch(`/api/usuarios/${id}`, {
@@ -276,7 +252,7 @@
                             return;
                         }
                         if (response.ok) {
-                            cargarUsuarios();
+                            tablaUsuarios.ajax.reload(); // Recargar la tabla después de eliminar
                         } else {
                             throw new Error('Error al eliminar el usuario');
                         }
@@ -290,7 +266,6 @@
 
             // Manejar guardar usuario
             $('#btnGuardar').click(function() {
-
                 const usuarioId = $('#usuarioId').val();
                 const usuario = {
                     nombre: $('#nombre').val(),
@@ -320,7 +295,7 @@
                     }
                     if (response.ok) {
                         usuarioModal.hide();
-                        cargarUsuarios();
+                        tablaUsuarios.ajax.reload(); // Recargar la tabla después de guardar
                     } else {
                         throw new Error('Error al guardar el usuario');
                     }

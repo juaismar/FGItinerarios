@@ -63,7 +63,6 @@ function cerrarSesion() {
 
 // Función para añadir el token a las peticiones
 function getHeaders() {
-    const token = localStorage.getItem('token');
     return {
         'Content-Type': 'application/json',
         'Authorization': getAuthToken()

@@ -3,8 +3,28 @@ const router = express.Router();
 const Estacion = require('../models/Estacion');
 const logger = require('../logger').logger;
 const { verificarAuth } = require('../middleware/auth');
+const { ssp } = require('../db/database');
 
 const logLocation = 'estaciones.js: ';
+
+// Obtener estaciones paginadas
+router.get('/paginated', async (req, res) => {
+    try {
+        const columns = [
+            { db: 'id', dt: 'id', formatter: null },
+            { db: 'nombre', dt: 'nombre', formatter: null },
+            { db: 'codigo', dt: 'codigo', formatter: null },
+            { db: 'ubicacion', dt: 'ubicacion', formatter: null },
+            { db: 'activa', dt: 'activa', formatter: null }
+        ];
+
+        const result = await ssp.Simple(req.query, 'Estacions', columns);
+        res.json(result);
+    } catch (error) {
+        logger.error(logLocation + 'Error al obtener estaciones paginadas:', error);
+        res.status(500).json({ mensaje: 'Error al obtener estaciones' });
+    }
+});
 
 // Obtener todas las estaciones
 router.get('/', async (req, res) => {

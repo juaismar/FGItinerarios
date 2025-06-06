@@ -33,7 +33,7 @@ const Usuario = sequelize.define('Usuario', {
         }
     },
     rol: {
-        type: DataTypes.ENUM(Object.values(ROLES)),
+        type: DataTypes.STRING,
         allowNull: false,
         defaultValue: ROLES.PLANIFICADOR
     },
