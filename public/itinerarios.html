@@ -122,20 +122,21 @@
             let tablaItinerarios;
             // Inicializar DataTable
             tablaItinerarios = $('#tablaItinerarios').DataTable({
-                language: {
-                    url: '/datatable_lang/es-ES.json'
-                },
+                processing: true,
+                serverSide: true,
                 ajax: {
                     url: '/api/itinerarios/paginated',
                     headers: {
                         'Authorization': getAuthToken()
-                    },
+                    }
+                },
+                language: {
+                    url: '/datatable_lang/es-ES.json'
                 },
                 columns: [
                     { data: 'numero' },
                     { data: 'origen' },
                     { data: 'destino' },
-                    { data: 'tipo' },
                     { 
                         data: 'fecha',
                         render: function(data) {
@@ -146,37 +147,46 @@
                         data: 'estado',
                         render: function(data) {
                             const estados = {
-                                'PENDIENTE': '<span class="badge bg-warning">Pendiente</span>',
-                                'EN_PROGRESO': '<span class="badge bg-info">En Progreso</span>',
-                                'COMPLETADO': '<span class="badge bg-success">Completado</span>',
-                                'CANCELADO': '<span class="badge bg-danger">Cancelado</span>'
+                                'pendiente': '<span class="badge bg-warning">Pendiente</span>',
+                                'en_proceso': '<span class="badge bg-info">En Proceso</span>',
+                                'completado': '<span class="badge bg-success">Completado</span>',
+                                'cancelado': '<span class="badge bg-danger">Cancelado</span>'
                             };
                             return estados[data] || data;
                         }
                     },
-                    { 
-                        data: 'Usuario',
-                        render: function(data) {
-                            return data ? data.nombre : 'N/A';
-                        }
-                    },
+                    { data: 'tipo' },
+                    { data: 'material' },
                     {
                         data: null,
+                        className: 'acciones-cell',
                         render: function(data) {
                             return `
-                                <button class="btn btn-sm btn-info btn-action" onclick="editarItinerario(${data.id})">
+                                <button class="btn btn-icon btn-editar editar-itinerario" 
+                                        data-id="${data.id}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Editar itinerario">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger btn-action" onclick="eliminarItinerario(${data.id})">
+                                <button class="btn btn-icon btn-eliminar eliminar-itinerario" 
+                                        data-id="${data.id}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Eliminar itinerario">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             `;
                         }
                     }
                 ],
-                order: [[4, 'desc']], // Ordenar por fecha descendente
-                pageLength: 10,
-                responsive: true
+                drawCallback: function() {
+                    // Reinicializar tooltips después de cada redibujado de la tabla
+                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                }
             });
 
             // Botón nuevo itinerario
