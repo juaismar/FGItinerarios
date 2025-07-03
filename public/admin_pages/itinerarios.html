@@ -1,0 +1,96 @@
+<!-- Itinerarios Content -->
+<div id="itinerarios-content">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Gestión de Itinerarios</h3>
+      <div class="card-tools">
+        <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalItinerario()">
+          <i class="fas fa-plus"></i> Nuevo Itinerario
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <table id="tabla-itinerarios" class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+async function cargarItinerarios() {
+    try {
+        const response = await fetch('/api/itinerarios');
+        const itinerarios = await response.json();
+        
+        if ($.fn.DataTable.isDataTable('#tabla-itinerarios')) {
+            $('#tabla-itinerarios').DataTable().destroy();
+        }
+        
+        const tabla = $('#tabla-itinerarios').DataTable({
+            data: itinerarios,
+            columns: [
+                { data: 'id' },
+                { data: 'nombre' },
+                { data: 'descripcion' },
+                { 
+                    data: 'activo',
+                    render: function(data) {
+                        return data ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-secondary">Inactivo</span>';
+                    }
+                },
+                {
+                    data: null,
+                    render: function(data) {
+                        return `
+                            <button class="btn btn-sm btn-info" onclick="editarItinerario(${data.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarItinerario(${data.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                    }
+                }
+            ],
+            responsive: true,
+            language: {
+                url: '/datatable_lang/es-ES.json'
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error cargando itinerarios:', error);
+    }
+}
+
+// Funciones para modales
+function abrirModalItinerario() {
+    alert('Función para abrir modal de itinerario');
+}
+
+function editarItinerario(id) {
+    alert(`Editar itinerario ${id}`);
+}
+
+function eliminarItinerario(id) {
+    if (confirm('¿Estás seguro de que quieres eliminar este itinerario?')) {
+        alert(`Eliminar itinerario ${id}`);
+    }
+}
+
+// Cargar itinerarios cuando se carga la página
+$(document).ready(function() {
+    cargarItinerarios();
+});
+</script> 

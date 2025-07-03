@@ -33,7 +33,7 @@ function verificarSesion() {
 
         switch(usuario.rol) {
             case 'admin':
-                if (!rutaActual.includes('home_admin.html')) {
+                if (!(rutaActual.includes('home_admin.html') || rutaActual.includes('admin_base.html'))) {
                     window.location.href = '/home_admin.html';
                 }
                 break;

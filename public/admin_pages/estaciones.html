@@ -1,0 +1,96 @@
+<!-- Estaciones Content -->
+<div id="estaciones-content">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Gestión de Estaciones</h3>
+      <div class="card-tools">
+        <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalEstacion()">
+          <i class="fas fa-plus"></i> Nueva Estación
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <table id="tabla-estaciones" class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Ubicación</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+async function cargarEstaciones() {
+    try {
+        const response = await fetch('/api/estaciones');
+        const estaciones = await response.json();
+        
+        if ($.fn.DataTable.isDataTable('#tabla-estaciones')) {
+            $('#tabla-estaciones').DataTable().destroy();
+        }
+        
+        const tabla = $('#tabla-estaciones').DataTable({
+            data: estaciones,
+            columns: [
+                { data: 'id' },
+                { data: 'nombre' },
+                { data: 'ubicacion' },
+                { 
+                    data: 'activo',
+                    render: function(data) {
+                        return data ? '<span class="badge badge-success">Activa</span>' : '<span class="badge badge-secondary">Inactiva</span>';
+                    }
+                },
+                {
+                    data: null,
+                    render: function(data) {
+                        return `
+                            <button class="btn btn-sm btn-info" onclick="editarEstacion(${data.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarEstacion(${data.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                    }
+                }
+            ],
+            responsive: true,
+            language: {
+                url: '/datatable_lang/es-ES.json'
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error cargando estaciones:', error);
+    }
+}
+
+// Funciones para modales
+function abrirModalEstacion() {
+    alert('Función para abrir modal de estación');
+}
+
+function editarEstacion(id) {
+    alert(`Editar estación ${id}`);
+}
+
+function eliminarEstacion(id) {
+    if (confirm('¿Estás seguro de que quieres eliminar esta estación?')) {
+        alert(`Eliminar estación ${id}`);
+    }
+}
+
+// Cargar estaciones cuando se carga la página
+$(document).ready(function() {
+    cargarEstaciones();
+});
+</script> 

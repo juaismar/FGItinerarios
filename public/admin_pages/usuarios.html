@@ -1,0 +1,98 @@
+<!-- Usuarios Content -->
+<div id="usuarios-content">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Gestión de Usuarios</h3>
+      <div class="card-tools">
+        <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalUsuario()">
+          <i class="fas fa-plus"></i> Nuevo Usuario
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <table id="tabla-usuarios" class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+async function cargarUsuarios() {
+    try {
+        const response = await fetch('/api/usuarios');
+        const usuarios = await response.json();
+        
+        if ($.fn.DataTable.isDataTable('#tabla-usuarios')) {
+            $('#tabla-usuarios').DataTable().destroy();
+        }
+        
+        const tabla = $('#tabla-usuarios').DataTable({
+            data: usuarios,
+            columns: [
+                { data: 'id' },
+                { data: 'nombre' },
+                { data: 'email' },
+                { data: 'rol' },
+                { 
+                    data: 'activo',
+                    render: function(data) {
+                        return data ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-secondary">Inactivo</span>';
+                    }
+                },
+                {
+                    data: null,
+                    render: function(data) {
+                        return `
+                            <button class="btn btn-sm btn-info" onclick="editarUsuario(${data.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarUsuario(${data.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                    }
+                }
+            ],
+            responsive: true,
+            language: {
+                url: '/datatable_lang/es-ES.json'
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error cargando usuarios:', error);
+    }
+}
+
+// Funciones para modales
+function abrirModalUsuario() {
+    alert('Función para abrir modal de usuario');
+}
+
+function editarUsuario(id) {
+    alert(`Editar usuario ${id}`);
+}
+
+function eliminarUsuario(id) {
+    if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+        alert(`Eliminar usuario ${id}`);
+    }
+}
+
+// Cargar usuarios cuando se carga la página
+$(document).ready(function() {
+    cargarUsuarios();
+});
+</script> 

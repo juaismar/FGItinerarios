@@ -1,0 +1,142 @@
+<!-- Dashboard Content -->
+<div id="dashboard-content">
+  <div class="row">
+    <div class="col-lg-3 col-6">
+      <div class="small-box bg-info">
+        <div class="inner">
+          <h3 id="total-itinerarios">0</h3>
+          <p>Itinerarios</p>
+        </div>
+        <div class="icon">
+          <i class="fas fa-route"></i>
+        </div>
+        <a href="#" class="small-box-footer" data-page="itinerarios">
+          Ver más <i class="fas fa-arrow-circle-right"></i>
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-3 col-6">
+      <div class="small-box bg-success">
+        <div class="inner">
+          <h3 id="total-estaciones">0</h3>
+          <p>Estaciones</p>
+        </div>
+        <div class="icon">
+          <i class="fas fa-map-marker-alt"></i>
+        </div>
+        <a href="#" class="small-box-footer" data-page="estaciones">
+          Ver más <i class="fas fa-arrow-circle-right"></i>
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-3 col-6">
+      <div class="small-box bg-warning">
+        <div class="inner">
+          <h3 id="total-usuarios">0</h3>
+          <p>Usuarios</p>
+        </div>
+        <div class="icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <a href="#" class="small-box-footer" data-page="usuarios">
+          Ver más <i class="fas fa-arrow-circle-right"></i>
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-3 col-6">
+      <div class="small-box bg-danger">
+        <div class="inner">
+          <h3 id="total-activos">0</h3>
+          <p>Activos</p>
+        </div>
+        <div class="icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <a href="#" class="small-box-footer">
+          Ver más <i class="fas fa-arrow-circle-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Últimos Itinerarios</h3>
+        </div>
+        <div class="card-body">
+          <div id="ultimos-itinerarios">
+            <p class="text-muted">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Actividad Reciente</h3>
+        </div>
+        <div class="card-body">
+          <div id="actividad-reciente">
+            <p class="text-muted">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function cargarDashboard() {
+    try {
+        // Cargar estadísticas
+        const [itinerarios, estaciones, usuarios] = await Promise.all([
+            fetch('/api/itinerarios').then(r => r.json()),
+            fetch('/api/estaciones').then(r => r.json()),
+            fetch('/api/usuarios').then(r => r.json())
+        ]);
+        
+        $('#total-itinerarios').text(itinerarios.length || 0);
+        $('#total-estaciones').text(estaciones.length || 0);
+        $('#total-usuarios').text(usuarios.length || 0);
+        $('#total-activos').text((itinerarios.filter(i => i.activo).length || 0));
+        
+        // Cargar últimos itinerarios
+        const ultimosItinerarios = itinerarios.slice(0, 5);
+        let html = '';
+        ultimosItinerarios.forEach(itinerario => {
+            html += `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>${itinerario.nombre}</span>
+                    <span class="badge badge-${itinerario.activo ? 'success' : 'secondary'}">${itinerario.activo ? 'Activo' : 'Inactivo'}</span>
+                </div>
+            `;
+        });
+        $('#ultimos-itinerarios').html(html || '<p class="text-muted">No hay itinerarios</p>');
+        
+        // Cargar actividad reciente
+        $('#actividad-reciente').html('<p class="text-muted">Actividad del sistema</p>');
+        
+    } catch (error) {
+        console.error('Error cargando dashboard:', error);
+    }
+}
+
+// Cargar dashboard cuando se carga la página
+$(document).ready(function() {
+    cargarDashboard();
+    
+    // Manejar clicks en los enlaces del dashboard
+    $('.small-box-footer').click(function(e) {
+        e.preventDefault();
+        const pagina = $(this).data('page');
+        if (pagina) {
+            // Llamar a la función del padre para cambiar página
+            if (typeof cambiarPagina === 'function') {
+                cambiarPagina(pagina);
+            }
+        }
+    });
+});
+</script> 
