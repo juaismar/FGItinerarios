@@ -1,91 +1,91 @@
-<!-- Dashboard Content -->
-<div id="dashboard-content">
-  <div class="row">
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-info">
-        <div class="inner">
-          <h3 id="total-itinerarios">0</h3>
-          <p>Itinerarios</p>
-        </div>
-        <div class="icon">
-          <i class="fas fa-route"></i>
-        </div>
-        <a href="#" class="small-box-footer" data-page="itinerarios">
-          Ver más <i class="fas fa-arrow-circle-right"></i>
-        </a>
-      </div>
-    </div>
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-success">
-        <div class="inner">
-          <h3 id="total-estaciones">0</h3>
-          <p>Estaciones</p>
-        </div>
-        <div class="icon">
-          <i class="fas fa-map-marker-alt"></i>
-        </div>
-        <a href="#" class="small-box-footer" data-page="estaciones">
-          Ver más <i class="fas fa-arrow-circle-right"></i>
-        </a>
-      </div>
-    </div>
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-warning">
-        <div class="inner">
-          <h3 id="total-usuarios">0</h3>
-          <p>Usuarios</p>
-        </div>
-        <div class="icon">
-          <i class="fas fa-users"></i>
-        </div>
-        <a href="#" class="small-box-footer" data-page="usuarios">
-          Ver más <i class="fas fa-arrow-circle-right"></i>
-        </a>
-      </div>
-    </div>
-    <div class="col-lg-3 col-6">
-      <div class="small-box bg-danger">
-        <div class="inner">
-          <h3 id="total-activos">0</h3>
-          <p>Activos</p>
-        </div>
-        <div class="icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <a href="#" class="small-box-footer">
-          Ver más <i class="fas fa-arrow-circle-right"></i>
-        </a>
-      </div>
-    </div>
-  </div>
+        <!-- Dashboard Content -->
+        <div id="dashboard-content">
+          <div class="row">
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-info">
+                <div class="inner">
+                  <h3 id="total-itinerarios">0</h3>
+                  <p data-i18n="dashboard.total_itineraries">Itinerarios</p>
+                </div>
+                <div class="icon">
+                  <i class="fas fa-route"></i>
+                </div>
+                <a href="#" class="small-box-footer" data-page="itinerarios">
+                  <span data-i18n="dashboard.see_more">Ver más</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+              </div>
+            </div>
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-success">
+                <div class="inner">
+                  <h3 id="total-estaciones">0</h3>
+                  <p data-i18n="dashboard.total_stations">Estaciones</p>
+                </div>
+                <div class="icon">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <a href="#" class="small-box-footer" data-page="estaciones">
+                  <span data-i18n="dashboard.see_more">Ver más</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+              </div>
+            </div>
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-warning">
+                <div class="inner">
+                  <h3 id="total-usuarios">0</h3>
+                  <p data-i18n="dashboard.total_users">Usuarios</p>
+                </div>
+                <div class="icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <a href="#" class="small-box-footer" data-page="usuarios">
+                  <span data-i18n="dashboard.see_more">Ver más</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+              </div>
+            </div>
+            <div class="col-lg-3 col-6">
+              <div class="small-box bg-danger">
+                <div class="inner">
+                  <h3 id="total-activos">0</h3>
+                  <p data-i18n="dashboard.total_active">Activos</p>
+                </div>
+                <div class="icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <a href="#" class="small-box-footer">
+                  <span data-i18n="dashboard.see_more">Ver más</span> <i class="fas fa-arrow-circle-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
 
-  <div class="row">
-    <div class="col-lg-6">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Últimos Itinerarios</h3>
-        </div>
-        <div class="card-body">
-          <div id="ultimos-itinerarios">
-            <p class="text-muted">Cargando...</p>
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title" data-i18n="dashboard.latest_itineraries">Últimos Itinerarios</h3>
+                </div>
+                <div class="card-body">
+                  <div id="ultimos-itinerarios">
+                    <p class="text-muted" data-i18n="common.loading">Cargando...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title" data-i18n="dashboard.recent_activity">Actividad Reciente</h3>
+                </div>
+                <div class="card-body">
+                  <div id="actividad-reciente">
+                    <p class="text-muted" data-i18n="common.loading">Cargando...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="col-lg-6">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Actividad Reciente</h3>
-        </div>
-        <div class="card-body">
-          <div id="actividad-reciente">
-            <p class="text-muted">Cargando...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
 async function cargarDashboard() {
@@ -109,14 +109,14 @@ async function cargarDashboard() {
             html += `
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>${itinerario.nombre}</span>
-                    <span class="badge badge-${itinerario.activo ? 'success' : 'secondary'}">${itinerario.activo ? 'Activo' : 'Inactivo'}</span>
+                    <span class="badge badge-${itinerario.activo ? 'success' : 'secondary'}">${itinerario.activo ? t('common.active') : t('common.inactive')}</span>
                 </div>
             `;
         });
-        $('#ultimos-itinerarios').html(html || '<p class="text-muted">No hay itinerarios</p>');
+        $('#ultimos-itinerarios').html(html || `<p class="text-muted">${t('dashboard.no_itineraries')}</p>`);
         
         // Cargar actividad reciente
-        $('#actividad-reciente').html('<p class="text-muted">Actividad del sistema</p>');
+        $('#actividad-reciente').html(`<p class="text-muted">${t('dashboard.system_activity')}</p>`);
         
     } catch (error) {
         console.error('Error cargando dashboard:', error);

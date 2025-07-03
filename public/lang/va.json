@@ -1,0 +1,99 @@
+{
+  "common": {
+    "loading": "Carregant...",
+    "error": "Error",
+    "success": "Èxit",
+    "cancel": "Cancel·lar",
+    "save": "Desar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "actions": "Accions",
+    "status": "Estat",
+    "active": "Actiu",
+    "inactive": "Inactiu",
+    "new": "Nou",
+    "back": "Tornar"
+  },
+  "navigation": {
+    "dashboard": "Tauler de Control",
+    "itineraries": "Itineraris",
+    "stations": "Estacions",
+    "users": "Usuaris",
+    "home": "Inici",
+    "logout": "Tancar Sessió",
+    "user": "Usuari"
+  },
+  "dashboard": {
+    "title": "Tauler de Control",
+    "total_itineraries": "Itineraris",
+    "total_stations": "Estacions",
+    "total_users": "Usuaris",
+    "total_active": "Actius",
+    "see_more": "Veure més",
+    "latest_itineraries": "Últims Itineraris",
+    "recent_activity": "Activitat Recent",
+    "no_itineraries": "No hi ha itineraris",
+    "system_activity": "Activitat del sistema"
+  },
+  "itineraries": {
+    "title": "Gestió d'Itineraris",
+    "new_itinerary": "Nou Itinerari",
+    "id": "ID",
+    "name": "Nom",
+    "description": "Descripció",
+    "status": "Estat",
+    "actions": "Accions",
+    "edit_itinerary": "Editar Itinerari",
+    "delete_itinerary": "Eliminar Itinerari",
+    "confirm_delete": "Estàs segur que vols eliminar aquest itinerari?",
+    "modal_title": "Itinerari",
+    "modal_new_title": "Nou Itinerari",
+    "modal_edit_title": "Editar Itinerari"
+  },
+  "stations": {
+    "title": "Gestió d'Estacions",
+    "new_station": "Nova Estació",
+    "id": "ID",
+    "name": "Nom",
+    "location": "Ubicació",
+    "status": "Estat",
+    "actions": "Accions",
+    "edit_station": "Editar Estació",
+    "delete_station": "Eliminar Estació",
+    "confirm_delete": "Estàs segur que vols eliminar aquesta estació?",
+    "modal_title": "Estació",
+    "modal_new_title": "Nova Estació",
+    "modal_edit_title": "Editar Estació"
+  },
+  "users": {
+    "title": "Gestió d'Usuaris",
+    "new_user": "Nou Usuari",
+    "id": "ID",
+    "name": "Nom",
+    "email": "Email",
+    "role": "Rol",
+    "status": "Estat",
+    "actions": "Accions",
+    "edit_user": "Editar Usuari",
+    "delete_user": "Eliminar Usuari",
+    "confirm_delete": "Estàs segur que vols eliminar aquest usuari?",
+    "modal_title": "Usuari",
+    "modal_new_title": "Nou Usuari",
+    "modal_edit_title": "Editar Usuari"
+  },
+  "roles": {
+    "admin": "Administrador",
+    "planner": "Planificador",
+    "viewer": "Visor"
+  },
+  "messages": {
+    "load_error": "Error al carregar les dades",
+    "save_success": "Desat correctament",
+    "delete_success": "Eliminat correctament",
+    "operation_failed": "L'operació ha fallat",
+    "page_load_error": "Error al carregar la pàgina"
+  }
+} 

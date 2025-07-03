@@ -1,0 +1,99 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "actions": "Acciones",
+    "status": "Estado",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "new": "Nuevo",
+    "back": "Volver"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "itineraries": "Itinerarios",
+    "stations": "Estaciones",
+    "users": "Usuarios",
+    "home": "Inicio",
+    "logout": "Cerrar Sesión",
+    "user": "Usuario"
+  },
+  "dashboard": {
+    "title": "Panel de Control",
+    "total_itineraries": "Itinerarios",
+    "total_stations": "Estaciones",
+    "total_users": "Usuarios",
+    "total_active": "Activos",
+    "see_more": "Ver más",
+    "latest_itineraries": "Últimos Itinerarios",
+    "recent_activity": "Actividad Reciente",
+    "no_itineraries": "No hay itinerarios",
+    "system_activity": "Actividad del sistema"
+  },
+  "itineraries": {
+    "title": "Gestión de Itinerarios",
+    "new_itinerary": "Nuevo Itinerario",
+    "id": "ID",
+    "name": "Nombre",
+    "description": "Descripción",
+    "status": "Estado",
+    "actions": "Acciones",
+    "edit_itinerary": "Editar Itinerario",
+    "delete_itinerary": "Eliminar Itinerario",
+    "confirm_delete": "¿Estás seguro de que quieres eliminar este itinerario?",
+    "modal_title": "Itinerario",
+    "modal_new_title": "Nuevo Itinerario",
+    "modal_edit_title": "Editar Itinerario"
+  },
+  "stations": {
+    "title": "Gestión de Estaciones",
+    "new_station": "Nueva Estación",
+    "id": "ID",
+    "name": "Nombre",
+    "location": "Ubicación",
+    "status": "Estado",
+    "actions": "Acciones",
+    "edit_station": "Editar Estación",
+    "delete_station": "Eliminar Estación",
+    "confirm_delete": "¿Estás seguro de que quieres eliminar esta estación?",
+    "modal_title": "Estación",
+    "modal_new_title": "Nueva Estación",
+    "modal_edit_title": "Editar Estación"
+  },
+  "users": {
+    "title": "Gestión de Usuarios",
+    "new_user": "Nuevo Usuario",
+    "id": "ID",
+    "name": "Nombre",
+    "email": "Email",
+    "role": "Rol",
+    "status": "Estado",
+    "actions": "Acciones",
+    "edit_user": "Editar Usuario",
+    "delete_user": "Eliminar Usuario",
+    "confirm_delete": "¿Estás seguro de que quieres eliminar este usuario?",
+    "modal_title": "Usuario",
+    "modal_new_title": "Nuevo Usuario",
+    "modal_edit_title": "Editar Usuario"
+  },
+  "roles": {
+    "admin": "Administrador",
+    "planner": "Planificador",
+    "viewer": "Visor"
+  },
+  "messages": {
+    "load_error": "Error al cargar los datos",
+    "save_success": "Guardado correctamente",
+    "delete_success": "Eliminado correctamente",
+    "operation_failed": "La operación falló",
+    "page_load_error": "Error al cargar la página"
+  }
+} 

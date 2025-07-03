@@ -1,0 +1,244 @@
+{
+    "processing": "Processant...",
+    "lengthMenu": "Mostrar _MENU_ registres",
+    "zeroRecords": "No s'han trobat resultats",
+    "emptyTable": "Cap dada disponible en aquesta taula",
+    "infoEmpty": "Mostrant registres del 0 al 0 d'un total de 0 registres",
+    "infoFiltered": "(filtrat d'un total de _MAX_ registres)",
+    "search": "Buscar:",
+    "loadingRecords": "Carregant...",
+    "paginate": {
+        "first": "Primer",
+        "last": "Últim",
+        "next": "Següent",
+        "previous": "Anterior"
+    },
+    "aria": {
+        "sortAscending": ": Activar per ordenar la columna de manera ascendent",
+        "sortDescending": ": Activar per ordenar la columna de manera descendent"
+    },
+    "buttons": {
+        "copy": "Copiar",
+        "colvis": "Visibilitat",
+        "collection": "Col·lecció",
+        "colvisRestore": "Restaurar visibilitat",
+        "copyKeys": "Premeu ctrl o u2318 + C per copiar les dades de la taula al porta-retalls del sistema. <br \/> <br \/> Per cancel·lar, feu clic en aquest missatge o premeu escape.",
+        "copySuccess": {
+            "1": "Copiada 1 fila al porta-retalls",
+            "_": "Copiades %ds files al porta-retalls"
+        },
+        "copyTitle": "Copiar al porta-retalls",
+        "csv": "CSV",
+        "excel": "Excel",
+        "pageLength": {
+            "-1": "Mostrar totes les files",
+            "_": "Mostrar %d files"
+        },
+        "pdf": "PDF",
+        "print": "Imprimir",
+        "renameState": "Canviar nom",
+        "updateState": "Actualitzar",
+        "createState": "Crear Estat",
+        "removeAllStates": "Eliminar Estats",
+        "removeState": "Eliminar",
+        "savedStates": "Estats Desats",
+        "stateRestore": "Estat %d"
+    },
+    "autoFill": {
+        "cancel": "Cancel·lar",
+        "fill": "Ompliu totes les cel·les amb <i>%d<\/i>",
+        "fillHorizontal": "Omplir cel·les horitzontalment",
+        "fillVertical": "Omplir cel·les verticalment"
+    },
+    "decimal": ",",
+    "searchBuilder": {
+        "add": "Afegir condició",
+        "button": {
+            "0": "Constructor de cerca",
+            "_": "Constructor de cerca (%d)"
+        },
+        "clearAll": "Esborrar tot",
+        "condition": "Condició",
+        "conditions": {
+            "date": {
+                "before": "Abans",
+                "between": "Entre",
+                "empty": "Buit",
+                "equals": "Igual a",
+                "notBetween": "No entre",
+                "not": "Diferent de",
+                "after": "Després",
+                "notEmpty": "No Buit"
+            },
+            "number": {
+                "between": "Entre",
+                "equals": "Igual a",
+                "gt": "Major a",
+                "gte": "Major o igual a",
+                "lt": "Menor que",
+                "lte": "Menor o igual que",
+                "notBetween": "No entre",
+                "notEmpty": "No buit",
+                "not": "Diferent de",
+                "empty": "Buit"
+            },
+            "string": {
+                "contains": "Conté",
+                "empty": "Buit",
+                "endsWith": "Acaba en",
+                "equals": "Igual a",
+                "startsWith": "Comença amb",
+                "not": "Diferent de",
+                "notContains": "No Conté",
+                "notStartsWith": "No comença amb",
+                "notEndsWith": "No acaba amb",
+                "notEmpty": "No Buit"
+            },
+            "array": {
+                "not": "Diferent de",
+                "equals": "Igual",
+                "empty": "Buit",
+                "contains": "Conté",
+                "notEmpty": "No Buit",
+                "without": "Sense"
+            }
+        },
+        "data": "Dades",
+        "deleteTitle": "Eliminar regla de filtrat",
+        "leftTitle": "Criteris anul·lats",
+        "logicAnd": "I",
+        "logicOr": "O",
+        "rightTitle": "Criteris de sagnia",
+        "title": {
+            "0": "Constructor de cerca",
+            "_": "Constructor de cerca (%d)"
+        },
+        "value": "Valor"
+    },
+    "searchPanes": {
+        "clearMessage": "Esborrar tot",
+        "collapse": {
+            "0": "Panells de cerca",
+            "_": "Panells de cerca (%d)"
+        },
+        "count": "{total}",
+        "countFiltered": "{shown} ({total})",
+        "emptyPanes": "Sense panells de cerca",
+        "loadMessage": "Carregant panells de cerca",
+        "title": "Filtres Actius - %d",
+        "showMessage": "Mostrar Tot",
+        "collapseMessage": "Col·lapsar Tot"
+    },
+    "select": {
+        "cells": {
+            "1": "1 cel·la seleccionada",
+            "_": "%d cel·les seleccionades"
+        },
+        "columns": {
+            "1": "1 columna seleccionada",
+            "_": "%d columnes seleccionades"
+        },
+        "rows": {
+            "1": "1 fila seleccionada",
+            "_": "%d files seleccionades"
+        }
+    },
+    "thousands": ".",
+    "datetime": {
+        "previous": "Anterior",
+        "hours": "Hores",
+        "minutes": "Minuts",
+        "seconds": "Segons",
+        "unknown": "-",
+        "amPm": [
+            "AM",
+            "PM"
+        ],
+        "months": {
+            "0": "Gener",
+            "1": "Febrer",
+            "10": "Novembre",
+            "11": "Desembre",
+            "2": "Març",
+            "3": "Abril",
+            "4": "Maig",
+            "5": "Juny",
+            "6": "Juliol",
+            "7": "Agost",
+            "8": "Setembre",
+            "9": "Octubre"
+        },
+        "weekdays": {
+            "0": "Dg",
+            "1": "Dl",
+            "2": "Dt",
+            "4": "Dj",
+            "5": "Dv",
+            "3": "Dc",
+            "6": "Ds"
+        },
+        "next": "Pròxim"
+    },
+    "editor": {
+        "close": "Tancar",
+        "create": {
+            "button": "Nou",
+            "title": "Crear Nou Registre",
+            "submit": "Crear"
+        },
+        "edit": {
+            "button": "Editar",
+            "title": "Editar Registre",
+            "submit": "Actualitzar"
+        },
+        "remove": {
+            "button": "Eliminar",
+            "title": "Eliminar Registre",
+            "submit": "Eliminar",
+            "confirm": {
+                "_": "¿Està segur de que desitja eliminar %d files?",
+                "1": "¿Està segur de que desitja eliminar 1 fila?"
+            }
+        },
+        "error": {
+            "system": "Ha ocorregut un error en el sistema (<a target=\"\\\" rel=\"\\ nofollow\" href=\"\\\">Més informació&lt;\\\/a&gt;).<\/a>"
+        },
+        "multi": {
+            "title": "Múltiples Valors",
+            "restore": "Desfer Canvis",
+            "noMulti": "Aquest registre pot ser editat individualment, però no com a part d'un grup.",
+            "info": "Els elements seleccionats contenen diferents valors per a aquest registre. Per editar i establir tots els elements d'aquest registre amb el mateix valor, feu clic o pulseu aquí, en cas contrari conservaran els seus valors individuals."
+        }
+    },
+    "info": "Mostrant _START_ a _END_ de _TOTAL_ registres",
+    "stateRestore": {
+        "creationModal": {
+            "button": "Crear",
+            "name": "Nom:",
+            "order": "Classificació",
+            "paging": "Paginació",
+            "select": "Seleccionar",
+            "columns": {
+                "search": "Cerca de Columna",
+                "visible": "Visibilitat de Columna"
+            },
+            "title": "Crear Nou Estat",
+            "toggleLabel": "Incloure:",
+            "scroller": "Posició de desplaçament",
+            "search": "Cerca",
+            "searchBuilder": "Cerca avançada"
+        },
+        "removeJoiner": "i",
+        "removeSubmit": "Eliminar",
+        "renameButton": "Canviar Nom",
+        "duplicateError": "Ja existeix un Estat amb aquest nom.",
+        "emptyStates": "No hi ha Estats desats",
+        "removeTitle": "Eliminar Estat",
+        "renameTitle": "Canviar Nom Estat",
+        "emptyError": "El nom no pot estar buit.",
+        "removeConfirm": "¿Segur que vol eliminar %s?",
+        "removeError": "Error en eliminar l'Estat",
+        "renameLabel": "Nou nom per a %s:"
+    },
+    "infoThousands": "."
+} 
