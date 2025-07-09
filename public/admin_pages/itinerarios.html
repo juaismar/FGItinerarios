@@ -1,96 +1,358 @@
-<!-- Itinerarios Content -->
 <div id="itinerarios-content">
   <div class="card">
     <div class="card-header">
       <h3 class="card-title">Gestión de Itinerarios</h3>
       <div class="card-tools">
-        <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalItinerario()">
+        <button type="button" class="btn btn-primary btn-sm nuevo-itinerario">
           <i class="fas fa-plus"></i> Nuevo Itinerario
         </button>
       </div>
     </div>
     <div class="card-body">
-      <table id="tabla-itinerarios" class="table table-bordered table-striped">
+      <table id="tablaItinerarios" class="table table-bordered table-striped">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
+            <th>Número</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Tipo</th>
+            <th>Fecha</th>
             <th>Estado</th>
+            <th>Planificador</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
+            <!-- Se llenará dinámicamente -->
         </tbody>
       </table>
     </div>
   </div>
 </div>
 
+<!-- Modal AdminLTE para Crear/Editar Estación -->
+<div class="modal fade" id="modalItinerario" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="fas fa-train"></i> Itinerario
+                </h5>
+                <button type="button" class="btn-close-custom" id="btnCerrarModal" aria-label="Close" onclick="itinerarioModal.hide()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="itinerarioForm">
+                    <input type="hidden" id="estacionId">
+                    
+                    <div class="form-group">
+                        <label for="nombre" class="form-label">
+                            <i class="fas fa-tag"></i> Nombre
+                        </label>
+                        <input type="text" class="form-control" id="nombre" placeholder="Introduce el nombre de la estación" required>
+                        <div class="invalid-feedback">
+                            Por favor introduce un nombre válido.
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="codigo" class="form-label">
+                            <i class="fas fa-code"></i> Código
+                        </label>
+                        <input type="text" class="form-control" id="codigo" placeholder="Código de 3 caracteres" required maxlength="3">
+                        <div class="invalid-feedback">
+                            El código debe tener 3 caracteres.
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ubicacion" class="form-label">
+                            <i class="fas fa-map-marker-alt"></i> Ubicación
+                        </label>
+                        <input type="text" class="form-control" id="ubicacion" placeholder="Ubicación de la estación">
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="activa" checked>
+                            <label class="custom-control-label" for="activa">
+                                <i class="fas fa-check-circle"></i> Estación Activa
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Campo oculto para manejar Enter -->
+                    <input type="submit" style="display: none;" id="submitForm">
+                </form>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelar" onclick="itinerarioModal.hide()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="btnGuardar">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-async function cargarItinerarios() {
-    try {
-        const response = await fetch('/api/itinerarios');
-        const itinerarios = await response.json();
-        
-        if ($.fn.DataTable.isDataTable('#tabla-itinerarios')) {
-            $('#tabla-itinerarios').DataTable().destroy();
+
+// Función para validar el formulario
+function validarFormulario() {
+    const numero = $('#numero').val().trim();
+    const origen = $('#origen').val().trim();
+    const destino = $('#destino').val().trim();
+    const tipo = $('#tipo').val();
+    const fecha = $('#fecha').val();
+    let esValido = true;
+
+    $('#numero, #origen, #destino, #tipo, #fecha').removeClass('is-invalid');
+
+    if (!numero) { $('#numero').addClass('is-invalid'); esValido = false; }
+    if (!origen) { $('#origen').addClass('is-invalid'); esValido = false; }
+    if (!destino) { $('#destino').addClass('is-invalid'); esValido = false; }
+    if (!tipo) { $('#tipo').addClass('is-invalid'); esValido = false; }
+    if (!fecha) { $('#fecha').addClass('is-invalid'); esValido = false; }
+
+    return esValido;
+}
+
+// Función para inicializar la página de estaciones
+function inicializarItinerarios() {
+    let tablaItinerarios;
+    let itinerarioModal;
+
+    // Inicializar el modal de AdminLTE
+    itinerarioModal = new bootstrap.Modal(document.getElementById('itinerarioModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+
+    // Manejar el cierre del modal
+    document.getElementById('itinerarioModal').addEventListener('hidden.bs.modal', function () {
+        // Limpiar formulario al cerrar
+        $('#itinerarioForm')[0].reset();
+        $('#numero, #origen, #destino, #tipo, #fecha').removeClass('is-invalid');
+
+        document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
         }
-        
-        const tabla = $('#tabla-itinerarios').DataTable({
-            data: itinerarios,
-            columns: [
-                { data: 'id' },
-                { data: 'nombre' },
-                { data: 'descripcion' },
-                { 
-                    data: 'activo',
-                    render: function(data) {
-                        return data ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-secondary">Inactivo</span>';
-                    }
-                },
-                {
-                    data: null,
-                    render: function(data) {
-                        return `
-                            <button class="btn btn-sm btn-info" onclick="editarItinerario(${data.id})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarItinerario(${data.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        `;
-                    }
+    });
+
+    // Inicializar DataTable
+    tablaItinerarios = $('#tablaItinerarios').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '/api/itinerarios/paginated',
+            headers: getHeaders()
+        },
+        language: {
+            url: '/datatable_lang/es-ES.json'
+        },
+        columns: [
+            { data: 'numero' },
+            { data: 'origen' },
+            { data: 'destino' },
+            { 
+                data: 'fecha',
+                render: function(data) {
+                    return new Date(data).toLocaleString('es-ES');
                 }
-            ],
-            responsive: true,
-            language: {
-                url: '/datatable_lang/es-ES.json'
+            },
+            { 
+                data: 'estado',
+                render: function(data) {
+                    const estados = {
+                        'pendiente': '<span class="badge bg-warning">Pendiente</span>',
+                        'en_proceso': '<span class="badge bg-info">En Proceso</span>',
+                        'completado': '<span class="badge bg-success">Completado</span>',
+                        'cancelado': '<span class="badge bg-danger">Cancelado</span>'
+                    };
+                    return estados[data] || data;
+                }
+            },
+            { data: 'tipo' },
+            { data: 'material' },
+            {
+                data: null,
+                className: 'acciones-cell',
+                render: function(data) {
+                    return `
+                        <button class="btn btn-icon btn-editar editar-itinerario" 
+                                data-id="${data.id}"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Editar itinerario">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-icon btn-eliminar eliminar-itinerario" 
+                                data-id="${data.id}"
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="Eliminar itinerario">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                }
+            }
+        ],
+        drawCallback: function() {
+            // Reinicializar tooltips después de cada redibujado de la tabla
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+    });
+
+    // Manejar clic en nueva estación
+    $(document).on('click', '.nuevo-itinerario', function() {   
+        $('#modalTitle').html('<i class="fas fa-plus"></i> Nuevo Itinerario');
+        $('#itinerarioForm')[0].reset();
+        $('#itinerarioId').val('');
+        $('#numero, #origen, #destino, #tipo, #fecha').removeClass('is-invalid');
+        
+        itinerarioModal.show();
+        
+        // Auto-focus en el primer campo después de que el modal se muestre
+        setTimeout(() => {
+            $('#nombre').focus();
+        }, 300);
+    });
+
+    // Manejar clic en editar
+    $(document).on('click', '.editar-itinerario', function() {
+        const id = $(this).data('id');
+        const estacion = tablaItinerarios.row($(this).closest('tr')).data();
+        
+        $('#modalTitle').html('<i class="fas fa-edit"></i> Editar Itinerario');
+        $('#itinerarioId').val(data.id);
+        $('#numero').val(data.numero);
+        $('#origen').val(data.origen);
+        $('#destino').val(data.destino);
+        $('#tipo').val(data.tipo);
+        $('#fecha').val(data.fecha ? data.fecha.substring(0,16) : '');
+        $('#estado').val(data.estado);
+        $('#planificador').val(data.planificador);
+        $('#numero, #origen, #destino, #tipo, #fecha').removeClass('is-invalid');
+        
+        itinerarioModal.show();
+        
+        // Auto-focus en el primer campo después de que el modal se muestre
+        setTimeout(() => {
+            $('#nombre').focus();
+        }, 300);
+    });
+
+    // Manejar clic en eliminar
+    $(document).on('click', '.eliminar-itinerario', function() {
+        const id = $(this).data('id');
+        const boton = $(this);
+        const textoOriginal = boton.html();
+        
+        FlashNotifications.confirm('¿Estás seguro de que deseas eliminar este itinerario?', {
+            title: 'Confirmar Eliminación',
+            confirmText: 'Sí, eliminar',
+            confirmClass: 'btn-danger'
+        })
+        .then((confirmado) => {
+            if (confirmado) {
+                mostrarLoading(boton, 'Eliminando');
+                
+                fetch(`/api/itinerarios/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    if (response.ok) {
+                        FlashNotifications.success('Éxito', 'Itinerario eliminado correctamente');
+                        tablaItinerarios.ajax.reload();
+                    } else {
+                        throw new Error('Error al eliminar el itinerario');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    FlashNotifications.error('Error', 'Error al eliminar el itinerario');
+                })
+                .finally(() => {
+                    restaurarBoton(boton, textoOriginal);
+                });
             }
         });
+    });
+
+    // Manejar Enter en el formulario
+    $(document).on('keypress', '#itinerarioForm input', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            $('#btnGuardar').click();
+        }
+    });
+
+    // Manejar guardar estación
+    $(document).on('click', '#btnGuardar', function() {
+        if (!validarFormulario()) {
+            FlashNotifications.error('Error', 'Por favor corrige los errores en el formulario');
+            return;
+        }
         
-    } catch (error) {
-        console.error('Error cargando itinerarios:', error);
-    }
+        const boton = $(this);
+        const textoOriginal = boton.html();
+        mostrarLoading(boton, 'Guardando');
+        
+        const estacionId = $('#estacionId').val();
+        const estacion = {
+            nombre: $('#nombre').val().trim(),
+            codigo: $('#codigo').val().trim().toUpperCase(),
+            ubicacion: $('#ubicacion').val().trim(),
+            activa: $('#activa').is(':checked')
+        };
+
+        const method = estacionId ? 'PUT' : 'POST';
+        const url = estacionId ? `/api/estaciones/${estacionId}` : '/api/estaciones';
+
+        fetch(url, {
+            method: method,
+            headers: getHeaders(),
+            body: JSON.stringify(estacion)
+        })
+        .then(response => {
+            if (response.status === 401) {
+                window.location.href = '/index.html';
+                return;
+            }
+            if (response.ok) {
+                itinerarioModal.hide();
+                FlashNotifications.success('Éxito', 'Itinerario guardado correctamente');
+                tablaItinerarios.ajax.reload();
+            } else {
+                throw new Error('Error al guardar el itinerario');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            FlashNotifications.error('Error', 'Error al guardar el itinerario');
+        })
+        .finally(() => {
+            restaurarBoton(boton, textoOriginal);
+        });
+    });
 }
 
-// Funciones para modales
-function abrirModalItinerario() {
-    alert('Función para abrir modal de itinerario');
-}
-
-function editarItinerario(id) {
-    alert(`Editar itinerario ${id}`);
-}
-
-function eliminarItinerario(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar este itinerario?')) {
-        alert(`Eliminar itinerario ${id}`);
-    }
-}
-
-// Cargar itinerarios cuando se carga la página
+// Inicializar cuando el documento esté listo
 $(document).ready(function() {
-    cargarItinerarios();
+    inicializarItinerarios();
 });
 </script> 

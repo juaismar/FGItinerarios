@@ -97,10 +97,13 @@ const FlashNotifications = {
      * @returns {Promise<boolean>} - Promise que resuelve a true si se confirma
      */
     confirm: function(mensaje, options = {}) {
+        // Obtener traducciones si están disponibles
+        const t = window.t || function(key) { return key; };
+        
         const defaultOptions = {
-            title: 'Confirmar Acción',
-            confirmText: 'Sí, confirmar',
-            cancelText: 'Cancelar',
+            title: t('common.confirm_action') || 'Confirmar Acción',
+            confirmText: t('common.yes_confirm') || 'Sí, confirmar',
+            cancelText: t('common.cancel') || 'Cancelar',
             confirmClass: 'btn-danger',
             icon: 'fas fa-exclamation-triangle'
         };
@@ -164,8 +167,8 @@ const FlashNotifications = {
      * Inserta la alerta en el DOM
      */
     _insertAlert: function(alerta) {
-        // Buscar el contenedor principal (puede variar según la página)
-        const container = $('#estaciones-content, #main-content, .content').first();
+        // Buscar el contenedor principal
+        const container = $('#main-content, .content').first();
         if (container.length) {
             container.prepend(alerta);
         } else {
@@ -187,7 +190,7 @@ const FlashNotifications = {
      * Hace scroll hacia arriba para mostrar la alerta
      */
     _scrollToTop: function(offset) {
-        const container = $('#estaciones-content, #main-content, .content').first();
+        const container = $('#main-content, .content').first();
         if (container.length) {
             $('html, body').animate({
                 scrollTop: container.offset().top - offset

@@ -6,70 +6,6 @@
     .estacion-inactiva {
         color: #dc3545;
     }
-    .btn-icon {
-        padding: 0.25rem 0.5rem;
-        margin: 0 0.2rem;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-    }
-    .btn-icon:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .btn-editar {
-        background-color: #1976d2;
-        color: white;
-    }
-    .btn-editar:hover {
-        background-color: #1565c0;
-        color: white;
-    }
-    .btn-eliminar {
-        background-color: #dc3545;
-        color: white;
-    }
-    .btn-eliminar:hover {
-        background-color: #c82333;
-        color: white;
-    }
-    .acciones-cell {
-        white-space: nowrap;
-        text-align: center;
-    }
-    [data-bs-toggle="tooltip"] {
-        cursor: pointer;
-    }
-    
-    /* Estilo para el botón de cierre del modal */
-    .btn-close-custom {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.2rem;
-        padding: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 4px;
-    }
-    
-    .btn-close-custom:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-    }
-    
-    .btn-close-custom .fas {
-        color: white;
-        font-size: 1rem;
-    }
-    
-
-    
-
 </style>
 
 <div id="estaciones-content">
@@ -110,7 +46,7 @@
                 <h5 class="modal-title" id="modalTitle">
                     <i class="fas fa-train"></i> Nueva Estación
                 </h5>
-                <button type="button" class="btn-close-custom" id="btnCerrarModal" aria-label="Close">
+                <button type="button" class="btn-close-custom" id="btnCerrarModal" aria-label="Close" onclick="estacionModal.hide()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -160,7 +96,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="btnCancelar">
+                <button type="button" class="btn btn-secondary" id="btnCancelar" onclick="estacionModal.hide()">
                     <i class="fas fa-times"></i> Cancelar
                 </button>
                 <button type="button" class="btn btn-primary" id="btnGuardar">
@@ -172,28 +108,6 @@
 </div>
 
 <script>
-// Función para obtener headers con token de autenticación
-function getHeaders() {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-}
-
-
-
-    // Función para mostrar loading en botones
-    function mostrarLoading(boton, textoOriginal) {
-        boton.prop('disabled', true);
-        boton.html(`<i class="fas fa-spinner fa-spin"></i> ${textoOriginal}...`);
-    }
-
-    // Función para restaurar botón después del loading
-    function restaurarBoton(boton, textoOriginal) {
-        boton.prop('disabled', false);
-        boton.html(textoOriginal);
-    }
 
 // Función para validar el formulario
 function validarFormulario() {
@@ -376,16 +290,6 @@ function inicializarEstaciones() {
         });
     });
 
-    // Manejar clic en cancelar
-    $(document).on('click', '#btnCancelar', function() {
-        estacionModal.hide();
-    });
-
-    // Manejar clic en el botón de cierre (X)
-    $(document).on('click', '#btnCerrarModal', function() {
-        estacionModal.hide();
-    });
-
     // Manejar Enter en el formulario
     $(document).on('keypress', '#estacionForm input', function(e) {
         if (e.which === 13) { // Enter key
@@ -449,8 +353,4 @@ $(document).ready(function() {
     inicializarEstaciones();
 });
 
-// Inicializar cuando se carga el contenido dinámicamente
-$(document).on('contentLoaded', function() {
-    inicializarEstaciones();
-});
 </script>

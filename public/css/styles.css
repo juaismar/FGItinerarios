@@ -102,3 +102,66 @@ h1 {
 .login-form .btn {
     margin-right: 10px;
 } 
+
+/* tablas */
+.btn-icon {
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.2rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+.btn-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.btn-editar {
+    background-color: #1976d2;
+    color: white;
+}
+.btn-editar:hover {
+    background-color: #1565c0;
+    color: white;
+}
+.btn-eliminar {
+    background-color: #dc3545;
+    color: white;
+}
+.btn-eliminar:hover {
+    background-color: #c82333;
+    color: white;
+}
+.acciones-cell {
+    white-space: nowrap;
+    text-align: center;
+}
+[data-bs-toggle="tooltip"] {
+    cursor: pointer;
+}
+    
+/* Estilo para el botón de cierre del modal */
+.btn-close-custom {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    }
+    
+.btn-close-custom:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    }
+    
+.btn-close-custom .fas {
+    color: white;
+    font-size: 1rem;
+}
+    
