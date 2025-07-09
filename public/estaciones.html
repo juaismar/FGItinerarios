@@ -1,179 +1,175 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Estaciones</title>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- DataTables CSS -->
+<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    .estacion-activa {
+        color: #28a745;
+    }
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        .estacion-activa {
-            color: #28a745;
-        }
-        .estacion-inactiva {
-            color: #dc3545;
-        }
-        .btn-icon {
-            padding: 0.25rem 0.5rem;
-            margin: 0 0.2rem;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-        .btn-icon:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .btn-editar {
-            background-color: #1976d2;
-            color: white;
-        }
-        .btn-editar:hover {
-            background-color: #1565c0;
-            color: white;
-        }
-        .btn-eliminar {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-eliminar:hover {
-            background-color: #c82333;
-            color: white;
-        }
-        .acciones-cell {
-            white-space: nowrap;
-            text-align: center;
-        }
-        [data-bs-toggle="tooltip"] {
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Gestión de Estaciones</h2>
-            <button class="btn btn-primary nueva-estacion">
-                <i class="fas fa-plus"></i> Nueva Estación
-            </button>
+    .estacion-inactiva {
+        color: #dc3545;
+    }
+
+    .btn-icon {
+        padding: 0.25rem 0.5rem;
+        margin: 0 0.2rem;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-editar {
+        background-color: #1976d2;
+        color: white;
+    }
+
+    .btn-editar:hover {
+        background-color: #1565c0;
+        color: white;
+    }
+
+    .btn-eliminar {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-eliminar:hover {
+        background-color: #c82333;
+        color: white;
+    }
+
+    .acciones-cell {
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    [data-bs-toggle="tooltip"] {
+        cursor: pointer;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gestión de Estaciones</h2>
+        <button class="btn btn-primary nueva-estacion">
+            <i class="fas fa-plus"></i> Nueva Estación
+        </button>
+    </div>
+
+    <!-- Tabla de Estaciones -->
+    <div class="card">
+        <div class="card-body">
+            <table id="tablaEstaciones" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Código</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Se llenará dinámicamente -->
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        <!-- Tabla de Estaciones -->
-        <div class="card">
-            <div class="card-body">
-                <table id="tablaEstaciones" class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Código</th>
-                            <th>Ubicación</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Se llenará dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Modal para Crear/Editar Estación -->
-        <div class="modal fade" id="estacionModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalTitle">Nueva Estación</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="estacionForm">
-                            <input type="hidden" id="estacionId">
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="nombre" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="codigo" class="form-label">Código</label>
-                                <input type="text" class="form-control" id="codigo" required maxlength="3">
-                            </div>
-                            <div class="mb-3">
-                                <label for="ubicacion" class="form-label">Ubicación</label>
-                                <input type="text" class="form-control" id="ubicacion">
-                            </div>
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="activa" checked>
-                                <label class="form-check-label" for="activa">Estación Activa</label>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
-                    </div>
+    <!-- Modal para Crear/Editar Estación -->
+    <div class="modal fade" id="estacionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Nueva Estación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="estacionForm">
+                        <input type="hidden" id="estacionId">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="codigo" class="form-label">Código</label>
+                            <input type="text" class="form-control" id="codigo" required maxlength="3">
+                        </div>
+                        <div class="mb-3">
+                            <label for="ubicacion" class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" id="ubicacion">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="activa" checked>
+                            <label class="form-check-label" for="activa">Estación Activa</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            let tablaEstaciones;
-            let estacionModal;
+<script>
+    $(document).ready(function () {
+        let tablaEstaciones;
+        let estacionModal;
 
-            // Inicializar el modal
-            estacionModal = new bootstrap.Modal(document.getElementById('estacionModal'), {
-                backdrop: 'static',
-                keyboard: false
-            });
+        // Inicializar el modal
+        estacionModal = new bootstrap.Modal(document.getElementById('estacionModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
 
-            // Manejar el cierre del modal
-            document.getElementById('estacionModal').addEventListener('hidden.bs.modal', function () {
-                document.body.classList.remove('modal-open');
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.remove();
-                }
-            });
+        // Manejar el cierre del modal
+        document.getElementById('estacionModal').addEventListener('hidden.bs.modal', function () {
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
+            }
+        });
 
-            // Inicializar DataTable
-            tablaEstaciones = $('#tablaEstaciones').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '/api/estaciones/paginated'
+        // Inicializar DataTable
+        tablaEstaciones = $('#tablaEstaciones').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: '/api/estaciones/paginated'
+            },
+            language: {
+                url: '/datatable_lang/es-ES.json'
+            },
+            columns: [
+                { data: 'id' },
+                { data: 'nombre' },
+                { data: 'codigo' },
+                { data: 'ubicacion' },
+                {
+                    data: 'activa',
+                    render: function (data) {
+                        return data ?
+                            '<span class="estacion-activa"><i class="fas fa-check-circle"></i> Activa</span>' :
+                            '<span class="estacion-inactiva"><i class="fas fa-times-circle"></i> Inactiva</span>';
+                    }
                 },
-                language: {
-                    url: '/datatable_lang/es-ES.json'
-                },
-                columns: [
-                    { data: 'id' },
-                    { data: 'nombre' },
-                    { data: 'codigo' },
-                    { data: 'ubicacion' },
-                    { 
-                        data: 'activa',
-                        render: function(data) {
-                            return data ? 
-                                '<span class="estacion-activa"><i class="fas fa-check-circle"></i> Activa</span>' : 
-                                '<span class="estacion-inactiva"><i class="fas fa-times-circle"></i> Inactiva</span>';
-                        }
-                    },
-                    {
-                        data: null,
-                        className: 'acciones-cell',
-                        render: function(data) {
-                            return `
+                {
+                    data: null,
+                    className: 'acciones-cell',
+                    render: function (data) {
+                        return `
                                 <button class="btn btn-icon btn-editar editar-estacion" 
                                         data-id="${data.id}"
                                         data-bs-toggle="tooltip"
@@ -189,54 +185,54 @@
                                     <i class="fas fa-trash"></i>
                                 </button>
                             `;
-                        }
                     }
-                ],
-                drawCallback: function() {
-                    // Reinicializar tooltips después de cada redibujado de la tabla
-                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                    tooltipTriggerList.map(function (tooltipTriggerEl) {
-                        return new bootstrap.Tooltip(tooltipTriggerEl);
-                    });
                 }
-            });
+            ],
+            drawCallback: function () {
+                // Reinicializar tooltips después de cada redibujado de la tabla
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        });
 
-            // Manejar clic en nueva
-            $('.nueva-estacion').on('click', function() {   
-                $('#modalTitle').text('Nueva Estación');
-                $('#estacionForm')[0].reset();
-                $('#estacionId').val('');
-                $('#nombre').val();
-                $('#codigo').val();
-                $('#ubicacion').val();
-                $('#activa').prop('checked', true);
-                
-                estacionModal.show();
-            });
+        // Manejar clic en nueva
+        $('.nueva-estacion').on('click', function () {
+            $('#modalTitle').text('Nueva Estación');
+            $('#estacionForm')[0].reset();
+            $('#estacionId').val('');
+            $('#nombre').val();
+            $('#codigo').val();
+            $('#ubicacion').val();
+            $('#activa').prop('checked', true);
 
-            // Manejar clic en editar
-            $('#tablaEstaciones').on('click', '.editar-estacion', function() {
-                const id = $(this).data('id');
-                const estacion = tablaEstaciones.row($(this).closest('tr')).data();
-                
-                $('#modalTitle').text('Editar Estación');
-                $('#estacionId').val(estacion.id);
-                $('#nombre').val(estacion.nombre);
-                $('#codigo').val(estacion.codigo);
-                $('#ubicacion').val(estacion.ubicacion);
-                $('#activa').prop('checked', estacion.activa);
-                
-                estacionModal.show();
-            });
+            estacionModal.show();
+        });
 
-            // Manejar clic en eliminar
-            $('#tablaEstaciones').on('click', '.eliminar-estacion', function() {
-                const id = $(this).data('id');
-                if (confirm('¿Estás seguro de que deseas eliminar esta estación?')) {
-                    fetch(`/api/estaciones/${id}`, {
-                        method: 'DELETE',
-                        headers: getHeaders()
-                    })
+        // Manejar clic en editar
+        $('#tablaEstaciones').on('click', '.editar-estacion', function () {
+            const id = $(this).data('id');
+            const estacion = tablaEstaciones.row($(this).closest('tr')).data();
+
+            $('#modalTitle').text('Editar Estación');
+            $('#estacionId').val(estacion.id);
+            $('#nombre').val(estacion.nombre);
+            $('#codigo').val(estacion.codigo);
+            $('#ubicacion').val(estacion.ubicacion);
+            $('#activa').prop('checked', estacion.activa);
+
+            estacionModal.show();
+        });
+
+        // Manejar clic en eliminar
+        $('#tablaEstaciones').on('click', '.eliminar-estacion', function () {
+            const id = $(this).data('id');
+            if (confirm('¿Estás seguro de que deseas eliminar esta estación?')) {
+                fetch(`/api/estaciones/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
                     .then(response => {
                         if (response.status === 401) {
                             window.location.href = '/index.html';
@@ -252,27 +248,27 @@
                         console.error('Error:', error);
                         alert('Error al eliminar la estación');
                     });
-                }
-            });
+            }
+        });
 
-            // Manejar guardar estación
-            $('#btnGuardar').click(function() {
-                const estacionId = $('#estacionId').val();
-                const estacion = {
-                    nombre: $('#nombre').val(),
-                    codigo: $('#codigo').val().toUpperCase(),
-                    ubicacion: $('#ubicacion').val(),
-                    activa: $('#activa').is(':checked')
-                };
+        // Manejar guardar estación
+        $('#btnGuardar').click(function () {
+            const estacionId = $('#estacionId').val();
+            const estacion = {
+                nombre: $('#nombre').val(),
+                codigo: $('#codigo').val().toUpperCase(),
+                ubicacion: $('#ubicacion').val(),
+                activa: $('#activa').is(':checked')
+            };
 
-                const method = estacionId ? 'PUT' : 'POST';
-                const url = estacionId ? `/api/estaciones/${estacionId}` : '/api/estaciones';
+            const method = estacionId ? 'PUT' : 'POST';
+            const url = estacionId ? `/api/estaciones/${estacionId}` : '/api/estaciones';
 
-                fetch(url, {
-                    method: method,
-                    headers: getHeaders(),
-                    body: JSON.stringify(estacion)
-                })
+            fetch(url, {
+                method: method,
+                headers: getHeaders(),
+                body: JSON.stringify(estacion)
+            })
                 .then(response => {
                     if (response.status === 401) {
                         window.location.href = '/index.html';
@@ -289,8 +285,6 @@
                     console.error('Error:', error);
                     alert('Error al guardar la estación');
                 });
-            });
         });
-    </script>
-</body>
-</html> 
+    });
+</script>

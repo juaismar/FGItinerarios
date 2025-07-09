@@ -1,106 +1,162 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Itinerarios</title>
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <style>
-        .table-container {
-            padding: 20px;
-        }
-        .header-container {
-            background-color: #f8f9fa;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .btn-action {
-            margin-right: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Gestión de Itinerarios</h2>
-            <button class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nuevo Itinerario
-            </button>
-        </div>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- DataTables CSS -->
+<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-        <!-- Tabla de Itinerarios-->
-        <div class="card">
-            <div class="card-body">
-                <table id="tablaItinerarios" class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Número</th>
-                            <th>Origen</th>
-                            <th>Destino</th>
-                            <th>Tipo</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
-                            <th>Planificador</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Se llenará dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
+<style>
+    .btn-icon {
+        padding: 0.25rem 0.5rem;
+        margin: 0 0.2rem;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-editar {
+        background-color: #1976d2;
+        color: white;
+    }
+
+    .btn-editar:hover {
+        background-color: #1565c0;
+        color: white;
+    }
+
+    .btn-eliminar {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-eliminar:hover {
+        background-color: #c82333;
+        color: white;
+    }
+
+    .acciones-cell {
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    [data-bs-toggle="tooltip"] {
+        cursor: pointer;
+    }
+
+    /* Estilos para las filas expandibles */
+    .details-row {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .details-table {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .details-table th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .details-table td {
+        padding: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .expand-button {
+        cursor: pointer;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    .expand-button:hover {
+        color: #0056b3;
+    }
+
+    .loading-details {
+        text-align: center;
+        padding: 20px;
+        color: #6c757d;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gestión de Itinerarios</h2>
+        <button class="btn btn-primary nuevo-itinerario">
+            <i class="fas fa-plus"></i> Nuevo Itinerario
+        </button>
+    </div>
+
+    <!-- Tabla de Itinerarios -->
+    <div class="card">
+        <div class="card-body">
+            <table id="tablaItinerarios" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>ID</th>
+                        <th>Número</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Material</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Se llenará dinámicamente -->
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Modal para nuevo/editar itinerario -->
-    <div class="modal fade" id="modalItinerario" tabindex="-1">
+    <!-- Modal para Crear/Editar Itinerario -->
+    <div class="modal fade" id="itinerarioModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Itinerario</h5>
+                    <h5 class="modal-title" id="modalTitle">Nuevo Itinerario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formItinerario">
+                    <form id="itinerarioForm">
+                        <input type="hidden" id="itinerarioId">
                         <div class="mb-3">
-                            <label class="form-label">Número</label>
+                            <label for="numero" class="form-label">Número</label>
                             <input type="text" class="form-control" id="numero" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Origen</label>
+                            <label for="origen" class="form-label">Origen</label>
                             <input type="text" class="form-control" id="origen" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Destino</label>
+                            <label for="destino" class="form-label">Destino</label>
                             <input type="text" class="form-control" id="destino" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Tipo</label>
-                            <select class="form-select" id="tipo" required>
-                                <option value="NACIONAL">Nacional</option>
-                                <option value="INTERNACIONAL">Internacional</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Fecha</label>
+                            <label for="fecha" class="form-label">Fecha y Hora</label>
                             <input type="datetime-local" class="form-control" id="fecha" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Estado</label>
-                            <select class="form-select" id="estado" required>
-                                <option value="PENDIENTE">Pendiente</option>
-                                <option value="EN_PROGRESO">En Progreso</option>
-                                <option value="COMPLETADO">Completado</option>
-                                <option value="CANCELADO">Cancelado</option>
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo" required>
+                                <option value="PASAJEROS">Pasajeros</option>
+                                <option value="OTRO">Otro</option>
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="material" class="form-label">Material</label>
+                            <input type="text" class="form-control" id="material">
                         </div>
                     </form>
                 </div>
@@ -111,120 +167,294 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            let tablaItinerarios;
-            // Inicializar DataTable
-            tablaItinerarios = $('#tablaItinerarios').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '/api/itinerarios/paginated',
-                    headers: {
-                        'Authorization': getAuthToken()
+<script>
+    $(document).ready(function () {
+        let tablaItinerarios;
+        let itinerarioModal;
+        let estaciones;
+
+        cargarEstaciones();
+console.log(estaciones);
+        // Función para cargar estaciones desde la API
+        function cargarEstaciones() {
+            return fetch('/api/estaciones', {
+                headers: getHeaders()
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Guardar las estaciones en la variable global
+                estaciones = data;
+                console.log(estaciones);
+            })
+            .catch(error => {
+                console.error('Error al cargar estaciones:', error);
+                alert('Error al cargar las estaciones');
+            });
+        }
+
+        // Inicializar el modal
+        itinerarioModal = new bootstrap.Modal(document.getElementById('itinerarioModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        // Función para cargar estaciones de un itinerario
+        function cargarEstacionesItinerario(itinerarioId) {
+            return fetch(`/api/itinerarios/${itinerarioId}/estaciones`, {
+                headers: getHeaders()
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                return response.json();
+            })
+            .catch(error => {
+                console.error('Error al cargar estaciones del itinerario:', error);
+                throw error;
+            });
+        }
+
+        // Función para formatear hora
+        function formatearHora(hora) {
+            if (!hora) return '-';
+            return hora;
+        }
+
+        // Inicializar DataTable
+        tablaItinerarios = $('#tablaItinerarios').DataTable({
+            language: {
+                url: '/datatable_lang/es-ES.json'
+            },
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: '/api/itinerarios/paginated',
+                headers: {
+                    'Authorization': getAuthToken()
+                }
+            },
+            columns: [
+                {
+                    className: 'details-control',
+                    orderable: false,
+                    data: null,
+                    defaultContent: '',
+                    render: function () {
+                        return '<i class="fas fa-plus-circle expand-button"></i>';
                     }
                 },
-                language: {
-                    url: '/datatable_lang/es-ES.json'
+                { data: 'id' },
+                { data: 'numero' },
+                { data: 'origen' },
+                { data: 'destino' },
+                {
+                    data: 'fecha',
+                    render: function (data) {
+                        return data ? new Date(data).toLocaleString('es-ES') : '';
+                    }
                 },
-                columns: [
-                    { data: 'numero' },
-                    { data: 'origen' },
-                    { data: 'destino' },
-                    { 
-                        data: 'fecha',
-                        render: function(data) {
-                            return new Date(data).toLocaleString('es-ES');
-                        }
-                    },
-                    { 
-                        data: 'estado',
-                        render: function(data) {
-                            const estados = {
-                                'pendiente': '<span class="badge bg-warning">Pendiente</span>',
-                                'en_proceso': '<span class="badge bg-info">En Proceso</span>',
-                                'completado': '<span class="badge bg-success">Completado</span>',
-                                'cancelado': '<span class="badge bg-danger">Cancelado</span>'
-                            };
-                            return estados[data] || data;
-                        }
-                    },
-                    { data: 'tipo' },
-                    { data: 'material' },
-                    {
-                        data: null,
-                        className: 'acciones-cell',
-                        render: function(data) {
-                            return `
-                                <button class="btn btn-icon btn-editar editar-itinerario" 
-                                        data-id="${data.id}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="Editar itinerario">
+                { data: 'tipo' },
+                { data: 'material' },
+                {
+                    data: null,
+                    className: 'acciones-cell',
+                    render: function (data) {
+                        return `
+                                <button class="btn btn-sm btn-primary editar-itinerario" data-id="${data.id}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-icon btn-eliminar eliminar-itinerario" 
-                                        data-id="${data.id}"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="Eliminar itinerario">
+                                <button class="btn btn-sm btn-danger eliminar-itinerario" data-id="${data.id}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             `;
-                        }
                     }
-                ],
-                drawCallback: function() {
-                    // Reinicializar tooltips después de cada redibujado de la tabla
-                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                    tooltipTriggerList.map(function (tooltipTriggerEl) {
-                        return new bootstrap.Tooltip(tooltipTriggerEl);
-                    });
                 }
-            });
-
-            // Botón nuevo itinerario
-            $('#btnNuevoItinerario').click(function() {
-                $('#formItinerario')[0].reset();
-                $('#modalItinerario').modal('show');
-            });
-
-            // Guardar itinerario
-            $('#btnGuardar').click(function() {
-                const formData = {
-                    numero: $('#numero').val(),
-                    origen: $('#origen').val(),
-                    destino: $('#destino').val(),
-                    tipo: $('#tipo').val(),
-                    fecha: $('#fecha').val(),
-                    estado: $('#estado').val()
-                };
-
-                // Aquí iría la lógica para guardar el itinerario
-                // Por ahora solo cerramos el modal y recargamos la tabla
-                $('#modalItinerario').modal('hide');
-                tabla.ajax.reload();
-            });
+            ],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+            order: [[1, 'asc']], // Ordenar por número por defecto
+            drawCallback: function () {
+                // Reinicializar tooltips después de cada redibujado
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
         });
 
-        // Funciones para editar y eliminar
-        function editarItinerario(id) {
-            // Aquí iría la lógica para cargar y editar el itinerario
-            $('#modalItinerario').modal('show');
-        }
+        // Manejar clic en expandir/contraer fila
+        $('#tablaItinerarios tbody').on('click', 'td.details-control', function () {
+            const tr = $(this).closest('tr');
+            const row = tablaItinerarios.row(tr);
+            const itinerarioId = row.data().id;
 
-        function eliminarItinerario(id) {
-            if (confirm('¿Estás seguro de que deseas eliminar este itinerario?')) {
-                // Aquí iría la lógica para eliminar el itinerario
-                $('#tablaItinerarios').DataTable().ajax.reload();
+            if (row.child.isShown()) {
+                // Esta fila ya está abierta - cerrarla
+                row.child.hide();
+                tr.removeClass('shown');
+                $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+            } else {
+                // Abrir esta fila
+                const childRow = $('<div class="loading-details">Cargando estaciones...</div>');
+                row.child(childRow).show();
+                tr.addClass('shown');
+                $(this).find('i').removeClass('fa-plus-circle').addClass('fa-minus-circle');
+
+                // Cargar las estaciones del itinerario
+                cargarEstacionesItinerario(itinerarioId)
+                    .then(estaciones => {
+                        if (estaciones.length === 0) {
+                            childRow.html('<div class="text-muted">No hay estaciones asignadas a este itinerario.</div>');
+                        } else {
+                            let estacionesHtml = `
+                                <div class="details-row">
+                                    <h6><i class="fas fa-route"></i> Estaciones del Itinerario</h6>
+                                    <table class="details-table table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Orden</th>
+                                                <th>Estación</th>
+                                                <th>Código</th>
+                                                <th>Llegada Programada</th>
+                                                <th>Salida Programada</th>
+                                                <th>Observaciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
+
+                            estaciones.forEach(estacion => {
+                                estacionesHtml += `
+                                    <tr>
+                                        <td>${estacion.orden}</td>
+                                        <td>${estacion.nombre}</td>
+                                        <td>${estacion.codigo}</td>
+                                        <td>${formatearHora(estacion.horaProgramadaLlegada)}</td>
+                                        <td>${formatearHora(estacion.horaProgramadaSalida)}</td>
+                                        <td>${estacion.observaciones || '-'}</td>
+                                    </tr>
+                                `;
+                            });
+
+                            estacionesHtml += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+
+                            childRow.html(estacionesHtml);
+                        }
+                    })
+                    .catch(error => {
+                        childRow.html('<div class="text-danger">Error al cargar las estaciones.</div>');
+                    });
             }
-        }
-    </script>
-</body>
-</html> 
+        });
+
+        // Manejar clic en nuevo
+        $('.nuevo-itinerario').on('click', function () {
+            $('#modalTitle').text('Nuevo Itinerario');
+            $('#itinerarioForm')[0].reset();
+            $('#itinerarioId').val('');
+            
+            $('#origen').val('');
+            $('#destino').val('');
+
+            itinerarioModal.show();
+    
+        });
+
+        // Manejar clic en editar
+        $('#tablaItinerarios').on('click', '.editar-itinerario', function () {
+            const id = $(this).data('id');
+            const itinerario = tablaItinerarios.row($(this).closest('tr')).data();
+
+            $('#modalTitle').text('Editar Itinerario');
+            $('#itinerarioId').val(itinerario.id);
+            $('#numero').val(itinerario.numero);
+            $('#fecha').val(itinerario.fecha ? itinerario.fecha.slice(0, 16) : '');
+            //$('#tipo').val(itinerario.tipo);
+            $('#material').val(itinerario.material);
+
+            $('#origen').val(itinerario.origen);
+            $('#destino').val(itinerario.destino);
+                
+            itinerarioModal.show();
+            
+        });
+
+        // Manejar clic en eliminar
+        $('#tablaItinerarios').on('click', '.eliminar-itinerario', function () {
+            const id = $(this).data('id');
+            if (confirm('¿Estás seguro de que deseas eliminar este itinerario?')) {
+                fetch(`/api/itinerarios/${id}`, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                })
+                    .then(response => {
+                        if (response.status === 401) {
+                            window.location.href = '/index.html';
+                            return;
+                        }
+                        if (response.ok) {
+                            tablaItinerarios.ajax.reload(); // Recargar la tabla después de eliminar
+                        } else {
+                            throw new Error('Error al eliminar el itinerario');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al eliminar el itinerario');
+                    });
+            }
+        });
+
+        // Manejar guardar itinerario
+        $('#btnGuardar').click(function () {
+            const itinerarioId = $('#itinerarioId').val();
+            const itinerario = {
+                numero: $('#numero').val(),
+                origen: $('#origen').val(),
+                destino: $('#destino').val(),
+                fecha: $('#fecha').val(),
+                tipo: $('#tipo').val(),
+                material: $('#material').val()
+            };
+
+            const method = itinerarioId ? 'PUT' : 'POST';
+            const url = itinerarioId ? `/api/itinerarios/${itinerarioId}` : '/api/itinerarios';
+
+            fetch(url, {
+                method: method,
+                headers: getHeaders(),
+                body: JSON.stringify(itinerario)
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    if (response.ok) {
+                        itinerarioModal.hide();
+                        tablaItinerarios.ajax.reload(); // Recargar la tabla después de guardar
+                    } else {
+                        throw new Error('Error al guardar el itinerario');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al guardar el itinerario');
+                });
+        });
+    });
+</script>

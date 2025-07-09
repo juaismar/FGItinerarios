@@ -26,10 +26,6 @@ const Itinerario = sequelize.define('Itinerario', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    estado: {
-        type: DataTypes.ENUM(['pendiente', 'en_proceso', 'completado', 'cancelado']),
-        defaultValue: 'pendiente'
-    },
     tipo: {
         type: DataTypes.STRING,
         comment: 'Tipo de tren o servicio'

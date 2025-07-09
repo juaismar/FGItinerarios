@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Itinerario = require('../models/Itinerario');
+const ItinerarioEstacion = require('../models/ItinerarioEstacion');
+const Estacion = require('../models/Estacion');
 const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
 const { Op } = require('sequelize');
@@ -34,7 +36,6 @@ router.get('/paginated', verificarAuth(['planificador', 'admin']), async (req, r
             { db: 'origen', dt: 'origen', formatter: null },
             { db: 'destino', dt: 'destino', formatter: null },
             { db: 'fecha', dt: 'fecha', formatter: (value) => new Date(value).toLocaleString('es-ES') },
-            { db: 'estado', dt: 'estado', formatter: null },
             { db: 'tipo', dt: 'tipo', formatter: null },
             { db: 'material', dt: 'material', formatter: null }
         ];
@@ -79,6 +80,59 @@ router.delete('/:id', verificarAuth('admin'), async (req, res) => {
     } catch (error) {
         logger.error('Error al eliminar itinerario:', error);
         res.status(500).json({ mensaje: 'Error al eliminar itinerario' });
+    }
+});
+
+// Obtener estaciones de un itinerario específico
+router.get('/:id/estaciones', verificarAuth(['planificador', 'admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Buscar en ItinerarioEstacion por itinerarioId y obtener datos de estaciones
+        const itinerarioEstaciones = await ItinerarioEstacion.findAll({
+            where: { itinerarioId: id },
+            order: [['orden', 'ASC']]
+        });
+        
+        if (itinerarioEstaciones.length === 0) {
+            return res.json([]);
+        }
+        
+        // Obtener los IDs de las estaciones
+        const estacionIds = itinerarioEstaciones.map(ie => ie.estacionId);
+        
+        // Obtener las estaciones correspondientes
+        const estaciones = await Estacion.findAll({
+            where: { id: estacionIds },
+            attributes: ['id', 'nombre', 'codigo']
+        });
+        
+        // Crear un mapa para acceso rápido
+        const estacionesMap = {};
+        estaciones.forEach(estacion => {
+            estacionesMap[estacion.id] = estacion;
+        });
+        
+        // Formatear los datos para el frontend
+        const estacionesFormateadas = itinerarioEstaciones.map(ie => {
+            const estacion = estacionesMap[ie.estacionId];
+            return {
+                id: estacion.id,
+                nombre: estacion.nombre,
+                codigo: estacion.codigo,
+                orden: ie.orden,
+                horaProgramadaLlegada: ie.horaProgramadaLlegada,
+                horaProgramadaSalida: ie.horaProgramadaSalida,
+                horaRealLlegada: ie.horaRealLlegada,
+                horaRealSalida: ie.horaRealSalida,
+                observaciones: ie.observaciones
+            };
+        });
+
+        res.json(estacionesFormateadas);
+    } catch (error) {
+        logger.error('Error al obtener estaciones del itinerario:', error);
+        res.status(500).json({ mensaje: 'Error al obtener estaciones del itinerario' });
     }
 });
 

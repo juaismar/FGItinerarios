@@ -23,7 +23,6 @@ const verificarAuth = (rolesPermitidos = null) => {
                 return res.status(401).json({ mensaje: 'Usuario no encontrado.' });
             }
 
-            console.log("usuario");
             
             // Verificar rol si se requiere
             if (rolesPermitidos) {
@@ -36,7 +35,6 @@ const verificarAuth = (rolesPermitidos = null) => {
                     });
                 }
             }
-            console.log("next");
             
             // Añadir usuario y token a la request
             req.usuario = usuario;
