@@ -23,8 +23,9 @@ const Itinerario = sequelize.define('Itinerario', {
         allowNull: false
     },
     fecha: {
-        type: DataTypes.DATE,
-        allowNull: false
+        type: DataTypes.TIME,
+        allowNull: false,
+        comment: 'Hora del itinerario'
     },
     tipo: {
         type: DataTypes.STRING,

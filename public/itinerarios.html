@@ -144,8 +144,8 @@
                             <input type="text" class="form-control" id="destino" required>
                         </div>
                         <div class="mb-3">
-                            <label for="fecha" class="form-label">Fecha y Hora</label>
-                            <input type="datetime-local" class="form-control" id="fecha" required>
+                            <label for="fecha" class="form-label">Hora</label>
+                            <input type="time" class="form-control" id="fecha" step="3600" required>
                         </div>
                         <div class="mb-3">
                             <label for="tipo" class="form-label">Tipo</label>
@@ -177,11 +177,11 @@
                             </div>
                             <div class="col-md-2">
                                 <label for="horaLlegada" class="form-label">Llegada</label>
-                                <input type="time" class="form-control" id="horaLlegada">
+                                <input type="time" class="form-control" id="horaLlegada" step="3600">
                             </div>
                             <div class="col-md-2">
                                 <label for="horaSalida" class="form-label">Salida</label>
-                                <input type="time" class="form-control" id="horaSalida">
+                                <input type="time" class="form-control" id="horaSalida" step="3600">
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">&nbsp;</label>
@@ -228,7 +228,6 @@
         let estacionesItinerario = []; // Array para almacenar las estaciones del itinerario actual
 
         cargarEstaciones();
-console.log(estaciones);
         // Función para cargar estaciones desde la API
         function cargarEstaciones() {
             return fetch('/api/estaciones', {
@@ -411,7 +410,7 @@ console.log(estaciones);
                 {
                     data: 'fecha',
                     render: function (data) {
-                        return data ? new Date(data).toLocaleString('es-ES') : '';
+                        return data || '';
                     }
                 },
                 { data: 'tipo' },
@@ -537,7 +536,7 @@ console.log(estaciones);
             $('#modalTitle').text('Editar Itinerario');
             $('#itinerarioId').val(itinerario.id);
             $('#numero').val(itinerario.numero);
-            $('#fecha').val(itinerario.fecha ? itinerario.fecha.slice(0, 16) : '');
+            $('#fecha').val(itinerario.fecha || '');
             $('#tipo').val(itinerario.tipo);
             $('#material').val(itinerario.material);
 

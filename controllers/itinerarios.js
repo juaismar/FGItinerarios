@@ -62,7 +62,7 @@ router.get('/paginated', verificarAuth(['planificador', 'admin']), async (req, r
             { db: 'numero', dt: 'numero', formatter: null },
             { db: 'origen', dt: 'origen', formatter: null },
             { db: 'destino', dt: 'destino', formatter: null },
-            { db: 'fecha', dt: 'fecha', formatter: (value) => new Date(value).toLocaleString('es-ES') },
+            { db: 'fecha', dt: 'fecha', formatter: (value) => value },
             { db: 'tipo', dt: 'tipo', formatter: null },
             { db: 'material', dt: 'material', formatter: null }
         ];
