@@ -192,7 +192,7 @@
                 {
                     className: 'details-control',
                     orderable: false,
-                    data: null,
+                    data: 'id',
                     defaultContent: '',
                     render: function () {
                         return '<i class="fas fa-plus-circle expand-button"></i>';
@@ -316,8 +316,13 @@
                 
                 case 'th_numero':
                     $(this).html('<input type="number" min="0" max="9999"/>');
-                    return;
-                
+                    $('input', this).on('keyup change', function () {
+                        if (tablaItinerarios.column(index).search() !== this.value) {
+                            tablaItinerarios.column(index)
+                            .search(this.value, false, false, false)
+                            .draw();
+                        }
+                    });
                 break;
 
                 case 'th_fecha':
@@ -331,8 +336,8 @@
                     $(this).html('<input type="text" placeholder="Buscar ' + title + '" />');
                     // this select is for text input fields
                     $('input', this).on('keyup change', function () {
-                        if (table.column(index).search() !== this.value) {
-                        table.column(index)
+                        if (tablaItinerarios.column(index).search() !== this.value) {
+                            tablaItinerarios.column(index)
                             .search(this.value)
                             .draw();
                         }

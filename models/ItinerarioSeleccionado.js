@@ -40,8 +40,7 @@ const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
     },
     estado: {
         type: DataTypes.ENUM('PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'),
-        defaultValue: 'PENDIENTE',
-        comment: 'Estado del itinerario seleccionado'
+        defaultValue: 'PENDIENTE'
     },
     planificadorId: {
         type: DataTypes.INTEGER,

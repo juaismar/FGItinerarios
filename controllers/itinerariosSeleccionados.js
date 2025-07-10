@@ -1,7 +1,7 @@
 const ItinerarioSeleccionado = require('../models/ItinerarioSeleccionado');
 const Estacion = require('../models/Estacion');
 const ItinerarioEstacion = require('../models/ItinerarioEstacion');
-const { Op } = require('sequelize');
+const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
 const express = require('express');
 const router = express.Router();
@@ -97,7 +97,7 @@ router.delete('/:id',verificarAuth(['planificador', 'admin']), async (req, res) 
         await ItinerarioEstacion.destroy({ 
             where: { itinerarioId: id } 
         });
-        
+
         const itinerario = await ItinerarioSeleccionado.findByPk(id);
 
         if (!itinerario) {
@@ -112,32 +112,5 @@ router.delete('/:id',verificarAuth(['planificador', 'admin']), async (req, res) 
     }
 });
 
-// Obtener estaciones de un itinerario seleccionado
-async function obtenerEstacionesItinerarioSeleccionado(req, res) {
-    try {
-        const { id } = req.params;
-        const itinerario = await ItinerarioSeleccionado.findByPk(id, {
-            include: [{
-                model: Estacion,
-                as: 'estaciones',
-                through: {
-                    attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida', 
-                                'horaRealLlegada', 'horaRealSalida', 'observaciones']
-                },
-                order: [[ItinerarioEstacion, 'orden', 'ASC']]
-            }]
-        });
-
-        if (!itinerario) {
-            return res.status(404).json({ error: 'Itinerario seleccionado no encontrado' });
-        }
-
-        res.json(itinerario.estaciones);
-    } catch (error) {
-        logger.error('Error al obtener estaciones del itinerario seleccionado:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-}
-router.get('/:id/estaciones', obtenerEstacionesItinerarioSeleccionado);
 
 module.exports = router; 

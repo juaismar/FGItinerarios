@@ -5,11 +5,8 @@ const ItinerarioEstacion = require('../models/ItinerarioEstacion');
 const Estacion = require('../models/Estacion');
 const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
-const paginate = require('sequelize-paginate');
 const { ssp } = require('../db/database');
 
-// Configurar paginación para el modelo Itinerario
-paginate.paginate(Itinerario);
 
 const logLocation = 'itinerarios.js: ';
 
