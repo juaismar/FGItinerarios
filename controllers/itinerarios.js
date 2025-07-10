@@ -42,7 +42,7 @@ async function manejarEstacionesItinerario(itinerarioId, estaciones) {
 }
 
 // Obtener todos los itinerarios
-router.get('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const itinerarios = await Itinerario.findAll({
             order: [['fecha', 'DESC']]
@@ -54,8 +54,7 @@ router.get('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
     }
 });
 
-// Nueva ruta paginada para la página de administración
-router.get('/paginated', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.get('/paginated', async (req, res) => {
     try {
         const columns = [
             { db: 'id', dt: 'id', formatter: null },
@@ -134,7 +133,7 @@ router.delete('/:id', verificarAuth('admin'), async (req, res) => {
 });
 
 // Obtener estaciones de un itinerario específico
-router.get('/:id/estaciones', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.get('/:id/estaciones', async (req, res) => {
     try {
         const { id } = req.params;
         
