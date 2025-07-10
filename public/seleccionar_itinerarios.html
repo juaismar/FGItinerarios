@@ -105,7 +105,7 @@
                         <th id="th_numero">Número</th>
                         <th id="th_origen">Origen</th>
                         <th id="th_destino">Destino</th>
-                        <th id="th_fecha">Fecha</th>
+                        <th id="th_fecha">Hora</th>
                         <th id="th_tipo">Tipo</th>
                         <th id="th_material">Material</th>
                         <th id="th_acciones">Acciones</th>
@@ -186,6 +186,14 @@
                 url: '/api/itinerarios/paginated',
                 headers: {
                     'Authorization': getAuthToken()
+                },
+                data:function(dtParms){
+                    if($('#fechaIT').val()){
+                        let hour = parseInt($('#fechaIT').val())
+                        dtParms.cs_DateStart = hour+":00:00";
+                        dtParms.cs_DateEnd = (hour+1 ) +":00:00";
+                    }
+                    return dtParms
                 }
             },
             columns: [
@@ -326,14 +334,17 @@
                 break;
 
                 case 'th_fecha':
-                    $(this).text('');
-                    //$(this).html('<input type="number" min="0" max="23" step="1"/>');
-                    return;
-
+                    $(this).html('<input type="number" id="fechaIT" min="0" max="24"/>');
+                    $('input', this).on('keyup change', function () {
+                        if (tablaItinerarios.column(index).search() !== this.value) {
+                            tablaItinerarios.column(index)
+                            .draw();
+                        }
+                    });
                 break;
 
                 default:
-                    $(this).html('<input type="text" placeholder="Buscar ' + title + '" />');
+                    $(this).html('<input type="text" style="width: 150px;" placeholder="Buscar ' + title + '" />');
                     // this select is for text input fields
                     $('input', this).on('keyup change', function () {
                         if (tablaItinerarios.column(index).search() !== this.value) {

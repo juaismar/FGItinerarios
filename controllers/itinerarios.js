@@ -63,7 +63,19 @@ router.get('/paginated', async (req, res) => {
             { db: 'material', dt: 'material', formatter: null }
         ];
 
-        const result = await ssp.Simple(req.query, 'Itinerarios', columns);
+        let whereResult = [];
+        let whereAll = [];
+
+        //buscar el parametro fecha
+        const fechaStart = req.query.cs_DateStart;
+        const fechaEnd = req.query.cs_DateEnd;
+        if (fechaStart) {
+           whereResult.push(`fecha >= '${fechaStart}'`);
+           whereResult.push(`fecha < '${fechaEnd}'`);
+        }
+        
+
+        const result = await ssp.Complex(req.query, 'Itinerarios', columns, whereResult, whereAll);
         res.json(result);
     } catch (error) {
         logger.error(logLocation + 'Error al obtener itinerarios paginados:', error);
