@@ -1,0 +1,335 @@
+<style>
+    .btn-icon {
+        padding: 0.25rem 0.5rem;
+        margin: 0 0.2rem;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-seleccionar {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-seleccionar:hover {
+        background-color: #218838;
+        color: white;
+    }
+
+    .acciones-cell {
+        white-space: nowrap;
+        text-align: center;
+    }
+
+    [data-bs-toggle="tooltip"] {
+        cursor: pointer;
+    }
+
+    /* Estilos para las filas expandibles */
+    .details-row {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .details-table {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .details-table th {
+        background-color: #e9ecef;
+        font-weight: 600;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .details-table td {
+        padding: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .expand-button {
+        cursor: pointer;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+    .expand-button:hover {
+        color: #0056b3;
+    }
+
+    .loading-details {
+        text-align: center;
+        padding: 20px;
+        color: #6c757d;
+    }
+
+    /* Estilos para filas seleccionadas */
+    .row-selected {
+        background-color: #d4edda !important;
+        border-color: #c3e6cb !important;
+    }
+
+    .row-selected td {
+        background-color: #d4edda !important;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Seleccionar Itinerarios</h2>
+        <div>
+            <button class="btn btn-success" id="btnConfirmarSeleccion" style="display: none;">
+                <i class="fas fa-check"></i> Confirmar Selección
+            </button>
+            <button class="btn btn-secondary" id="btnLimpiarSeleccion" style="display: none;">
+                <i class="fas fa-times"></i> Limpiar Selección
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabla de Itinerarios -->
+    <div class="card">
+        <div class="card-body">
+            <table id="tablaItinerarios" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>ID</th>
+                        <th>Número</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Material</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Se llenará dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        let tablaItinerarios;
+        let itinerariosSeleccionados = new Set();
+
+        // Función para cargar estaciones de un itinerario
+        function cargarEstacionesItinerario(itinerarioId) {
+            return fetch(`/api/itinerarios/${itinerarioId}/estaciones`, {
+                headers: getHeaders()
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                return response.json();
+            })
+            .catch(error => {
+                console.error('Error al cargar estaciones del itinerario:', error);
+                throw error;
+            });
+        }
+
+        // Función para formatear hora
+        function formatearHora(hora) {
+            if (!hora) return '-';
+            return hora;
+        }
+
+        // Función para actualizar botones de selección
+        function actualizarBotonesSeleccion() {
+            const btnConfirmar = $('#btnConfirmarSeleccion');
+            const btnLimpiar = $('#btnLimpiarSeleccion');
+            
+            if (itinerariosSeleccionados.size > 0) {
+                btnConfirmar.show();
+                btnLimpiar.show();
+                btnConfirmar.text(`Confirmar Selección (${itinerariosSeleccionados.size})`);
+            } else {
+                btnConfirmar.hide();
+                btnLimpiar.hide();
+            }
+        }
+
+        // Función para alternar selección de fila
+        function alternarSeleccionFila(itinerarioId, tr) {
+            if (itinerariosSeleccionados.has(itinerarioId)) {
+                itinerariosSeleccionados.delete(itinerarioId);
+                tr.removeClass('row-selected');
+            } else {
+                itinerariosSeleccionados.add(itinerarioId);
+                tr.addClass('row-selected');
+            }
+            actualizarBotonesSeleccion();
+        }
+
+        // Inicializar DataTable
+        tablaItinerarios = $('#tablaItinerarios').DataTable({
+            language: {
+                url: '/datatable_lang/es-ES.json'
+            },
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: '/api/itinerarios/paginated',
+                headers: {
+                    'Authorization': getAuthToken()
+                }
+            },
+            columns: [
+                {
+                    className: 'details-control',
+                    orderable: false,
+                    data: null,
+                    defaultContent: '',
+                    render: function () {
+                        return '<i class="fas fa-plus-circle expand-button"></i>';
+                    }
+                },
+                { data: 'id' },
+                { data: 'numero' },
+                { data: 'origen' },
+                { data: 'destino' },
+                {
+                    data: 'fecha',
+                    render: function (data) {
+                        return data || '';
+                    }
+                },
+                { data: 'tipo' },
+                { data: 'material' },
+                {
+                    data: null,
+                    className: 'acciones-cell',
+                    render: function (data) {
+                        return `
+                                <button class="btn btn-sm btn-success seleccionar-itinerario" data-id="${data.id}">
+                                    <i class="fas fa-check"></i> Seleccionar
+                                </button>
+                            `;
+                    }
+                }
+            ],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+            order: [[1, 'asc']], // Ordenar por número por defecto
+            drawCallback: function () {
+                // Reinicializar tooltips después de cada redibujado
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        });
+
+        // Manejar clic en expandir/contraer fila
+        $('#tablaItinerarios tbody').on('click', 'td.details-control', function () {
+            const tr = $(this).closest('tr');
+            const row = tablaItinerarios.row(tr);
+            const itinerarioId = row.data().id;
+
+            if (row.child.isShown()) {
+                // Esta fila ya está abierta - cerrarla
+                row.child.hide();
+                tr.removeClass('shown');
+                $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+            } else {
+                // Abrir esta fila
+                const childRow = $('<div class="loading-details">Cargando estaciones...</div>');
+                row.child(childRow).show();
+                tr.addClass('shown');
+                $(this).find('i').removeClass('fa-plus-circle').addClass('fa-minus-circle');
+
+                // Cargar las estaciones del itinerario
+                cargarEstacionesItinerario(itinerarioId)
+                    .then(estaciones => {
+                        if (estaciones.length === 0) {
+                            childRow.html('<div class="text-muted">No hay estaciones asignadas a este itinerario.</div>');
+                        } else {
+                            let estacionesHtml = `
+                                <div class="details-row">
+                                    <h6><i class="fas fa-route"></i> Estaciones del Itinerario</h6>
+                                    <table class="details-table table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Orden</th>
+                                                <th>Estación</th>
+                                                <th>Código</th>
+                                                <th>Llegada Programada</th>
+                                                <th>Salida Programada</th>
+                                                <th>Observaciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                            `;
+
+                            estaciones.forEach(estacion => {
+                                estacionesHtml += `
+                                    <tr>
+                                        <td>${estacion.orden}</td>
+                                        <td>${estacion.nombre}</td>
+                                        <td>${estacion.codigo}</td>
+                                        <td>${formatearHora(estacion.horaProgramadaLlegada)}</td>
+                                        <td>${formatearHora(estacion.horaProgramadaSalida)}</td>
+                                        <td>${estacion.observaciones || '-'}</td>
+                                    </tr>
+                                `;
+                            });
+
+                            estacionesHtml += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+
+                            childRow.html(estacionesHtml);
+                        }
+                    })
+                    .catch(error => {
+                        childRow.html('<div class="text-danger">Error al cargar las estaciones.</div>');
+                    });
+            }
+        });
+
+        // Manejar clic en seleccionar itinerario
+        $('#tablaItinerarios').on('click', '.seleccionar-itinerario', function () {
+            const id = $(this).data('id');
+            const tr = $(this).closest('tr');
+            alternarSeleccionFila(id, tr);
+        });
+
+        // Manejar clic en confirmar selección
+        $('#btnConfirmarSeleccion').click(function () {
+            if (itinerariosSeleccionados.size === 0) {
+                alert('Por favor selecciona al menos un itinerario');
+                return;
+            }
+
+            const itinerariosSeleccionadosArray = Array.from(itinerariosSeleccionados);
+            console.log('Itinerarios seleccionados:', itinerariosSeleccionadosArray);
+            
+            // Aquí puedes implementar la lógica para procesar los itinerarios seleccionados
+            // Por ejemplo, enviarlos a otra página o hacer una petición al servidor
+            alert(`Se han seleccionado ${itinerariosSeleccionados.size} itinerarios. IDs: ${itinerariosSeleccionadosArray.join(', ')}`);
+        });
+
+        // Manejar clic en limpiar selección
+        $('#btnLimpiarSeleccion').click(function () {
+            itinerariosSeleccionados.clear();
+            $('#tablaItinerarios tbody tr').removeClass('row-selected');
+            actualizarBotonesSeleccion();
+        });
+    });
+</script> 
