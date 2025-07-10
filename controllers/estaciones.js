@@ -56,17 +56,12 @@ router.post('/', verificarAuth('admin'), async (req, res) => {
 
 // Eliminar estación (solo admin)
 router.delete('/:id', verificarAuth('admin'), async (req, res) => {
-    console.log("delete1");
     try {
-        console.log("delete");
         const { id } = req.params;
         await Estacion.destroy({ where: { id } });
         logger.info(logLocation + 'Estación eliminada exitosamente');
         res.status(204).send();
     } catch (error) {
-        console.log("error");
-        
-        console.log(error);
         logger.error(logLocation + 'Error al eliminar la estación: ' + error);
         res.status(500).json({ mensaje: 'Error al eliminar la estación' });
     }

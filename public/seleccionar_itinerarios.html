@@ -100,15 +100,15 @@
             <table id="tablaItinerarios" class="table table-striped">
                 <thead>
                     <tr>
-                        <th></th>
-                        <th>ID</th>
-                        <th>Número</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Material</th>
-                        <th>Acciones</th>
+                        <th id="th_mas"></th>
+                        <th id="th_id">ID</th>
+                        <th id="th_numero">Número</th>
+                        <th id="th_origen">Origen</th>
+                        <th id="th_destino">Destino</th>
+                        <th id="th_fecha">Fecha</th>
+                        <th id="th_tipo">Tipo</th>
+                        <th id="th_material">Material</th>
+                        <th id="th_acciones">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -299,6 +299,43 @@
                     })
                     .catch(error => {
                         childRow.html('<div class="text-danger">Error al cargar las estaciones.</div>');
+                    });
+            }
+        });
+
+        $('#tablaItinerarios thead tr').clone(true).appendTo('#tablaItinerarios thead');
+        $('#tablaItinerarios thead tr:eq(1) th').each(function (index) {
+            var id = $(this).attr('id');
+            var title = $(this).text();
+            switch( id ) {
+                case 'th_id': case 'th_mas': case 'th_acciones': 
+                    $(this).text('');
+                    return;
+                
+                break;
+                
+                case 'th_numero':
+                    $(this).html('<input type="number" min="0" max="9999"/>');
+                    return;
+                
+                break;
+
+                case 'th_fecha':
+                    $(this).text('');
+                    //$(this).html('<input type="number" min="0" max="23" step="1"/>');
+                    return;
+
+                break;
+
+                default:
+                    $(this).html('<input type="text" placeholder="Buscar ' + title + '" />');
+                    // this select is for text input fields
+                    $('input', this).on('keyup change', function () {
+                        if (table.column(index).search() !== this.value) {
+                        table.column(index)
+                            .search(this.value)
+                            .draw();
+                        }
                     });
             }
         });

@@ -4,16 +4,13 @@ const Usuario = require('../models/Usuario');
 const verificarAuth = (rolesPermitidos = null) => {
     return async (req, res, next) => {
         try {
-          console.log("verificarAuth");
           
             // Verificar token
             const token = req.header('Authorization')?.replace('Bearer ', '');
-            console.log("token");
-            console.log(token);
+
             if (!token) {
                 return res.status(401).json({ mensaje: 'Por favor autentíquese.' });
             }
-            console.log("token");
             
             // Decodificar token y obtener usuario
             const decoded = jwt.verify(token, process.env.JWT_SECRET);

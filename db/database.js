@@ -61,9 +61,6 @@ const sequelize = new Sequelize(
 // Función para inicializar la conexión
 async function inicializarConexion() {
   try {
-    // TODO Inicializar SSP en mejor lugar
-    //console.log("inicializar ssp")
-    //ssp = new SSP(SSPconfig);
 
     // Probar la conexión
     await sequelize.authenticate();
@@ -72,6 +69,7 @@ async function inicializarConexion() {
     // Importar modelos
     require('../models/Usuario');
     require('../models/Itinerario');
+    require('../models/ItinerarioSeleccionado');
 
     // Sincronizar modelos
     await sequelize.sync({ alter: env === 'development' });

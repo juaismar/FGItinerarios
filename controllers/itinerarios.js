@@ -74,8 +74,8 @@ router.get('/paginated', async (req, res) => {
     }
 });
 
-// Crear nuevo itinerario (solo planificador o admin)
-router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
+// Crear nuevo itinerario
+router.post('/', verificarAuth(['admin']), async (req, res) => {
     try {
         const { estaciones, ...itinerarioData } = req.body;
         
@@ -92,8 +92,8 @@ router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
     }
 });
 
-// Actualizar itinerario (solo planificador o admin)
-router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) => {
+// Actualizar itinerario
+router.put('/:id', verificarAuth(['admin']), async (req, res) => {
     try {
         const { id } = req.params;
         const { estaciones, ...itinerarioData } = req.body;
@@ -111,7 +111,7 @@ router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) =>
     }
 });
 
-// Eliminar itinerario (solo admin)
+// Eliminar itinerario
 router.delete('/:id', verificarAuth('admin'), async (req, res) => {
     try {
         const { id } = req.params;
