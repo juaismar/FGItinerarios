@@ -5,7 +5,6 @@ const ItinerarioEstacion = require('../models/ItinerarioEstacion');
 const Estacion = require('../models/Estacion');
 const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
-const { Op } = require('sequelize');
 const paginate = require('sequelize-paginate');
 const { ssp } = require('../db/database');
 
@@ -13,6 +12,34 @@ const { ssp } = require('../db/database');
 paginate.paginate(Itinerario);
 
 const logLocation = 'itinerarios.js: ';
+
+// Función para manejar las estaciones de un itinerario
+async function manejarEstacionesItinerario(itinerarioId, estaciones) {
+    if (!estaciones || !Array.isArray(estaciones)) {
+        return;
+    }
+    
+    // Eliminar todas las relaciones existentes
+    await ItinerarioEstacion.destroy({ 
+        where: { itinerarioId: itinerarioId } 
+    });
+    
+    // Crear las nuevas relaciones
+    const estacionesData = estaciones.map(estacion => ({
+        itinerarioId: parseInt(itinerarioId),
+        estacionId: estacion.estacionId,
+        orden: estacion.orden,
+        horaProgramadaLlegada: estacion.horaProgramadaLlegada,
+        horaProgramadaSalida: estacion.horaProgramadaSalida,
+        horaRealLlegada: estacion.horaRealLlegada,
+        horaRealSalida: estacion.horaRealSalida,
+        observaciones: estacion.observaciones
+    }));
+    
+    await ItinerarioEstacion.bulkCreate(estacionesData);
+    
+    logger.info(logLocation + `Estaciones del itinerario ${itinerarioId} actualizadas: ${estaciones.length} estaciones`);
+}
 
 // Obtener todos los itinerarios
 router.get('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
@@ -51,7 +78,14 @@ router.get('/paginated', verificarAuth(['planificador', 'admin']), async (req, r
 // Crear nuevo itinerario (solo planificador o admin)
 router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
-        const itinerario = await Itinerario.create(req.body);
+        const { estaciones, ...itinerarioData } = req.body;
+        
+        // Crear el itinerario
+        const itinerario = await Itinerario.create(itinerarioData);
+        
+        // Manejar las estaciones del itinerario
+        await manejarEstacionesItinerario(itinerario.id, estaciones);
+        
         res.status(201).json(itinerario);
     } catch (error) {
         logger.error('Error al crear itinerario:', error);
@@ -63,7 +97,14 @@ router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
 router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
         const { id } = req.params;
-        await Itinerario.update(req.body, { where: { id } });
+        const { estaciones, ...itinerarioData } = req.body;
+        
+        // Actualizar datos del itinerario
+        await Itinerario.update(itinerarioData, { where: { id } });
+        
+        // Manejar las estaciones del itinerario
+        await manejarEstacionesItinerario(id, estaciones);
+        
         res.status(204).send();
     } catch (error) {
         logger.error('Error al actualizar itinerario:', error);
@@ -75,7 +116,16 @@ router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) =>
 router.delete('/:id', verificarAuth('admin'), async (req, res) => {
     try {
         const { id } = req.params;
+        
+        // Primero eliminar las relaciones ItinerarioEstacion
+        await ItinerarioEstacion.destroy({ 
+            where: { itinerarioId: id } 
+        });
+        
+        // Luego eliminar el itinerario
         await Itinerario.destroy({ where: { id } });
+        
+        logger.info(logLocation + `Itinerario ${id} eliminado junto con sus relaciones`);
         res.status(204).send();
     } catch (error) {
         logger.error('Error al eliminar itinerario:', error);
