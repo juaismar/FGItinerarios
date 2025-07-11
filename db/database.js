@@ -68,8 +68,11 @@ async function inicializarConexion() {
 
     // Importar modelos
     require('../models/Usuario');
+    require('../models/Estacion');
     require('../models/Itinerario');
+    require('../models/ItinerarioEstacion');
     require('../models/ItinerarioSeleccionado');
+    require('../models/ItinerarioSeleccionadoEstacion');
 
     // Sincronizar modelos
     await sequelize.sync({ force: false, alter: false });
