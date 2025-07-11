@@ -11,8 +11,7 @@ const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
     },
     numero: {
         type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
+        allowNull: false
     },
     origen: {
         type: DataTypes.STRING,
@@ -42,6 +41,14 @@ const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
         type: DataTypes.ENUM('PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'),
         defaultValue: 'PENDIENTE'
     },
+}, {
+    indexes: [
+        {
+            unique: true,
+            fields: ['numero', 'fecha'],
+            name: 'itinerario_seleccionado_numero_fecha_unique'
+        }
+    ]
 });
 
 // Relaciones
