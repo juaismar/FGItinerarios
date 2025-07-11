@@ -79,6 +79,31 @@
     .row-selected td {
         background-color: #d4edda !important;
     }
+
+    /* Estilos para filas ya seleccionadas (naranja) */
+    .row-already-selected {
+        background-color: #ffe6cc !important;
+        border-color: #ffcc80 !important;
+    }
+
+    .row-already-selected td {
+        background-color: #ffe6cc !important;
+    }
+
+    /* Estilos para botones deshabilitados */
+    .btn-disabled {
+        background-color: #6c757d !important;
+        color: #ffffff !important;
+        cursor: not-allowed !important;
+        opacity: 0.6;
+    }
+
+    .btn-disabled:hover {
+        background-color: #6c757d !important;
+        color: #ffffff !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <div class="container-fluid">
@@ -91,6 +116,47 @@
             <button class="btn btn-secondary" id="btnLimpiarSeleccion" style="display: none;">
                 <i class="fas fa-times"></i> Limpiar Selección
             </button>
+        </div>
+    </div>
+
+    <!-- Leyenda de colores -->
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6 class="mb-2"><i class="fas fa-info-circle text-info"></i> Leyenda de Estados:</h6>
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="d-flex align-items-center">
+                            <div class="color-indicator bg-white border" style="width: 20px; height: 20px; border-radius: 4px;"></div>
+                            <span class="ms-2 small">Normal - Disponible para seleccionar</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="color-indicator" style="width: 20px; height: 20px; border-radius: 4px; background-color: #d4edda; border: 1px solid #c3e6cb;"></div>
+                            <span class="ms-2 small">Verde - Seleccionado en esta sesión</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="color-indicator" style="width: 20px; height: 20px; border-radius: 4px; background-color: #ffe6cc; border: 1px solid #ffcc80;"></div>
+                            <span class="ms-2 small">Naranja - Ya seleccionado para hoy</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-success" disabled style="opacity: 0.6;">
+                                <i class="fas fa-check"></i> Seleccionar
+                            </button>
+                            <span class="ms-2 small">Botón activo</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-secondary" disabled style="opacity: 0.6;">
+                                <i class="fas fa-ban"></i> Ya Seleccionado
+                            </button>
+                            <span class="ms-2 small">Botón deshabilitado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -123,6 +189,31 @@
     $(document).ready(function () {
         let tablaItinerarios;
         let itinerariosSeleccionados = new Set();
+        let numerosTrenYaSeleccionados = new Set(); // Para almacenar los números de tren ya seleccionados
+
+        // Función para cargar itinerarios ya seleccionados de hoy
+        function cargarItinerariosYaSeleccionados() {
+            return fetch('/api/itinerariosSeleccionados/', {
+                headers: getHeaders()
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Extraer los números de tren ya seleccionados
+                numerosTrenYaSeleccionados.clear();
+                data.forEach(itinerario => {
+                    numerosTrenYaSeleccionados.add(itinerario.numero);
+                });
+            })
+            .catch(error => {
+                console.error('Error al cargar itinerarios ya seleccionados:', error);
+            });
+        }
 
         // Función para cargar estaciones de un itinerario
         function cargarEstacionesItinerario(itinerarioId) {
@@ -175,6 +266,17 @@
             actualizarBotonesSeleccion();
         }
 
+        // Función para marcar filas ya seleccionadas
+        function marcarFilasYaSeleccionadas() {
+            $('#tablaItinerarios tbody tr').each(function() {
+                const row = tablaItinerarios.row(this);
+                const data = row.data();
+                if (data && numerosTrenYaSeleccionados.has(data.numero)) {
+                    $(this).addClass('row-already-selected');
+                }
+            });
+        }
+
         // Inicializar DataTable
         tablaItinerarios = $('#tablaItinerarios').DataTable({
             language: {
@@ -222,9 +324,15 @@
                     data: null,
                     className: 'acciones-cell',
                     render: function (data) {
+                        const yaSeleccionado = numerosTrenYaSeleccionados.has(data.numero);
+                        const buttonClass = yaSeleccionado ? 'btn btn-sm btn-disabled' : 'btn btn-sm btn-success seleccionar-itinerario';
+                        const buttonText = yaSeleccionado ? 'Ya Seleccionado' : 'Seleccionar';
+                        const iconClass = yaSeleccionado ? 'fas fa-ban' : 'fas fa-check';
+                        const disabled = yaSeleccionado ? 'disabled' : '';
+                        
                         return `
-                                <button class="btn btn-sm btn-success seleccionar-itinerario" data-id="${data.id}">
-                                    <i class="fas fa-check"></i> Seleccionar
+                                <button class="${buttonClass}" data-id="${data.id}" ${disabled}>
+                                    <i class="${iconClass}"></i> ${buttonText}
                                 </button>
                             `;
                     }
@@ -239,6 +347,9 @@
                 tooltipTriggerList.map(function (tooltipTriggerEl) {
                     return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
+                
+                // Marcar filas ya seleccionadas después de cada redibujado
+                marcarFilasYaSeleccionadas();
             }
         });
 
@@ -360,6 +471,21 @@
         $('#tablaItinerarios').on('click', '.seleccionar-itinerario', function () {
             const id = $(this).data('id');
             const tr = $(this).closest('tr');
+            const row = tablaItinerarios.row(tr);
+            const data = row.data();
+            
+            // Verificar si el itinerario ya está seleccionado en la sesión actual
+            if (itinerariosSeleccionados.has(id)) {
+                alert('Este itinerario ya está seleccionado.');
+                return;
+            }
+
+            // Verificar si el itinerario ya fue seleccionado para hoy
+            if (numerosTrenYaSeleccionados.has(data.numero)) {
+                alert('Este itinerario ya fue seleccionado para hoy.');
+                return;
+            }
+
             alternarSeleccionFila(id, tr);
         });
 
@@ -371,7 +497,6 @@
             }
 
             const itinerariosSeleccionadosArray = Array.from(itinerariosSeleccionados);
-            console.log('Itinerarios seleccionados:', itinerariosSeleccionadosArray);
             
             // Obtener la fecha de hoy
             const hoy = new Date();
@@ -405,8 +530,10 @@
                         itinerariosSeleccionados.clear();
                         $('#tablaItinerarios tbody tr').removeClass('row-selected');
                         actualizarBotonesSeleccion();
-                        // Recargar la tabla para mostrar los cambios
-                        tablaItinerarios.ajax.reload();
+                        // Recargar los itinerarios ya seleccionados y la tabla
+                        cargarItinerariosYaSeleccionados().then(() => {
+                            tablaItinerarios.ajax.reload();
+                        });
                     }
                 })
                 .catch(error => {
@@ -421,6 +548,14 @@
             itinerariosSeleccionados.clear();
             $('#tablaItinerarios tbody tr').removeClass('row-selected');
             actualizarBotonesSeleccion();
+        });
+
+        // Cargar itinerarios ya seleccionados al inicializar la página
+        cargarItinerariosYaSeleccionados().then(() => {
+            // Marcar las filas ya seleccionadas después de cargar los datos
+            setTimeout(() => {
+                marcarFilasYaSeleccionadas();
+            }, 100);
         });
     });
 </script> 

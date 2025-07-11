@@ -74,7 +74,7 @@ router.get('/paginated', async (req, res) => {
         const fechaEnd = req.query.cs_DateEnd;
         if (fechaEnd) {
             whereResult.push(`fecha < '${fechaEnd}'`);
-         }
+        }
         
 
         const result = await ssp.Complex(req.query, 'Itinerarios', columns, whereResult, whereAll);

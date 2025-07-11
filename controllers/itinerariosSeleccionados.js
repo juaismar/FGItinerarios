@@ -6,6 +6,7 @@ const logger = require('../logger').logger;
 const express = require('express');
 const router = express.Router();
 const { ssp } = require('../db/database');
+const { Op } = require('sequelize');
 
 const logLocation = 'itinerariosSeleccionados.js: ';
 
@@ -69,19 +70,6 @@ async function manejarEstacionesItinerario(itinerarioId, estaciones) {
     await ItinerarioSeleccionadoEstacion.bulkCreate(estacionesData);
 }
 
-// Obtener todos los itinerarios
-router.get('/', async (req, res) => {
-    try {
-        const itinerarios = await ItinerarioSeleccionado.findAll({
-            order: [['fecha', 'DESC']]
-        });
-        res.json(itinerarios);
-    } catch (error) {
-        logger.error('Error al obtener itinerarios seleccionados:', error);
-        res.status(500).json({ mensaje: 'Error al obtener itinerarios seleccionados' });
-    }
-});
-
 // Obtener todos los itinerarios seleccionados con paginación
 router.get('/paginated', async (req, res) => {
     try {
@@ -139,6 +127,43 @@ router.get('/:id', async(req, res) => {
     } catch (error) {
         logger.error('Error al obtener itinerario seleccionado:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Obtener itinerarios seleccionados por fecha
+router.get('/', async (req, res) => {
+    try {
+        const { date } = req.query;
+        
+        // Si no se proporciona fecha, usar hoy
+        let fechaConsulta;
+        if (date) {
+            fechaConsulta = new Date(date);
+            if (isNaN(fechaConsulta.getTime())) {
+                return res.status(400).json({ error: 'Formato de fecha inválido' });
+            }
+        } else {
+            fechaConsulta = new Date();
+        }
+
+        const inicioDia = new Date(fechaConsulta.getFullYear(), fechaConsulta.getMonth(), fechaConsulta.getDate(), 0, 0, 0);
+        const finDia = new Date(fechaConsulta.getFullYear(), fechaConsulta.getMonth(), fechaConsulta.getDate(), 23, 59, 59, 999);
+
+        const itinerarios = await ItinerarioSeleccionado.findAll({
+            where: {
+                fecha: {
+                    [Op.gte]: inicioDia,
+                    [Op.lte]: finDia
+                }
+            },
+            attributes: ['numero'], // Solo necesitamos el número para comparar
+            order: [['numero', 'ASC']]
+        });
+
+        res.json(itinerarios);
+    } catch (error) {
+        logger.error('Error al obtener itinerarios seleccionados de hoy:', error);
+        res.status(500).json({ mensaje: 'Error al obtener itinerarios seleccionados de hoy' });
     }
 });
 
