@@ -321,7 +321,7 @@ router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res
 });
 
 // Crear itinerario custom
-router.post('/custom', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
         const { estaciones, ...itinerarioData } = req.body;
         
@@ -336,6 +336,25 @@ router.post('/custom', verificarAuth(['planificador', 'admin']), async (req, res
     } catch (error) {
         logger.error(logLocation + 'Error al crear itinerario custom:', error);
         res.status(500).json({ mensaje: 'Error al crear itinerario custom' });
+    }
+});
+
+// Actualizar itinerario
+router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { estaciones, ...itinerarioData } = req.body;
+        
+        // Actualizar datos del itinerario
+        await ItinerarioSeleccionado.update(itinerarioData, { where: { id } });
+        
+        // Manejar las estaciones del itinerario
+        await manejarEstacionesItinerario(id, estaciones);
+        
+        res.status(204).send();
+    } catch (error) {
+        logger.error('Error al actualizar itinerario:', error);
+        res.status(500).json({ mensaje: 'Error al actualizar itinerario' });
     }
 });
 
@@ -442,6 +461,134 @@ router.get('/mallacirculaciones', async (req, res) => {
         res.json(malla);
     } catch (error) {
         logger.error('Error al obtener malla de circulaciones:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Obtener datos del visor para una estación específica
+router.get('/visor/:estacionCodigo', async (req, res) => {
+    try {
+        const { estacionCodigo } = req.params;
+        const fecha = req.query.fecha || new Date().toISOString().split('T')[0];
+        
+        // Buscar la estación por código
+        const estacion = await Estacion.findOne({
+            where: { codigo: estacionCodigo }
+        });
+        
+        if (!estacion) {
+            return res.status(404).json({ error: 'Estación no encontrada' });
+        }
+        
+        // Obtener todos los itinerarios seleccionados para la fecha
+        const itinerarios = await ItinerarioSeleccionado.findAll({
+            where: {
+                fecha: {
+                    [Op.between]: [
+                        `${fecha} 00:00:00`,
+                        `${fecha} 23:59:59`
+                    ]
+                }
+            },
+            include: [{
+                model: Estacion,
+                as: 'estaciones',
+                through: {
+                    attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida', 'observaciones']
+                },
+                order: [[ItinerarioSeleccionadoEstacion, 'orden', 'ASC']]
+            }],
+            order: [['fecha', 'ASC']]
+        });
+        
+        // Procesar los itinerarios para obtener salidas y llegadas
+        const salidas = [];
+        const llegadas = [];
+        
+        itinerarios.forEach(itinerario => {
+            // Buscar la estación específica en el itinerario
+            const estacionEnItinerario = itinerario.estaciones.find(e => e.codigo === estacionCodigo);
+            
+            if (estacionEnItinerario) {
+                const horaItinerario = new Date(itinerario.fecha);
+                const horaFormateada = horaItinerario.toTimeString().slice(0, 5);
+                
+                // Determinar si es salida o llegada basado en el orden
+                const esPrimeraEstacion = estacionEnItinerario.orden === 1;
+                const esUltimaEstacion = estacionEnItinerario.orden === itinerario.estaciones.length;
+                
+                // Si es la primera estación, es una salida
+                if (esPrimeraEstacion) {
+                    salidas.push({
+                        hora: horaFormateada,
+                        destino: itinerario.destino,
+                        tren: itinerario.material || itinerario.tipo,
+                        numero: itinerario.numero,
+                        via: '1', // Por defecto
+                        observaciones: estacionEnItinerario.observaciones || ''
+                    });
+                }
+                
+                // Si es la última estación, es una llegada
+                if (esUltimaEstacion) {
+                    llegadas.push({
+                        hora: horaFormateada,
+                        procedencia: itinerario.origen,
+                        tren: itinerario.material || itinerario.tipo,
+                        numero: itinerario.numero,
+                        via: '1', // Por defecto
+                        observaciones: estacionEnItinerario.observaciones || ''
+                    });
+                }
+                
+                // Si no es ni la primera ni la última, puede ser tanto salida como llegada
+                if (!esPrimeraEstacion && !esUltimaEstacion) {
+                    // Buscar la estación anterior y siguiente
+                    const estacionAnterior = itinerario.estaciones.find(e => e.orden === estacionEnItinerario.orden - 1);
+                    const estacionSiguiente = itinerario.estaciones.find(e => e.orden === estacionEnItinerario.orden + 1);
+                    
+                    // Si hay estación anterior, es una llegada
+                    if (estacionAnterior) {
+                        llegadas.push({
+                            hora: estacionEnItinerario.horaProgramadaLlegada || horaFormateada,
+                            procedencia: estacionAnterior.nombre,
+                            tren: itinerario.material || itinerario.tipo,
+                            numero: itinerario.numero,
+                            via: '1',
+                            observaciones: estacionEnItinerario.observaciones || ''
+                        });
+                    }
+                    
+                    // Si hay estación siguiente, es una salida
+                    if (estacionSiguiente) {
+                        salidas.push({
+                            hora: estacionEnItinerario.horaProgramadaSalida || horaFormateada,
+                            destino: estacionSiguiente.nombre,
+                            tren: itinerario.material || itinerario.tipo,
+                            numero: itinerario.numero,
+                            via: '1',
+                            observaciones: estacionEnItinerario.observaciones || ''
+                        });
+                    }
+                }
+            }
+        });
+        
+        // Ordenar por hora
+        salidas.sort((a, b) => a.hora.localeCompare(b.hora));
+        llegadas.sort((a, b) => a.hora.localeCompare(b.hora));
+        
+        res.json({
+            salidas,
+            llegadas,
+            estacion: {
+                nombre: estacion.nombre,
+                codigo: estacion.codigo
+            }
+        });
+        
+    } catch (error) {
+        logger.error('Error al obtener datos del visor:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
