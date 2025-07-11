@@ -35,6 +35,36 @@
         .text-muted i {
             margin-right: 5px;
         }
+        
+        /* Estilos para el modal custom */
+        #modalItinerarioCustom .modal-dialog {
+            max-width: 800px;
+        }
+        
+        #modalItinerarioCustom .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        #modalItinerarioCustom .alert-info {
+            background-color: #e3f2fd;
+            border-color: #90caf9;
+            color: #1565c0;
+        }
+        
+        #modalItinerarioCustom .btn:disabled {
+            opacity: 0.7;
+        }
+        
+        /* Animación para el spinner */
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -76,53 +106,90 @@
         </div>
     </div>
 
-    <!-- Modal para nuevo/editar itinerario -->
-    <div class="modal fade" id="modalItinerario" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- Modal para nuevo itinerario custom -->
+    <div class="modal fade" id="modalItinerarioCustom" tabindex="-1">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Itinerario</h5>
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle text-primary"></i> Nuevo Tren Custom
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formItinerario">
-                        <div class="mb-3">
-                            <label class="form-label">Número</label>
-                            <input type="text" class="form-control" id="numero" required>
+                    <form id="formItinerarioCustom">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Número de Tren *</label>
+                                    <input type="text" class="form-control" id="numeroCustom" required 
+                                           placeholder="Ej: 12345">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo de Tren *</label>
+                                    <select class="form-select" id="tipoCustom" required>
+                                        <option value="PASAJEROS">Pasajeros</option>
+                                        <option value="OTRO">Otro</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Origen</label>
-                            <input type="text" class="form-control" id="origen" required>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Origen *</label>
+                                    <input type="text" class="form-control" id="origenCustom" required 
+                                           placeholder="Ej: Racó">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Destino *</label>
+                                    <input type="text" class="form-control" id="destinoCustom" required 
+                                           placeholder="Ej: Granja">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Destino</label>
-                            <input type="text" class="form-control" id="destino" required>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Material Rodante</label>
+                                    <input type="text" class="form-control" id="materialCustom" 
+                                           placeholder="Ej: 101">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Hora de Salida *</label>
+                                    <input type="time" class="form-control" id="horaSalidaCustom" required>
+                                </div>
+                            </div>
                         </div>
+                        
                         <div class="mb-3">
-                            <label class="form-label">Tipo</label>
-                            <select class="form-select" id="tipo" required>
-                                <option value="NACIONAL">Nacional</option>
-                                <option value="INTERNACIONAL">Internacional</option>
-                            </select>
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observacionesCustom" rows="3" 
+                                      placeholder="Observaciones adicionales sobre el itinerario..."></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Fecha</label>
-                            <input type="datetime-local" class="form-control" id="fecha" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Estado</label>
-                            <select class="form-select" id="estado" required>
-                                <option value="PENDIENTE">Pendiente</option>
-                                <option value="EN_PROGRESO">En Progreso</option>
-                                <option value="COMPLETADO">Completado</option>
-                                <option value="CANCELADO">Cancelado</option>
-                            </select>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Nota:</strong> Este itinerario se creará para la fecha seleccionada en el planificador: 
+                            <strong id="fechaSeleccionadaModal"></strong>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarCustom">
+                        <i class="fas fa-save"></i> Crear Itinerario
+                    </button>
                 </div>
             </div>
         </div>
@@ -243,28 +310,133 @@
             // Actualizar el indicador de fecha al inicializar
             actualizarIndicadorFecha();
 
-            // Botón nuevo itinerario
-            $('#btnNuevoItinerario').click(function() {
-                $('#formItinerario')[0].reset();
-                $('#modalItinerario').modal('show');
+            // Botón nuevo itinerario custom
+            $('.btn-primary').click(function() {
+                if ($(this).text().includes('Nuevo tren custom')) {
+                    abrirModalItinerarioCustom();
+                }
             });
 
-            // Guardar itinerario
-            $('#btnGuardar').click(function() {
+            // Función para abrir modal de itinerario custom
+            function abrirModalItinerarioCustom() {
+                // Limpiar formulario
+                $('#formItinerarioCustom')[0].reset();
+                
+                // Mostrar fecha seleccionada en el modal
+                const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                $('#fechaSeleccionadaModal').text(fechaFormateada);
+                
+                // Abrir modal
+                $('#modalItinerarioCustom').modal('show');
+            }
+
+            // Guardar itinerario custom
+            $('#btnGuardarCustom').click(function() {
+                if (!validarFormularioCustom()) {
+                    return;
+                }
+
                 const formData = {
-                    numero: $('#numero').val(),
-                    origen: $('#origen').val(),
-                    destino: $('#destino').val(),
-                    tipo: $('#tipo').val(),
-                    fecha: $('#fecha').val(),
-                    estado: $('#estado').val()
+                    numero: $('#numeroCustom').val(),
+                    origen: $('#origenCustom').val(),
+                    destino: $('#destinoCustom').val(),
+                    tipo: $('#tipoCustom').val(),
+                    material: $('#materialCustom').val() || null,
+                    observaciones: $('#observacionesCustom').val() || null,
+                    fecha: crearFechaCompleta(),
+                    estado: 'PENDIENTE'
                 };
 
-                // Aquí iría la lógica para guardar el itinerario
-                // Por ahora solo cerramos el modal y recargamos la tabla
-                $('#modalItinerario').modal('hide');
-                tabla.ajax.reload();
+                crearItinerarioCustom(formData);
             });
+
+            // Función para validar formulario
+            function validarFormularioCustom() {
+                const numero = $('#numeroCustom').val().trim();
+                const origen = $('#origenCustom').val().trim();
+                const destino = $('#destinoCustom').val().trim();
+                const tipo = $('#tipoCustom').val();
+                const hora = $('#horaSalidaCustom').val();
+
+                if (!numero) {
+                    alert('Por favor ingresa el número de tren');
+                    $('#numeroCustom').focus();
+                    return false;
+                }
+
+                if (!origen) {
+                    alert('Por favor ingresa el origen');
+                    $('#origenCustom').focus();
+                    return false;
+                }
+
+                if (!destino) {
+                    alert('Por favor ingresa el destino');
+                    $('#destinoCustom').focus();
+                    return false;
+                }
+
+                if (!tipo) {
+                    alert('Por favor selecciona el tipo de tren');
+                    $('#tipoCustom').focus();
+                    return false;
+                }
+
+                if (!hora) {
+                    alert('Por favor ingresa la hora de salida');
+                    $('#horaSalidaCustom').focus();
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Función para crear fecha completa
+            function crearFechaCompleta() {
+                const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
+                const hora = $('#horaSalidaCustom').val();
+                return `${fechaFormateada}T${hora}:00`;
+            }
+
+            // Función para crear itinerario custom
+            function crearItinerarioCustom(formData) {
+                $('#btnGuardarCustom').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Creando...');
+
+                fetch('/api/itinerariosSeleccionados/custom', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getAuthToken()
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data) {
+                        $('#modalItinerarioCustom').modal('hide');
+                        alert('¡Itinerario custom creado exitosamente!');
+                        tablaItinerarios.ajax.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al crear itinerario custom:', error);
+                    alert('Error al crear el itinerario custom. Por favor, inténtalo de nuevo.');
+                })
+                .finally(() => {
+                    $('#btnGuardarCustom').prop('disabled', false).html('<i class="fas fa-save"></i> Crear Itinerario');
+                });
+            }
         });
 
         // Funciones para editar y eliminar
