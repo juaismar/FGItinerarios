@@ -75,7 +75,7 @@ async function inicializarConexion() {
     require('../models/ItinerarioSeleccionadoEstacion');
 
     // Sincronizar modelos
-    await sequelize.sync({ force: false, alter: false });
+    await sequelize.sync({ force: true, alter: false });
     logger.info('Modelos sincronizados correctamente');
 
     return sequelize;

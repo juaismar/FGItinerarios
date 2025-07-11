@@ -52,16 +52,6 @@ const ItinerarioEstacion = sequelize.define('ItinerarioEstacion', {
         type: DataTypes.TEXT,
         comment: 'Observaciones sobre la parada en esta estación'
     }
-}, {
-    indexes: [
-        {
-            unique: true,
-            fields: ['itinerarioId', 'estacionId']
-        },
-        {
-            fields: ['itinerarioId', 'orden']
-        }
-    ]
 });
 
 module.exports = ItinerarioEstacion; 
