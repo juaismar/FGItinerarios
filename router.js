@@ -31,7 +31,7 @@ router.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas de la API
 router.use('/api/itinerarios', itinerariosRoutes);
-router.use('/api/itinerarios-seleccionados', itinerariosSeleccionadosRoutes);
+router.use('/api/itinerariosSeleccionados', itinerariosSeleccionadosRoutes);
 router.use('/api/usuarios', usuariosRoutes);
 router.use('/api/estaciones', estacionesRoutes);
 

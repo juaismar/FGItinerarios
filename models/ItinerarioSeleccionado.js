@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db/database');
 const Estacion = require('./Estacion');
-const ItinerarioEstacion = require('./ItinerarioEstacion');
+const ItinerarioSeleccionadoEstacion = require('./ItinerarioSeleccionadoEstacion');
 
 const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
     id: {
@@ -42,20 +42,15 @@ const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
         type: DataTypes.ENUM('PENDIENTE', 'EN_PROGRESO', 'COMPLETADO', 'CANCELADO'),
         defaultValue: 'PENDIENTE'
     },
-    planificadorId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        comment: 'ID del planificador que seleccionó este itinerario'
-    }
 });
 
 // Relaciones
 ItinerarioSeleccionado.belongsToMany(Estacion, { 
-    through: ItinerarioEstacion,
+    through: ItinerarioSeleccionadoEstacion,
     as: 'estaciones'
 });
 Estacion.belongsToMany(ItinerarioSeleccionado, { 
-    through: ItinerarioEstacion,
+    through: ItinerarioSeleccionadoEstacion,
     as: 'itinerariosSeleccionados'
 });
 
@@ -66,7 +61,7 @@ ItinerarioSeleccionado.prototype.obtenerEstacionesOrdenadas = async function() {
             attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida', 
                         'horaRealLlegada', 'horaRealSalida', 'observaciones']
         },
-        order: [[ItinerarioEstacion, 'orden', 'ASC']]
+        order: [[ItinerarioSeleccionadoEstacion, 'orden', 'ASC']]
     });
 };
 

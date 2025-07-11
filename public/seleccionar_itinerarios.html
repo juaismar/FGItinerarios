@@ -373,9 +373,47 @@
             const itinerariosSeleccionadosArray = Array.from(itinerariosSeleccionados);
             console.log('Itinerarios seleccionados:', itinerariosSeleccionadosArray);
             
-            // Aquí puedes implementar la lógica para procesar los itinerarios seleccionados
-            // Por ejemplo, enviarlos a otra página o hacer una petición al servidor
-            alert(`Se han seleccionado ${itinerariosSeleccionados.size} itinerarios. IDs: ${itinerariosSeleccionadosArray.join(', ')}`);
+            // Obtener la fecha de hoy
+            const hoy = new Date();
+            const fechaHoy = hoy.toISOString();
+            
+            // Mostrar confirmación al usuario
+            if (confirm(`¿Estás seguro de que quieres seleccionar ${itinerariosSeleccionados.size} itinerarios para hoy (${hoy.toLocaleDateString()})?`)) {
+                // Enviar petición al servidor
+                fetch('/api/itinerariosSeleccionados/select', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getAuthToken()
+                    },
+                    body: JSON.stringify({
+                        itinerarioIds: itinerariosSeleccionadosArray,
+                        fecha: fechaHoy
+                    })
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data) {
+                        alert(`¡Éxito! Se han creado ${itinerariosSeleccionados.size} itinerarios seleccionados para hoy.`);
+                        // Limpiar selección después del éxito
+                        itinerariosSeleccionados.clear();
+                        $('#tablaItinerarios tbody tr').removeClass('row-selected');
+                        actualizarBotonesSeleccion();
+                        // Recargar la tabla para mostrar los cambios
+                        tablaItinerarios.ajax.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al crear itinerarios seleccionados:', error);
+                    alert('Error al crear los itinerarios seleccionados. Por favor, inténtalo de nuevo.');
+                });
+            }
         });
 
         // Manejar clic en limpiar selección
