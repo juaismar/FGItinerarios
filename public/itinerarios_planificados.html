@@ -1,106 +1,114 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Itinerarios</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <style>
         .table-container {
             padding: 20px;
         }
+
         .header-container {
             background-color: #f8f9fa;
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 5px;
         }
+
         .btn-action {
             margin-right: 5px;
         }
-        
+
         /* Estilos para botones de acción */
         .btn-editar {
             background-color: #17a2b8;
             color: white;
             border: none;
         }
-        
+
         .btn-editar:hover {
             background-color: #138496;
             color: white;
         }
-        
+
         .btn-eliminar {
             background-color: #dc3545;
             color: white;
             border: none;
         }
-        
+
         .btn-eliminar:hover {
             background-color: #c82333;
             color: white;
         }
-        
+
         .btn-icon {
             padding: 0.375rem 0.75rem;
             font-size: 0.875rem;
             border-radius: 0.25rem;
             transition: all 0.15s ease-in-out;
         }
-        
+
         .btn-icon:hover {
             transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         /* Estilos para el indicador de fecha */
         #fechaMostrada {
             color: #1976d2;
             font-weight: 600;
         }
-        
+
         .text-muted i {
             margin-right: 5px;
         }
-        
+
         /* Estilos para el modal custom */
         #modalItinerarioCustom .modal-dialog {
             max-width: 800px;
         }
-        
+
         #modalItinerarioCustom .form-label {
             font-weight: 600;
             color: #495057;
         }
-        
+
         #modalItinerarioCustom .alert-info {
             background-color: #e3f2fd;
             border-color: #90caf9;
             color: #1565c0;
         }
-        
+
         #modalItinerarioCustom .btn:disabled {
             opacity: 0.7;
         }
-        
+
         /* Animación para el spinner */
         .fa-spinner {
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         /* Estilos para las filas expandibles */
         .details-row {
             background-color: #f8f9fa;
@@ -142,13 +150,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2>Gestión de Itinerarios Planificados</h2>
                 <p class="text-muted mb-0">
-                    <i class="fas fa-calendar-alt text-primary"></i> 
+                    <i class="fas fa-calendar-alt text-primary"></i>
                     Mostrando itinerarios del: <strong id="fechaMostrada"></strong>
                 </p>
             </div>
@@ -198,8 +207,8 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Número de Tren *</label>
-                                    <input type="text" class="form-control" id="numeroCustom" required 
-                                           placeholder="Ej: 12345">
+                                    <input type="text" class="form-control" id="numeroCustom" required
+                                        placeholder="Ej: 12345">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -212,30 +221,29 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Origen *</label>
-                                    <input type="text" class="form-control" id="origenCustom" required 
-                                           placeholder="Ej: Racó">
+                                    <input type="text" class="form-control" id="origenCustom" required
+                                        placeholder="Ej: Racó">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Destino *</label>
-                                    <input type="text" class="form-control" id="destinoCustom" required 
-                                           placeholder="Ej: Granja">
+                                    <input type="text" class="form-control" id="destinoCustom" required
+                                        placeholder="Ej: Granja">
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Material Rodante</label>
-                                    <input type="text" class="form-control" id="materialCustom" 
-                                           placeholder="Ej: 101">
+                                    <input type="text" class="form-control" id="materialCustom" placeholder="Ej: 101">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -245,16 +253,17 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Observaciones</label>
-                            <textarea class="form-control" id="observacionesCustom" rows="3" 
-                                      placeholder="Observaciones adicionales sobre el itinerario..."></textarea>
+                            <textarea class="form-control" id="observacionesCustom" rows="3"
+                                placeholder="Observaciones adicionales sobre el itinerario..."></textarea>
                         </div>
-                        
+
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle"></i>
-                            <strong>Nota:</strong> Este itinerario se creará para la fecha seleccionada en el planificador: 
+                            <strong>Nota:</strong> Este itinerario se creará para la fecha seleccionada en el
+                            planificador:
                             <strong id="fechaSeleccionadaModal"></strong>
                         </div>
                     </form>
@@ -277,12 +286,12 @@
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>
-        $(document).ready(function() {
-            let tablaItinerarios;
+        $(document).ready(function () {
+            let tablaItinerariosSeleccionados;
             let fechaSeleccionada = window.fechaPlanificador || new Date();
-            
+
             // Inicializar DataTable
-            tablaItinerarios = $('#tablaItinerarios').DataTable({
+            tablaItinerariosSeleccionados = $('#tablaItinerarios').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
@@ -290,17 +299,17 @@
                     headers: {
                         'Authorization': getAuthToken()
                     },
-                    data: function(dtParms) {
+                    data: function (dtParms) {
                         // Agregar la fecha seleccionada a los parámetros
                         const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
-                        
+
                         // Crear fecha de inicio (00:00:00) y fin (23:59:59) del día
                         const fechaInicio = fechaFormateada + ' 00:00:00';
                         const fechaFin = fechaFormateada + ' 23:59:59';
-                        
+
                         dtParms.cs_DateStart = fechaInicio;
                         dtParms.cs_DateEnd = fechaFin;
-                    
+
                         return dtParms;
                     }
                 },
@@ -320,9 +329,9 @@
                     { data: 'numero' },
                     { data: 'origen' },
                     { data: 'destino' },
-                    { 
+                    {
                         data: 'fecha',
-                        render: function(data) {
+                        render: function (data) {
                             const fecha = new Date(data);
                             return fecha.toLocaleTimeString('es-ES', {
                                 hour: '2-digit',
@@ -330,9 +339,9 @@
                             });
                         }
                     },
-                    { 
+                    {
                         data: 'estado',
-                        render: function(data) {
+                        render: function (data) {
                             const estados = {
                                 'PENDIENTE': '<span class="badge bg-warning">Pendiente</span>',
                                 'EN_PROGRESO': '<span class="badge bg-info">En Progreso</span>',
@@ -347,7 +356,7 @@
                     {
                         data: null,
                         className: 'acciones-cell',
-                        render: function(data) {
+                        render: function (data) {
                             return `
                                 <button class="btn btn-icon btn-editar editar-itinerario" 
                                         data-id="${data.id}"
@@ -368,7 +377,7 @@
                     }
                 ],
                 order: [[4, 'asc']], // Ordenar por fecha/hora (columna 4) ascendente
-                drawCallback: function() {
+                drawCallback: function () {
                     // Reinicializar tooltips después de cada redibujado de la tabla
                     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
                     tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -389,12 +398,12 @@
             }
 
             // Event listener para cambios en la fecha del planificador
-            $(document).on('fechaPlanificadorCambiada', function(event, nuevaFecha) {
+            $(document).on('fechaPlanificadorCambiada', function (event, nuevaFecha) {
                 fechaSeleccionada = nuevaFecha;
                 // Actualizar el indicador de fecha
                 actualizarIndicadorFecha();
                 // Recargar la tabla con la nueva fecha
-                tablaItinerarios.ajax.reload();
+                tablaItinerariosSeleccionados.ajax.reload();
             });
 
             // Función para cargar estaciones de un itinerario
@@ -404,17 +413,17 @@
                         'Authorization': getAuthToken()
                     }
                 })
-                .then(response => {
-                    if (response.status === 401) {
-                        window.location.href = '/index.html';
-                        return;
-                    }
-                    return response.json();
-                })
-                .catch(error => {
-                    console.error('Error al cargar estaciones del itinerario:', error);
-                    throw error;
-                });
+                    .then(response => {
+                        if (response.status === 401) {
+                            window.location.href = '/index.html';
+                            return;
+                        }
+                        return response.json();
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar estaciones del itinerario:', error);
+                        throw error;
+                    });
             }
 
             // Función para formatear hora
@@ -427,7 +436,7 @@
             actualizarIndicadorFecha();
 
             // Botón nuevo itinerario custom
-            $('.btn-primary').click(function() {
+            $('.btn-primary').click(function () {
                 if ($(this).text().includes('Nuevo tren custom')) {
                     abrirModalItinerarioCustom();
                 }
@@ -437,7 +446,7 @@
             function abrirModalItinerarioCustom() {
                 // Limpiar formulario
                 $('#formItinerarioCustom')[0].reset();
-                
+
                 // Mostrar fecha seleccionada en el modal
                 const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
                     weekday: 'long',
@@ -446,13 +455,13 @@
                     day: 'numeric'
                 });
                 $('#fechaSeleccionadaModal').text(fechaFormateada);
-                
+
                 // Abrir modal
                 $('#modalItinerarioCustom').modal('show');
             }
 
             // Guardar itinerario custom
-            $('#btnGuardarCustom').click(function() {
+            $('#btnGuardarCustom').click(function () {
                 if (!validarFormularioCustom()) {
                     return;
                 }
@@ -531,41 +540,41 @@
                     },
                     body: JSON.stringify(formData)
                 })
-                .then(response => {
-                    if (response.status === 401) {
-                        window.location.href = '/index.html';
-                        return;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data) {
-                        $('#modalItinerarioCustom').modal('hide');
-                        alert('¡Itinerario custom creado exitosamente!');
-                        tablaItinerarios.ajax.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al crear itinerario custom:', error);
-                    alert('Error al crear el itinerario custom. Por favor, inténtalo de nuevo.');
-                })
-                .finally(() => {
-                    $('#btnGuardarCustom').prop('disabled', false).html('<i class="fas fa-save"></i> Crear Itinerario');
-                });
+                    .then(response => {
+                        if (response.status === 401) {
+                            window.location.href = '/index.html';
+                            return;
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data) {
+                            $('#modalItinerarioCustom').modal('hide');
+                            alert('¡Itinerario custom creado exitosamente!');
+                            tablaItinerariosSeleccionados.ajax.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al crear itinerario custom:', error);
+                        alert('Error al crear el itinerario custom. Por favor, inténtalo de nuevo.');
+                    })
+                    .finally(() => {
+                        $('#btnGuardarCustom').prop('disabled', false).html('<i class="fas fa-save"></i> Crear Itinerario');
+                    });
             }
-        });
 
-                    // Manejar clic en expandir/contraer fila
+
+            // Manejar clic en expandir/contraer fila
             $('#tablaItinerarios tbody').on('click', 'td.details-control', function () {
                 const tr = $(this).closest('tr');
-                const row = tablaItinerarios.row(tr);
+                const row = tablaItinerariosSeleccionados.row(tr);
                 const data = row.data();
-                
+
                 if (!data) {
                     console.error('No se pudo obtener los datos de la fila');
                     return;
                 }
-                
+
                 const itinerarioId = data.id;
 
                 if (row.child.isShown()) {
@@ -632,65 +641,67 @@
             });
 
             // Event listener para eliminar itinerario
-            $(document).on('click', '.eliminar-itinerario', function() {
-            const id = $(this).data('id');
-            const row = $(this).closest('tr');
-            const numero = row.find('td:eq(0)').text();
-            const origen = row.find('td:eq(1)').text();
-            const destino = row.find('td:eq(2)').text();
-            const hora = row.find('td:eq(3)').text();
-            
-            const mensaje = `¿Estás seguro de que deseas eliminar el itinerario?\n\n` +
-                           `Esta acción no se puede deshacer.`;
-            
-            if (confirm(mensaje)) {
-                eliminarItinerario(id);
+            $(document).on('click', '.eliminar-itinerario', function () {
+                const id = $(this).data('id');
+                const row = $(this).closest('tr');
+                const numero = row.find('td:eq(0)').text();
+                const origen = row.find('td:eq(1)').text();
+                const destino = row.find('td:eq(2)').text();
+                const hora = row.find('td:eq(3)').text();
+
+                const mensaje = `¿Estás seguro de que deseas eliminar el itinerario?\n\n` +
+                    `Esta acción no se puede deshacer.`;
+
+                if (confirm(mensaje)) {
+                    eliminarItinerario(id);
+                }
+            });
+
+            // Función para eliminar itinerario
+            function eliminarItinerario(id) {
+                // Deshabilitar el botón durante la eliminación
+                const btnEliminar = $(`.eliminar-itinerario[data-id="${id}"]`);
+                const originalHtml = btnEliminar.html();
+                btnEliminar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                fetch(`/api/itinerariosSeleccionados/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': getAuthToken()
+                    }
+                })
+                    .then(response => {
+                        if (response.status === 401) {
+                            window.location.href = '/index.html';
+                            return;
+                        }
+                        if (response.status === 404) {
+                            alert('El itinerario no fue encontrado.');
+                            return;
+                        }
+                        if (response.status === 200) {
+                            tablaItinerariosSeleccionados.ajax.reload();
+                        } else {
+                            throw new Error('Error al eliminar el itinerario');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al eliminar itinerario:', error);
+                        alert('Error al eliminar el itinerario. Por favor, inténtalo de nuevo.');
+                    })
+                    .finally(() => {
+                        // Restaurar el botón
+                        btnEliminar.prop('disabled', false).html(originalHtml);
+                    });
+            }
+
+            // Función para editar itinerario (placeholder para futura implementación)
+            function editarItinerario(id) {
+                // Aquí iría la lógica para cargar y editar el itinerario
+                alert('Función de edición en desarrollo');
             }
         });
-
-        // Función para eliminar itinerario
-        function eliminarItinerario(id) {
-            // Deshabilitar el botón durante la eliminación
-            const btnEliminar = $(`.eliminar-itinerario[data-id="${id}"]`);
-            const originalHtml = btnEliminar.html();
-            btnEliminar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-            
-            fetch(`/api/itinerariosSeleccionados/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': getAuthToken()
-                }
-            })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/index.html';
-                    return;
-                }
-                if (response.status === 404) {
-                    alert('El itinerario no fue encontrado.');
-                    return;
-                }
-                if (response.status === 200) {
-                    tablaItinerarios.ajax.reload();
-                } else {
-                    throw new Error('Error al eliminar el itinerario');
-                }
-            })
-            .catch(error => {
-                console.error('Error al eliminar itinerario:', error);
-                alert('Error al eliminar el itinerario. Por favor, inténtalo de nuevo.');
-            })
-            .finally(() => {
-                // Restaurar el botón
-                btnEliminar.prop('disabled', false).html(originalHtml);
-            });
-        }
-
-        // Función para editar itinerario (placeholder para futura implementación)
-        function editarItinerario(id) {
-            // Aquí iría la lógica para cargar y editar el itinerario
-            alert('Función de edición en desarrollo');
-        }
     </script>
 </body>
-</html> 
+
+</html>

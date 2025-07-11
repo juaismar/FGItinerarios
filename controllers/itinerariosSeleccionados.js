@@ -136,23 +136,46 @@ router.get('/:id/estaciones', async (req, res) => {
     try {
         const { id } = req.params;
         
-        const estaciones = await ItinerarioSeleccionadoEstacion.findAll({
+        // Buscar en ItinerarioEstacion por itinerarioId y obtener datos de estaciones
+        const itinerarioSeleccionadoEstaciones = await ItinerarioSeleccionadoEstacion.findAll({
             where: { itinerarioSeleccionadoId: id },
-            include: [{
-                model: Estacion,
-                attributes: ['nombre', 'codigo']
-            }],
             order: [['orden', 'ASC']]
         });
-
-        const estacionesFormateadas = estaciones.map(estacion => ({
-            orden: estacion.orden,
-            nombre: estacion.Estacion.nombre,
-            codigo: estacion.Estacion.codigo,
-            horaProgramadaLlegada: estacion.horaProgramadaLlegada,
-            horaProgramadaSalida: estacion.horaProgramadaSalida,
-            observaciones: estacion.observaciones
-        }));
+        
+        if (itinerarioSeleccionadoEstaciones.length === 0) {
+            return res.json([]);
+        }
+        
+        // Obtener los IDs de las estaciones
+        const estacionIds = itinerarioSeleccionadoEstaciones.map(ie => ie.estacionId);
+        
+        // Obtener las estaciones correspondientes
+        const estaciones = await Estacion.findAll({
+            where: { id: estacionIds },
+            attributes: ['id', 'nombre', 'codigo']
+        });
+        
+        // Crear un mapa para acceso rápido
+        const estacionesMap = {};
+        estaciones.forEach(estacion => {
+            estacionesMap[estacion.id] = estacion;
+        });
+        
+        // Formatear los datos para el frontend
+        const estacionesFormateadas = itinerarioSeleccionadoEstaciones.map(ie => {
+            const estacion = estacionesMap[ie.estacionId];
+            return {
+                id: estacion.id,
+                nombre: estacion.nombre,
+                codigo: estacion.codigo,
+                orden: ie.orden,
+                horaProgramadaLlegada: ie.horaProgramadaLlegada,
+                horaProgramadaSalida: ie.horaProgramadaSalida,
+                horaRealLlegada: ie.horaRealLlegada,
+                horaRealSalida: ie.horaRealSalida,
+                observaciones: ie.observaciones
+            };
+        });
 
         res.json(estacionesFormateadas);
     } catch (error) {
