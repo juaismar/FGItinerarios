@@ -299,26 +299,6 @@ router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res
                 estado: 'PENDIENTE'
             });
             
-            
-            /*// Copiar las estaciones del itinerario original
-                console.log(itinerario)
-                console.log(itinerario.estaciones)
-            if (itinerario.estaciones && itinerario.estaciones.length > 0) {
-                console.log(itinerario.estaciones.ItinerarioEstacion)
-                const estacionesData = itinerario.estaciones.map(estacion => ({
-                    itinerarioSeleccionadoId: itinerarioSeleccionado.id,
-                    estacionId: estacion.id,
-                    orden: estacion.ItinerarioEstacion.orden,
-                    horaProgramadaLlegada: estacion.ItinerarioEstacion.horaProgramadaLlegada,
-                    horaProgramadaSalida: estacion.ItinerarioEstacion.horaProgramadaSalida,
-                    horaRealLlegada: estacion.ItinerarioEstacion.horaRealLlegada,
-                    horaRealSalida: estacion.ItinerarioEstacion.horaRealSalida,
-                    observaciones: estacion.ItinerarioEstacion.observaciones
-                }));
-                
-                await ItinerarioSeleccionadoEstacion.bulkCreate(estacionesData);
-            }*/
-            
             itinerariosSeleccionadosCreados.push(itinerarioSeleccionado);
 
             // Copiar las estaciones del itinerario original
@@ -343,58 +323,19 @@ router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res
 // Crear itinerario custom
 router.post('/custom', verificarAuth(['planificador', 'admin']), async (req, res) => {
     try {
-        const { numero, origen, destino, tipo, material, observaciones, fecha, estado } = req.body;
+        const { estaciones, ...itinerarioData } = req.body;
         
-        // Validar campos requeridos
-        if (!numero || !origen || !destino || !tipo || !fecha) {
-            return res.status(400).json({ 
-                error: 'Faltan campos requeridos: número, origen, destino, tipo y fecha' 
-            });
-        }
+        // Crear el itinerario
+        const itinerario = await ItinerarioSeleccionado.create(itinerarioData);
         
-        // Validar que el número de tren no esté duplicado para la misma fecha
-        const itinerarioExistente = await ItinerarioSeleccionado.findOne({
-            where: {
-                numero: numero,
-                fecha: {
-                    [Op.between]: [
-                        new Date(fecha.split('T')[0] + 'T00:00:00'),
-                        new Date(fecha.split('T')[0] + 'T23:59:59')
-                    ]
-                }
-            }
-        });
+        // Manejar las estaciones del itinerario
+        await manejarEstacionesItinerario(itinerario.id, estaciones);
         
-        if (itinerarioExistente) {
-            return res.status(409).json({ 
-                error: `Ya existe un tren con el número ${numero} para la fecha seleccionada` 
-            });
-        }
-        
-        // Crear el itinerario custom
-        const itinerarioCustom = await ItinerarioSeleccionado.create({
-            numero: numero,
-            origen: origen,
-            destino: destino,
-            fecha: fecha,
-            tipo: tipo,
-            material: material,
-            observaciones: observaciones,
-            estado: estado || 'PENDIENTE'
-        });
-        
-        logger.info(logLocation + `Itinerario custom creado: ${numero} (${origen} - ${destino}) para ${fecha}`);
-        
-        res.status(201).json({
-            mensaje: 'Itinerario custom creado exitosamente',
-            itinerario: itinerarioCustom
-        });
+        res.status(201).json(itinerario);
         
     } catch (error) {
         logger.error(logLocation + 'Error al crear itinerario custom:', error);
-        res.status(500).json({ 
-            error: 'Error interno del servidor al crear itinerario custom' 
-        });
+        res.status(500).json({ mensaje: 'Error al crear itinerario custom' });
     }
 });
 

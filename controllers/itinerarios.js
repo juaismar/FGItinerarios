@@ -98,7 +98,7 @@ router.post('/', verificarAuth(['admin']), async (req, res) => {
         
         res.status(201).json(itinerario);
     } catch (error) {
-        logger.error('Error al crear itinerario:', error);
+        logger.error(logLocation + 'Error al crear itinerario:', error);
         res.status(500).json({ mensaje: 'Error al crear itinerario' });
     }
 });
