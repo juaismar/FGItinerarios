@@ -79,6 +79,7 @@ router.get('/paginated', async (req, res) => {
             { db: 'origen', dt: 'origen', formatter: null },
             { db: 'destino', dt: 'destino', formatter: null },
             { db: 'fecha', dt: 'fecha', formatter: (value) => value },
+            { db: 'estado', dt: 'estado', formatter: null },
             { db: 'tipo', dt: 'tipo', formatter: null },
             { db: 'material', dt: 'material', formatter: null }
         ];
@@ -126,6 +127,36 @@ router.get('/:id', async(req, res) => {
         res.json(itinerario);
     } catch (error) {
         logger.error('Error al obtener itinerario seleccionado:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Obtener estaciones de un itinerario seleccionado
+router.get('/:id/estaciones', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const estaciones = await ItinerarioSeleccionadoEstacion.findAll({
+            where: { itinerarioSeleccionadoId: id },
+            include: [{
+                model: Estacion,
+                attributes: ['nombre', 'codigo']
+            }],
+            order: [['orden', 'ASC']]
+        });
+
+        const estacionesFormateadas = estaciones.map(estacion => ({
+            orden: estacion.orden,
+            nombre: estacion.Estacion.nombre,
+            codigo: estacion.Estacion.codigo,
+            horaProgramadaLlegada: estacion.horaProgramadaLlegada,
+            horaProgramadaSalida: estacion.horaProgramadaSalida,
+            observaciones: estacion.observaciones
+        }));
+
+        res.json(estacionesFormateadas);
+    } catch (error) {
+        logger.error('Error al obtener estaciones del itinerario seleccionado:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
