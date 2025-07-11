@@ -1,0 +1,535 @@
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla de Circulaciones</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- D3.js para visualización -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <style>
+        .header-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .malla-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .estacion-node {
+            fill: #007bff;
+            stroke: #0056b3;
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .estacion-node:hover {
+            fill: #0056b3;
+            transform: scale(1.1);
+        }
+        
+        .estacion-label {
+            font-size: 12px;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        
+        .circulacion-line {
+            stroke: #28a745;
+            stroke-width: 2;
+            opacity: 0.7;
+            marker-end: url(#arrowhead);
+        }
+        
+        .circulacion-line:hover {
+            stroke-width: 4;
+            opacity: 1;
+        }
+        
+        .circulacion-label {
+            font-size: 10px;
+            fill: #495057;
+            text-anchor: middle;
+        }
+        
+        .legend {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        
+        .filtros {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .estado-badge {
+            font-size: 0.75em;
+            padding: 0.25em 0.5em;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
+
+    <div class="container-fluid">
+        <div class="header-container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-route"></i> Malla de Circulaciones</h2>
+                    <p class="text-muted mb-0">
+                        Visualización de la red ferroviaria y circulaciones del día
+                    </p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <label for="fechaSelector" class="form-label me-2">Fecha:</label>
+                    <input type="date" id="fechaSelector" class="form-control" style="width: auto;">
+                </div>
+            </div>
+        </div>
+
+        <div class="filtros">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="filtroEstado" class="form-label">Estado:</label>
+                    <select id="filtroEstado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="EN_PROGRESO">En Progreso</option>
+                        <option value="COMPLETADO">Completado</option>
+                        <option value="CANCELADO">Cancelado</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="filtroTipo" class="form-label">Tipo:</label>
+                    <select id="filtroTipo" class="form-select">
+                        <option value="">Todos los tipos</option>
+                        <option value="PASAJEROS">Pasajeros</option>
+                        <option value="MERCANCIAS">Mercancías</option>
+                        <option value="MIXTO">Mixto</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="filtroEstacion" class="form-label">Estación:</label>
+                    <select id="filtroEstacion" class="form-select">
+                        <option value="">Todas las estaciones</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button id="btnActualizar" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <h6><i class="fas fa-info-circle"></i> Leyenda</h6>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #007bff;"></div>
+                        <span>Estaciones</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #28a745;"></div>
+                        <span>Circulaciones</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ffc107;"></div>
+                        <span>Seleccionado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="malla-container">
+            <div id="mallaVisualizacion" class="text-center">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Cargando malla de circulaciones...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let mallaData = null;
+        let svg = null;
+        let simulation = null;
+
+        // Función para obtener el token de autenticación
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        // Función para formatear hora
+        function formatearHora(hora) {
+            if (!hora) return '-';
+            return hora;
+        }
+
+        // Función para cargar la malla de circulaciones
+        async function cargarMallaCirculaciones(fecha = null) {
+            try {
+                const url = fecha 
+                    ? `/api/itinerariosSeleccionados/malla/circulaciones?fecha=${fecha}`
+                    : '/api/itinerariosSeleccionados/malla/circulaciones';
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': getAuthToken()
+                    }
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar la malla');
+                }
+
+                mallaData = await response.json();
+                actualizarFiltros();
+                renderizarMalla();
+            } catch (error) {
+                console.error('Error al cargar malla:', error);
+                document.getElementById('mallaVisualizacion').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Error al cargar la malla de circulaciones
+                    </div>
+                `;
+            }
+        }
+
+        // Función para actualizar los filtros
+        function actualizarFiltros() {
+            if (!mallaData) return;
+
+            // Actualizar filtro de estaciones
+            const filtroEstacion = document.getElementById('filtroEstacion');
+            const estacionesActuales = Array.from(filtroEstacion.options).map(opt => opt.value);
+            
+            mallaData.estaciones.forEach(estacion => {
+                if (!estacionesActuales.includes(estacion.id.toString())) {
+                    const option = document.createElement('option');
+                    option.value = estacion.id;
+                    option.textContent = `${estacion.nombre} (${estacion.codigo})`;
+                    filtroEstacion.appendChild(option);
+                }
+            });
+        }
+
+        // Función para renderizar la malla
+        function renderizarMalla() {
+            if (!mallaData || mallaData.circulaciones.length === 0) {
+                document.getElementById('mallaVisualizacion').innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-info-circle fa-2x"></i>
+                        <p>No hay circulaciones para la fecha seleccionada</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const container = document.getElementById('mallaVisualizacion');
+            const width = container.clientWidth;
+            const height = 600;
+
+            // Limpiar contenedor
+            container.innerHTML = '';
+
+            // Crear SVG
+            svg = d3.select(container)
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Crear definiciones para flechas
+            svg.append('defs').append('marker')
+                .attr('id', 'arrowhead')
+                .attr('viewBox', '0 -5 10 10')
+                .attr('refX', 8)
+                .attr('refY', 0)
+                .attr('markerWidth', 6)
+                .attr('markerHeight', 6)
+                .attr('orient', 'auto')
+                .append('path')
+                .attr('d', 'M0,-5L10,0L0,5')
+                .attr('fill', '#28a745');
+
+            // Crear nodos para estaciones
+            const nodes = mallaData.estaciones.map(estacion => ({
+                id: estacion.id,
+                nombre: estacion.nombre,
+                codigo: estacion.codigo,
+                x: Math.random() * (width - 100) + 50,
+                y: Math.random() * (height - 100) + 50
+            }));
+
+            // Crear enlaces para circulaciones
+            const links = mallaData.circulaciones.map(circulacion => ({
+                source: circulacion.desde.estacionId,
+                target: circulacion.hasta.estacionId,
+                itinerarioId: circulacion.itinerarioId,
+                numero: circulacion.numero,
+                tipo: circulacion.tipo,
+                estado: circulacion.estado,
+                desde: circulacion.desde,
+                hasta: circulacion.hasta
+            }));
+
+            // Crear simulación de fuerzas
+            simulation = d3.forceSimulation(nodes)
+                .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(30));
+
+            // Crear enlaces
+            const link = svg.append('g')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'circulacion-line')
+                .attr('stroke-width', 2);
+
+            // Crear nodos
+            const node = svg.append('g')
+                .selectAll('circle')
+                .data(nodes)
+                .enter().append('circle')
+                .attr('class', 'estacion-node')
+                .attr('r', 15)
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            // Añadir etiquetas a los nodos
+            const nodeLabels = svg.append('g')
+                .selectAll('text')
+                .data(nodes)
+                .enter().append('text')
+                .attr('class', 'estacion-label')
+                .text(d => d.codigo)
+                .attr('dy', '.35em');
+
+            // Añadir etiquetas a los enlaces
+            const linkLabels = svg.append('g')
+                .selectAll('text')
+                .data(links)
+                .enter().append('text')
+                .attr('class', 'circulacion-label')
+                .text(d => d.numero);
+
+            // Actualizar posiciones en cada tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                nodeLabels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+
+                linkLabels
+                    .attr('x', d => (d.source.x + d.target.x) / 2)
+                    .attr('y', d => (d.source.y + d.target.y) / 2);
+            });
+
+            // Funciones de drag
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+
+            // Añadir tooltips
+            node.on('mouseover', function(event, d) {
+                const tooltip = d3.select('body').append('div')
+                    .attr('class', 'tooltip')
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 10) + 'px')
+                    .html(`
+                        <strong>${d.nombre}</strong><br>
+                        Código: ${d.codigo}
+                    `);
+            })
+            .on('mouseout', function() {
+                d3.selectAll('.tooltip').remove();
+            });
+
+            link.on('mouseover', function(event, d) {
+                const tooltip = d3.select('body').append('div')
+                    .attr('class', 'tooltip')
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 10) + 'px')
+                    .html(`
+                        <strong>Tren ${d.numero}</strong><br>
+                        ${d.desde.estacionNombre} → ${d.hasta.estacionNombre}<br>
+                        Tipo: ${d.tipo}<br>
+                        Estado: <span class="badge bg-${getEstadoColor(d.estado)}">${d.estado}</span><br>
+                        Salida: ${formatearHora(d.desde.horaSalida)}<br>
+                        Llegada: ${formatearHora(d.hasta.horaLlegada)}
+                    `);
+            })
+            .on('mouseout', function() {
+                d3.selectAll('.tooltip').remove();
+            });
+        }
+
+        // Función para obtener color del estado
+        function getEstadoColor(estado) {
+            const colores = {
+                'PENDIENTE': 'warning',
+                'EN_PROGRESO': 'info',
+                'COMPLETADO': 'success',
+                'CANCELADO': 'danger'
+            };
+            return colores[estado] || 'secondary';
+        }
+
+        // Función para aplicar filtros
+        function aplicarFiltros() {
+            if (!mallaData) return;
+
+            const filtroEstado = document.getElementById('filtroEstado').value;
+            const filtroTipo = document.getElementById('filtroTipo').value;
+            const filtroEstacion = document.getElementById('filtroEstacion').value;
+
+            let circulacionesFiltradas = mallaData.circulaciones;
+
+            if (filtroEstado) {
+                circulacionesFiltradas = circulacionesFiltradas.filter(c => c.estado === filtroEstado);
+            }
+
+            if (filtroTipo) {
+                circulacionesFiltradas = circulacionesFiltradas.filter(c => c.tipo === filtroTipo);
+            }
+
+            if (filtroEstacion) {
+                const estacionId = parseInt(filtroEstacion);
+                circulacionesFiltradas = circulacionesFiltradas.filter(c => 
+                    c.desde.estacionId === estacionId || c.hasta.estacionId === estacionId
+                );
+            }
+
+            // Actualizar datos y re-renderizar
+            const mallaFiltrada = {
+                ...mallaData,
+                circulaciones: circulacionesFiltradas
+            };
+
+            renderizarMallaConDatos(mallaFiltrada);
+        }
+
+        // Función para renderizar con datos específicos
+        function renderizarMallaConDatos(datos) {
+            mallaData = datos;
+            renderizarMalla();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer fecha por defecto (hoy)
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('fechaSelector').value = hoy;
+
+            // Cargar malla inicial
+            cargarMallaCirculaciones(hoy);
+
+            // Event listeners para filtros
+            document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtroTipo').addEventListener('change', aplicarFiltros);
+            document.getElementById('filtroEstacion').addEventListener('change', aplicarFiltros);
+
+            // Event listener para fecha
+            document.getElementById('fechaSelector').addEventListener('change', function() {
+                cargarMallaCirculaciones(this.value);
+            });
+
+            // Event listener para botón actualizar
+            document.getElementById('btnActualizar').addEventListener('click', function() {
+                const fecha = document.getElementById('fechaSelector').value;
+                cargarMallaCirculaciones(fecha);
+            });
+        });
+    </script>

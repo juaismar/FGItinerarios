@@ -398,4 +398,111 @@ router.post('/custom', verificarAuth(['planificador', 'admin']), async (req, res
     }
 });
 
+// Obtener malla de circulaciones entre estaciones
+router.get('/mallacirculaciones', async (req, res) => {
+    try {
+        const { fecha } = req.query;
+        
+        // Si no se proporciona fecha, usar hoy
+        let fechaConsulta;
+        if (fecha) {
+            fechaConsulta = new Date(fecha);
+            if (isNaN(fechaConsulta.getTime())) {
+                return res.status(400).json({ error: 'Formato de fecha inválido' });
+            }
+        } else {
+            fechaConsulta = new Date();
+        }
+
+        const inicioDia = new Date(fechaConsulta.getFullYear(), fechaConsulta.getMonth(), fechaConsulta.getDate(), 0, 0, 0);
+        const finDia = new Date(fechaConsulta.getFullYear(), fechaConsulta.getMonth(), fechaConsulta.getDate(), 23, 59, 59, 999);
+
+        // Obtener todos los itinerarios seleccionados para la fecha
+        const itinerarios = await ItinerarioSeleccionado.findAll({
+            where: {
+                fecha: {
+                    [Op.gte]: inicioDia,
+                    [Op.lte]: finDia
+                }
+            },
+            include: [{
+                model: Estacion,
+                as: 'estaciones',
+                through: {
+                    attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida']
+                },
+                order: [[ItinerarioSeleccionadoEstacion, 'orden', 'ASC']]
+            }],
+            order: [['fecha', 'ASC']]
+        });
+
+        // Procesar los datos para crear la malla
+        const malla = {
+            fecha: fechaConsulta.toISOString().split('T')[0],
+            estaciones: [],
+            circulaciones: []
+        };
+
+        // Obtener todas las estaciones únicas
+        const estacionesUnicas = new Set();
+        const estacionesMap = new Map();
+
+        itinerarios.forEach(itinerario => {
+            if (itinerario.estaciones) {
+                itinerario.estaciones.forEach(estacion => {
+                    estacionesUnicas.add(estacion.id);
+                    if (!estacionesMap.has(estacion.id)) {
+                        estacionesMap.set(estacion.id, {
+                            id: estacion.id,
+                            nombre: estacion.nombre,
+                            codigo: estacion.codigo
+                        });
+                    }
+                });
+            }
+        });
+
+        malla.estaciones = Array.from(estacionesMap.values());
+
+        // Crear las circulaciones
+        itinerarios.forEach(itinerario => {
+            if (itinerario.estaciones && itinerario.estaciones.length > 1) {
+                // Crear conexiones entre estaciones consecutivas
+                for (let i = 0; i < itinerario.estaciones.length - 1; i++) {
+                    const estacionActual = itinerario.estaciones[i];
+                    const estacionSiguiente = itinerario.estaciones[i + 1];
+                    
+                    const circulacion = {
+                        itinerarioId: itinerario.id,
+                        numero: itinerario.numero,
+                        origen: itinerario.origen,
+                        destino: itinerario.destino,
+                        tipo: itinerario.tipo,
+                        estado: itinerario.estado,
+                        desde: {
+                            estacionId: estacionActual.id,
+                            estacionNombre: estacionActual.nombre,
+                            estacionCodigo: estacionActual.codigo,
+                            horaSalida: estacionActual.ItinerarioSeleccionadoEstacion.horaProgramadaSalida
+                        },
+                        hasta: {
+                            estacionId: estacionSiguiente.id,
+                            estacionNombre: estacionSiguiente.nombre,
+                            estacionCodigo: estacionSiguiente.codigo,
+                            horaLlegada: estacionSiguiente.ItinerarioSeleccionadoEstacion.horaProgramadaLlegada
+                        }
+                    };
+                    
+                    malla.circulaciones.push(circulacion);
+                }
+            }
+        });
+
+        res.json(malla);
+    } catch (error) {
+        logger.error('Error al obtener malla de circulaciones:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 module.exports = router; 
