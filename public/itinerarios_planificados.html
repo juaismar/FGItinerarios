@@ -25,12 +25,28 @@
         .btn-action {
             margin-right: 5px;
         }
+        
+        /* Estilos para el indicador de fecha */
+        #fechaMostrada {
+            color: #1976d2;
+            font-weight: 600;
+        }
+        
+        .text-muted i {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Gestión de Itinerarios Planificados</h2>
+            <div>
+                <h2>Gestión de Itinerarios Planificados</h2>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-calendar-alt text-primary"></i> 
+                    Mostrando itinerarios del: <strong id="fechaMostrada"></strong>
+                </p>
+            </div>
             <button class="btn btn-primary">
                 <i class="fas fa-plus"></i> Nuevo tren custom
             </button>
@@ -120,6 +136,8 @@
     <script>
         $(document).ready(function() {
             let tablaItinerarios;
+            let fechaSeleccionada = window.fechaPlanificador || new Date();
+            
             // Inicializar DataTable
             tablaItinerarios = $('#tablaItinerarios').DataTable({
                 processing: true,
@@ -128,6 +146,19 @@
                     url: '/api/itinerariosSeleccionados/paginated',
                     headers: {
                         'Authorization': getAuthToken()
+                    },
+                    data: function(dtParms) {
+                        // Agregar la fecha seleccionada a los parámetros
+                        const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
+                        
+                        // Crear fecha de inicio (00:00:00) y fin (23:59:59) del día
+                        const fechaInicio = fechaFormateada + ' 00:00:00';
+                        const fechaFin = fechaFormateada + ' 23:59:59';
+                        
+                        dtParms.cs_DateStart = fechaInicio;
+                        dtParms.cs_DateEnd = fechaFin;
+                    
+                        return dtParms;
                     }
                 },
                 language: {
@@ -188,6 +219,29 @@
                     });
                 }
             });
+
+            // Función para actualizar el indicador de fecha
+            function actualizarIndicadorFecha() {
+                const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                $('#fechaMostrada').text(fechaFormateada);
+            }
+
+            // Event listener para cambios en la fecha del planificador
+            $(document).on('fechaPlanificadorCambiada', function(event, nuevaFecha) {
+                fechaSeleccionada = nuevaFecha;
+                // Actualizar el indicador de fecha
+                actualizarIndicadorFecha();
+                // Recargar la tabla con la nueva fecha
+                tablaItinerarios.ajax.reload();
+            });
+
+            // Actualizar el indicador de fecha al inicializar
+            actualizarIndicadorFecha();
 
             // Botón nuevo itinerario
             $('#btnNuevoItinerario').click(function() {
