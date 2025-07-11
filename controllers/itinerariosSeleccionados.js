@@ -8,6 +8,47 @@ const router = express.Router();
 const { ssp } = require('../db/database');
 
 const logLocation = 'itinerariosSeleccionados.js: ';
+
+// Función para copiar estaciones de un itinerario original a uno seleccionado
+async function copiarItinerario(itinerarioOriginalId, itinerarioSeleccionadoId) {
+    try {
+        // Obtener las estaciones del itinerario original
+        const ItinerarioEstacion = require('../models/ItinerarioEstacion');
+        const estacionesOriginales = await ItinerarioEstacion.findAll({
+            where: { itinerarioId: itinerarioOriginalId },
+            order: [['orden', 'ASC']]
+        });
+        
+        console.log(`Estaciones encontradas para itinerario ${itinerarioOriginalId}:`, estacionesOriginales.length);
+        
+        if (estacionesOriginales.length > 0) {
+            // Crear las estaciones para el itinerario seleccionado
+            const estacionesData = estacionesOriginales.map(estacion => ({
+                itinerarioSeleccionadoId: itinerarioSeleccionadoId,
+                estacionId: estacion.estacionId,
+                orden: estacion.orden,
+                horaProgramadaLlegada: estacion.horaProgramadaLlegada,
+                horaProgramadaSalida: estacion.horaProgramadaSalida,
+                horaRealLlegada: estacion.horaRealLlegada,
+                horaRealSalida: estacion.horaRealSalida,
+                observaciones: estacion.observaciones
+            }));
+            
+            console.log('Datos de estaciones a copiar:', estacionesData);
+            
+            // Crear las estaciones en el itinerario seleccionado
+            await ItinerarioSeleccionadoEstacion.bulkCreate(estacionesData);
+            
+            logger.info(logLocation + `Estaciones copiadas del itinerario ${itinerarioOriginalId} al ${itinerarioSeleccionadoId}`);
+        } else {
+            console.log(`No se encontraron estaciones para el itinerario ${itinerarioOriginalId}`);
+        }
+    } catch (error) {
+        logger.error(logLocation + `Error al copiar estaciones del itinerario ${itinerarioOriginalId}:`, error);
+        throw error;
+    }
+}
+
 // Función auxiliar para manejar las estaciones del itinerario
 async function manejarEstacionesItinerario(itinerarioId, estaciones) {
     // Eliminar todas las relaciones existentes
@@ -53,8 +94,20 @@ router.get('/paginated', async (req, res) => {
             { db: 'tipo', dt: 'tipo', formatter: null },
             { db: 'material', dt: 'material', formatter: null }
         ];
+        let whereResult = [];
+        let whereAll = [];
 
-        const result = await ssp.Simple(req.query, 'ItinerariosSeleccionados', columns);
+        //buscar el parametro fecha
+        const fechaStart = req.query.cs_DateStart;
+        if (fechaStart) {
+           whereResult.push(`fecha >= '${fechaStart}'`);
+        }
+        const fechaEnd = req.query.cs_DateEnd;
+        if (fechaEnd) {
+            whereResult.push(`fecha < '${fechaEnd}'`);
+        }
+
+        const result = await ssp.Complex(req.query, 'ItinerarioSeleccionados', columns, whereResult, whereAll);
         res.json(result);
     } catch (error) {
         logger.error(logLocation + 'Error al obtener itinerarios paginados:', error);
@@ -167,8 +220,12 @@ router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res
                 estado: 'PENDIENTE'
             });
             
-            // Copiar las estaciones del itinerario original
+            
+            /*// Copiar las estaciones del itinerario original
+                console.log(itinerario)
+                console.log(itinerario.estaciones)
             if (itinerario.estaciones && itinerario.estaciones.length > 0) {
+                console.log(itinerario.estaciones.ItinerarioEstacion)
                 const estacionesData = itinerario.estaciones.map(estacion => ({
                     itinerarioSeleccionadoId: itinerarioSeleccionado.id,
                     estacionId: estacion.id,
@@ -181,9 +238,12 @@ router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res
                 }));
                 
                 await ItinerarioSeleccionadoEstacion.bulkCreate(estacionesData);
-            }
+            }*/
             
             itinerariosSeleccionadosCreados.push(itinerarioSeleccionado);
+
+            // Copiar las estaciones del itinerario original
+            await copiarItinerario(itinerario.id, itinerarioSeleccionado.id);
         }
         
         logger.info(logLocation + `Se crearon ${itinerariosSeleccionadosCreados.length} itinerarios seleccionados para la fecha ${fecha}`);

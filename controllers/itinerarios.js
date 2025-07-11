@@ -68,11 +68,13 @@ router.get('/paginated', async (req, res) => {
 
         //buscar el parametro fecha
         const fechaStart = req.query.cs_DateStart;
-        const fechaEnd = req.query.cs_DateEnd;
         if (fechaStart) {
            whereResult.push(`fecha >= '${fechaStart}'`);
-           whereResult.push(`fecha < '${fechaEnd}'`);
         }
+        const fechaEnd = req.query.cs_DateEnd;
+        if (fechaEnd) {
+            whereResult.push(`fecha < '${fechaEnd}'`);
+         }
         
 
         const result = await ssp.Complex(req.query, 'Itinerarios', columns, whereResult, whereAll);
