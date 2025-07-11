@@ -190,10 +190,14 @@
         let tablaItinerarios;
         let itinerariosSeleccionados = new Set();
         let numerosTrenYaSeleccionados = new Set(); // Para almacenar los números de tren ya seleccionados
+        
+        // Obtener la fecha del planificador global
+        let fechaSeleccionada = window.fechaPlanificador || new Date();
 
-        // Función para cargar itinerarios ya seleccionados de hoy
+        // Función para cargar itinerarios ya seleccionados de la fecha seleccionada
         function cargarItinerariosYaSeleccionados() {
-            return fetch('/api/itinerariosSeleccionados/', {
+            const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
+            return fetch(`/api/itinerariosSeleccionados?date=${fechaFormateada}`, {
                 headers: getHeaders()
             })
             .then(response => {
@@ -498,12 +502,11 @@
 
             const itinerariosSeleccionadosArray = Array.from(itinerariosSeleccionados);
             
-            // Obtener la fecha de hoy
-            const hoy = new Date();
-            const fechaHoy = hoy.toISOString();
+            // Usar la fecha seleccionada
+            const fechaSeleccion = fechaSeleccionada.toISOString();
             
             // Mostrar confirmación al usuario
-            if (confirm(`¿Estás seguro de que quieres seleccionar ${itinerariosSeleccionados.size} itinerarios para hoy (${hoy.toLocaleDateString()})?`)) {
+            if (confirm(`¿Estás seguro de que quieres seleccionar ${itinerariosSeleccionados.size} itinerarios para el ${fechaSeleccionada.toLocaleDateString()}?`)) {
                 // Enviar petición al servidor
                 fetch('/api/itinerariosSeleccionados/select', {
                     method: 'POST',
@@ -513,7 +516,7 @@
                     },
                     body: JSON.stringify({
                         itinerarioIds: itinerariosSeleccionadosArray,
-                        fecha: fechaHoy
+                        fecha: fechaSeleccion
                     })
                 })
                 .then(response => {
@@ -548,6 +551,21 @@
             itinerariosSeleccionados.clear();
             $('#tablaItinerarios tbody tr').removeClass('row-selected');
             actualizarBotonesSeleccion();
+        });
+
+        // Event listener para cambios en la fecha del planificador
+        $(document).on('fechaPlanificadorCambiada', function(event, nuevaFecha) {
+            fechaSeleccionada = nuevaFecha;
+            
+            // Limpiar selecciones actuales
+            itinerariosSeleccionados.clear();
+            $('#tablaItinerarios tbody tr').removeClass('row-selected');
+            actualizarBotonesSeleccion();
+            
+            // Recargar datos con la nueva fecha
+            cargarItinerariosYaSeleccionados().then(() => {
+                tablaItinerarios.ajax.reload();
+            });
         });
 
         // Cargar itinerarios ya seleccionados al inicializar la página

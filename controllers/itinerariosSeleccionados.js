@@ -133,7 +133,7 @@ router.get('/:id', async(req, res) => {
 // Obtener itinerarios seleccionados por fecha
 router.get('/', async (req, res) => {
     try {
-        const { date } = req.query;
+        const date = req.query.date;
         
         // Si no se proporciona fecha, usar hoy
         let fechaConsulta;

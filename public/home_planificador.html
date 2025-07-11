@@ -42,6 +42,44 @@
             height: 40px;
             margin-right: 10px;
         }
+        
+        /* Estilos para el selector de fecha en navbar */
+        #fechaPlanificador {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #333;
+            font-size: 0.875rem;
+        }
+        
+        #fechaPlanificador:focus {
+            background-color: white;
+            border-color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+        }
+        
+        #btnHoyPlanificador {
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        
+        #btnHoyPlanificador:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: white;
+            color: white;
+        }
+        
+        /* Responsive para el selector de fecha */
+        @media (max-width: 768px) {
+            .d-flex.align-items-center .d-flex.align-items-center {
+                flex-direction: column;
+                align-items: flex-start !important;
+                margin-bottom: 10px;
+            }
+            
+            #fechaPlanificador {
+                min-width: 120px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -64,7 +102,17 @@
                         <a class="nav-link" href="#" data-page="seleccionar_itinerarios">Seleccionar Itinerarios</a>
                     </li>
                 </ul>
-                <div class="d-flex">
+                <div class="d-flex align-items-center">
+                    <!-- Selector de fecha -->
+                    <div class="d-flex align-items-center me-3">
+                        <label for="fechaPlanificador" class="text-white me-2 mb-0 small">
+                            <i class="fas fa-calendar-alt"></i> Fecha:
+                        </label>
+                        <input type="date" id="fechaPlanificador" class="form-control form-control-sm" style="width: auto; min-width: 140px;">
+                        <button class="btn btn-outline-light btn-sm ms-2" id="btnHoyPlanificador" title="Ir a hoy">
+                            <i class="fas fa-calendar-day"></i>
+                        </button>
+                    </div>
                     <span class="nav-link text-white me-3" id="user-info">Usuario</span>
                     <a class="nav-link" href="#" id="logout" onclick="cerrarSesion()">Cerrar Sesión</a>
                 </div>
@@ -84,7 +132,13 @@
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="/js/auth.js"></script>
     <script>
+        // Variable global para la fecha seleccionada
+        window.fechaPlanificador = new Date();
+        
         $(document).ready(function() {
+            // Configurar selector de fecha
+            configurarSelectorFecha();
+            
             // Cargar itinerarios.html por defecto
             cargarContenido('itinerarios_planificados');
 
@@ -106,6 +160,39 @@
                     if (status === "error") {
                         $('#main-content').html('<div class="alert alert-danger">Error al cargar el contenido</div>');
                     }
+                });
+            }
+            
+            // Función para configurar el selector de fecha
+            function configurarSelectorFecha() {
+                const inputFecha = $('#fechaPlanificador');
+                const hoy = new Date();
+                const maxFecha = new Date();
+                maxFecha.setDate(hoy.getDate() + 30); // Máximo 30 días en el futuro
+
+                // Configurar fecha mínima (hoy) y máxima (30 días)
+                inputFecha.attr('min', hoy.toISOString().split('T')[0]);
+                inputFecha.attr('max', maxFecha.toISOString().split('T')[0]);
+                
+                // Establecer fecha por defecto (hoy)
+                inputFecha.val(hoy.toISOString().split('T')[0]);
+                
+                // Event listener para cambio de fecha
+                inputFecha.on('change', function() {
+                    const nuevaFecha = new Date($(this).val());
+                    if (!isNaN(nuevaFecha.getTime())) {
+                        window.fechaPlanificador = nuevaFecha;
+                        // Disparar evento personalizado para notificar el cambio
+                        $(document).trigger('fechaPlanificadorCambiada', [nuevaFecha]);
+                    }
+                });
+                
+                // Event listener para botón "Hoy"
+                $('#btnHoyPlanificador').on('click', function() {
+                    const hoy = new Date();
+                    inputFecha.val(hoy.toISOString().split('T')[0]);
+                    window.fechaPlanificador = hoy;
+                    $(document).trigger('fechaPlanificadorCambiada', [hoy]);
                 });
             }
         });
