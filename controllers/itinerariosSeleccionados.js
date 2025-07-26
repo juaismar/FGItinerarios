@@ -20,7 +20,7 @@ async function copiarItinerario(itinerarioOriginalId, itinerarioSeleccionadoId) 
             order: [['orden', 'ASC']]
         });
         
-        console.log(`Estaciones encontradas para itinerario ${itinerarioOriginalId}:`, estacionesOriginales.length);
+        //console.log(`Estaciones encontradas para itinerario ${itinerarioOriginalId}:`, estacionesOriginales.length);
         
         if (estacionesOriginales.length > 0) {
             // Crear las estaciones para el itinerario seleccionado
@@ -35,7 +35,7 @@ async function copiarItinerario(itinerarioOriginalId, itinerarioSeleccionadoId) 
                 observaciones: estacion.observaciones
             }));
             
-            console.log('Datos de estaciones a copiar:', estacionesData);
+            //console.log('Datos de estaciones a copiar:', estacionesData);
             
             // Crear las estaciones en el itinerario seleccionado
             await ItinerarioSeleccionadoEstacion.bulkCreate(estacionesData);
@@ -292,7 +292,38 @@ router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res
                 numero: itinerario.numero,
                 origen: itinerario.origen,
                 destino: itinerario.destino,
-                fecha: fecha, // Usar la fecha proporcionada
+                fecha: (() => {
+                    const fechaObj = new Date(fecha);
+                    
+                    // Parsear la cadena de tiempo (formato: "HH:MM:SS")
+                    const tiempoParts = itinerario.fecha.split(':');
+                    const hora = parseInt(tiempoParts[0], 10);
+                    const minuto = parseInt(tiempoParts[1], 10);
+                    const segundo = parseInt(tiempoParts[2], 10);
+                    
+                    // Validar que la fecha sea válida
+                    if (isNaN(fechaObj.getTime())) {
+                        console.log('Fecha inválida, usando fecha original');
+                        return fechaObj;
+                    }
+                    
+                    // Validar que los componentes de tiempo sean válidos
+                    if (isNaN(hora) || isNaN(minuto) || isNaN(segundo)) {
+                        console.log('Tiempo inválido, usando fecha original');
+                        return fechaObj;
+                    }
+                    
+                    const fechaCombinada = new Date(
+                        fechaObj.getFullYear(),
+                        fechaObj.getMonth(),
+                        fechaObj.getDate(),
+                        hora,
+                        minuto,
+                        segundo
+                    );
+                    
+                    return fechaCombinada;
+                })(),
                 tipo: itinerario.tipo,
                 material: itinerario.material,
                 observaciones: itinerario.observaciones,

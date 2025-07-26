@@ -240,23 +240,53 @@
 
         function inicializarTablas() {
             $('#salidas').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '/api/panel/paginated'
+                },
+                columns: [
+                    { data: 'destino' },
+                    { data: 'material' },
+                    { data: 2 },
+                    { data: 3 },
+                    { data: 4 },
+                    { data: 5 }
+                ],
                 paging: false,
                 searching: false,
                 info: false,
                 order: [[0, 'asc']],
                 language: {
-                    emptyTable: "No hay salidas programadas"
+                    emptyTable: "No hay salidas programadas",
+                    processing: "Procesando..."
                 }
             });
+            
             $('#llegadas').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '/api/panel/paginated'
+                },
+                columns: [
+                    { title: 'Hora', data: 0 },
+                    { title: 'Procedencia', data: 1 },
+                    { title: 'Tren', data: 2 },
+                    { title: 'Nº', data: 3 },
+                    { title: 'Vía', data: 4 },
+                    { title: 'Observaciones', data: 5 }
+                ],
                 paging: false,
                 searching: false,
                 info: false,
                 order: [[0, 'asc']],
                 language: {
-                    emptyTable: "No hay llegadas programadas"
+                    emptyTable: "No hay llegadas programadas",
+                    processing: "Procesando..."
                 }
             });
+            
             // Resaltar los retrasos en rojo
             $('td').filter(function() {
                 return $(this).text().trim().toUpperCase() === 'RETRASO';

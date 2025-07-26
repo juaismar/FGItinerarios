@@ -22,7 +22,11 @@ const Estacion = sequelize.define('Estacion', {
     activa: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
-    }
+    },
+    gestionado: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
 });
 
 module.exports = Estacion; 

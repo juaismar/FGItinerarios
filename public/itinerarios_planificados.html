@@ -747,7 +747,9 @@
         // Función para cargar estaciones de un itinerario existente
         function cargarEstacionesParaEdicion(itinerarioId) {
             return fetch(`/api/itinerariosSeleccionados/${itinerarioId}/estaciones`, {
-                headers: getHeaders()
+                headers: {
+                    'Authorization': getAuthToken()
+                }
             })
             .then(response => {
                 if (response.status === 401) {
@@ -790,7 +792,9 @@
 
         // Event listener para editar itinerario
         $(document).on('click', '.editar-itinerario', function () {
-            const id = $(this).data('id');
+            console.log('editar-itinerario');
+            const id = $(this).data('data-id');
+            console.log(id);
             const row = $(this).closest('tr');
             const data = tablaItinerariosSeleccionados.row(row).data();
 
@@ -811,7 +815,7 @@
             }
 
             // Cargar estaciones del itinerario
-            cargarEstacionesParaEdicion(id);
+            cargarEstacionesParaEdicion(data.id);
 
             // Cambiar título del modal
             $('.modal-title').html('<i class="fas fa-edit text-primary"></i> Editar Tren Custom');

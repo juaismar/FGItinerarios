@@ -8,7 +8,7 @@ const SSPconfig = { // TODO Inicializar
   host: 'localhost',
   user: 'postgres',
   password: 'postgres',
-  database: 'fgitinerarios',
+  database: 'fgtest',//'fgitinerarios',
   port: 5432 
 };
 let ssp = new SSP(SSPconfig);
@@ -17,7 +17,7 @@ const config = {
   development: {
     username: 'postgres',
     password: 'postgres',
-    database: 'fgitinerarios',
+    database: 'fgtest',//'fgitinerarios',
     host: 'localhost',
     port: 5432,
     dialect: 'postgres',

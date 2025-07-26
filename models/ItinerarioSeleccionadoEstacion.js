@@ -48,6 +48,11 @@ const ItinerarioSeleccionadoEstacion = sequelize.define('ItinerarioSeleccionadoE
         allowNull: true,
         comment: 'Hora real de salida de la estación'
     },
+    via: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Vía de la estación'
+    },
     observaciones: {
         type: DataTypes.TEXT,
         comment: 'Observaciones sobre la parada en esta estación'

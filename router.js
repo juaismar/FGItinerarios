@@ -25,6 +25,8 @@ const itinerariosRoutes = require('./controllers/itinerarios');
 const itinerariosSeleccionadosRoutes = require('./controllers/itinerariosSeleccionados');
 const usuariosRoutes = require('./controllers/usuarios');
 const estacionesRoutes = require('./controllers/estaciones');
+const panel = require('./controllers/panel');
+const controlEstacion = require('./controllers/controlEstacion');
 
 // Servir archivos estáticos desde la carpeta public
 router.use(express.static(path.join(__dirname, 'public')));
@@ -34,6 +36,8 @@ router.use('/api/itinerarios', itinerariosRoutes);
 router.use('/api/itinerariosSeleccionados', itinerariosSeleccionadosRoutes);
 router.use('/api/usuarios', usuariosRoutes);
 router.use('/api/estaciones', estacionesRoutes);
+router.use('/api/panel', panel);
+router.use('/api/controlEstacion', controlEstacion);
 
 // Ruta para servir el index.html
 router.get('/', (req, res) => {

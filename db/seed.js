@@ -16,7 +16,7 @@ async function seed() {
 
     await seedUsers();
     await seedEstaciones();
-    await seedItinerarios();
+    //await seedItinerarios();
     
     logger.info(logLocation + 'Seed completado exitosamente');
 }
@@ -28,46 +28,59 @@ async function seedEstaciones() {
         if (estacionesExistentes === 0) {
             const estaciones = [
                 {
+                    id: 1,
                     nombre: 'Granja',
-                    codigo: 'GRJ',
+                    codigo: 'G',
                     ubicacion: '-',
-                    activa: true
+                    activa: true,
+                    gestionado: true
                 },
                 {
+                    id: 2,
                     nombre: 'Aljibe',
-                    codigo: 'ALJ',
+                    codigo: 'A',
                     ubicacion: '-',
-                    activa: true
+                    activa: true,
+                    gestionado: false
                 },
                 {
+                    id: 3,
                     nombre: 'Font',
-                    codigo: 'FNT',
+                    codigo: 'F',
                     ubicacion: '-',
-                    activa: true
+                    activa: true,
+                    gestionado: false
                 },
                 {
+                    id: 4,
                     nombre: 'Pista',
-                    codigo: 'PST',
+                    codigo: 'P',
                     ubicacion: '-',
-                    activa: true
+                    activa: true,
+                    gestionado: false
                 },
                 {
+                    id: 5,
                     nombre: 'Mirador',
-                    codigo: 'MIR',
+                    codigo: 'M',
                     ubicacion: '-',
                     activa: true
                 },
                 {
+                    id: 6,
                     nombre: 'Racó',
-                    codigo: 'RCO',
+                    codigo: 'R',
                     ubicacion: '-',
-                    activa: true
+                    activa: true,
+                    gestionado: true
                 },
                 {
+                    id: 7,
                     nombre: 'Taller',
-                    codigo: 'TLL',
+                    codigo: 'T',
                     ubicacion: '-',
-                    activa: true
+                    activa: true,
+                    gestionado: false
                 }
             ];
 
