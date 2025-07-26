@@ -27,7 +27,9 @@ const Itinerario = sequelize.define('Itinerario', {
         allowNull: false,
         comment: 'Hora del itinerario'
     },
-    //"ViajerosOrdinario", "Mercancias" 
+    //"ViajerosCalidad", "ViajerosOrdinario", 
+    // "Mercancias", "ServicioInterior", "MaquinasAisladas", 
+    // "Otro"
     tipo: {
         type: DataTypes.STRING,
         comment: 'Tipo de tren o servicio'

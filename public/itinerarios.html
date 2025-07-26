@@ -143,8 +143,12 @@
                         <div class="mb-3">
                             <label for="tipo" class="form-label">Tipo</label>
                             <select class="form-select" id="tipo" required>
-                                <option value="PASAJEROS">Pasajeros</option>
-                                <option value="OTRO">Otro</option>
+                                <option value="ViajerosCalidad" selected>Viajeros Calidad</option>
+                                <option value="ViajerosOrdinario" selected>Viajeros Ordinario</option>
+                                <option value="Mercancias" selected>Mercancias</option>
+                                <option value="ServicioInterior">Servicio Interior</option>
+                                <option value="MaquinasAisladas">Máquinas aisladas</option>
+                                <option value="Otro">Otro</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -226,22 +230,22 @@
             return fetch('/api/estaciones', {
                 headers: getHeaders()
             })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/index.html';
-                    return;
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Guardar las estaciones en la variable global
-                estaciones = data;
-                cargarEstacionesEnSelect();
-            })
-            .catch(error => {
-                console.error('Error al cargar estaciones:', error);
-                alert('Error al cargar las estaciones');
-            });
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Guardar las estaciones en la variable global
+                    estaciones = data;
+                    cargarEstacionesEnSelect();
+                })
+                .catch(error => {
+                    console.error('Error al cargar estaciones:', error);
+                    alert('Error al cargar las estaciones');
+                });
         }
 
         // Inicializar el modal
@@ -255,17 +259,17 @@
             return fetch(`/api/itinerarios/${itinerarioId}/estaciones`, {
                 headers: getHeaders()
             })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/index.html';
-                    return;
-                }
-                return response.json();
-            })
-            .catch(error => {
-                console.error('Error al cargar estaciones del itinerario:', error);
-                throw error;
-            });
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('Error al cargar estaciones del itinerario:', error);
+                    throw error;
+                });
         }
 
         // Función para formatear hora
@@ -278,7 +282,7 @@
         function cargarEstacionesEnSelect() {
             const select = document.getElementById('estacionSelect');
             select.innerHTML = '<option value="">Seleccionar estación</option>';
-            
+
             if (estaciones) {
                 estaciones.forEach(estacion => {
                     const option = document.createElement('option');
@@ -332,7 +336,7 @@
 
             // Buscar la estación seleccionada
             const estacionSeleccionada = estaciones.find(e => e.id === parseInt(estacionId));
-            
+
             if (estacionSeleccionada) {
                 const nuevaEstacion = {
                     estacionId: parseInt(estacionId),
@@ -345,12 +349,12 @@
                 };
 
                 estacionesItinerario.push(nuevaEstacion);
-                
+
                 // Ordenar por orden
                 estacionesItinerario.sort((a, b) => a.orden - b.orden);
-                
+
                 renderizarEstacionesItinerario();
-                
+
                 // Limpiar formulario
                 document.getElementById('estacionSelect').value = '';
                 document.getElementById('ordenEstacion').value = estacionesItinerario.length + 1;
@@ -363,12 +367,12 @@
         function eliminarEstacionDelItinerario(index) {
             estacionesItinerario.splice(index, 1);
             renderizarEstacionesItinerario();
-            
+
             // Actualizar orden
             estacionesItinerario.forEach((estacion, i) => {
                 estacion.orden = i + 1;
             });
-            
+
             document.getElementById('ordenEstacion').value = estacionesItinerario.length + 1;
         }
 
@@ -508,10 +512,10 @@
             $('#modalTitle').text('Nuevo Itinerario');
             $('#itinerarioForm')[0].reset();
             $('#itinerarioId').val('');
-            
+
             $('#origen').val('');
             $('#destino').val('');
-            
+
             // Limpiar estaciones del itinerario
             estacionesItinerario = [];
             renderizarEstacionesItinerario();
@@ -534,7 +538,7 @@
 
             $('#origen').val(itinerario.origen);
             $('#destino').val(itinerario.destino);
-            
+
             // Cargar estaciones del itinerario
             cargarEstacionesItinerario(id)
                 .then(estacionesData => {
@@ -555,7 +559,7 @@
                     estacionesItinerario = [];
                     renderizarEstacionesItinerario();
                 });
-                
+
             itinerarioModal.show();
         });
 

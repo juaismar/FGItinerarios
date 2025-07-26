@@ -280,8 +280,12 @@
                             <div class="mb-3">
                                 <label class="form-label">Tipo de Tren *</label>
                                 <select class="form-select" id="tipoCustom" required>
-                                    <option value="PASAJEROS" selected>Pasajeros</option>
-                                    <option value="OTRO">Otro</option>
+                                    <option value="ViajerosCalidad" selected>Viajeros Calidad</option>
+                                    <option value="ViajerosOrdinario" selected>Viajeros Ordinario</option>
+                                    <option value="Mercancias" selected>Mercancias</option>
+                                    <option value="ServicioInterior">Servicio Interior</option>
+                                    <option value="MaquinasAisladas">Máquinas aisladas</option>
+                                    <option value="Otro">Otro</option>
                                 </select>
                             </div>
                         </div>
@@ -792,46 +796,78 @@
 
         // Event listener para editar itinerario
         $(document).on('click', '.editar-itinerario', function () {
-            console.log('editar-itinerario');
-            const id = $(this).data('data-id');
-            console.log(id);
-            const row = $(this).closest('tr');
-            const data = tablaItinerariosSeleccionados.row(row).data();
-
-            // Cargar datos del itinerario en el modal
-            $('#itinerarioId').val(data.id);
-            $('#numeroCustom').val(data.numero);
-            $('#origenCustom').val(data.origen);
-            $('#destinoCustom').val(data.destino);
-            $('#tipoCustom').val(data.tipo);
-            $('#materialCustom').val(data.material || '');
-            $('#observacionesCustom').val(data.observaciones || '');
-
-            // Formatear fecha para el campo de hora
-            if (data.fecha) {
-                const fecha = new Date(data.fecha);
-                const hora = fecha.toTimeString().slice(0, 5);
-                $('#horaSalidaCustom').val(hora);
-            }
-
-            // Cargar estaciones del itinerario
-            cargarEstacionesParaEdicion(data.id);
-
-            // Cambiar título del modal
-            $('.modal-title').html('<i class="fas fa-edit text-primary"></i> Editar Tren Custom');
-
-            // Mostrar fecha seleccionada en el modal
-            const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            $('#fechaSeleccionadaModal').text(fechaFormateada);
-
-            // Abrir modal
-            $('#modalItinerarioCustom').modal('show');
+            const id = $(this).data('id');
+            
+            // Cargar datos del itinerario desde el servidor
+            cargarDatosItinerario(id);
         });
+
+        // Función para cargar datos del itinerario desde el servidor
+        function cargarDatosItinerario(itinerarioId) {
+            // Mostrar indicador de carga
+            const btnEditar = $(`.editar-itinerario[data-id="${itinerarioId}"]`);
+            const originalHtml = btnEditar.html();
+            btnEditar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            fetch(`/api/itinerariosSeleccionados/${itinerarioId}`, {
+                headers: {
+                    'Authorization': getAuthToken()
+                }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error('Error al obtener datos del itinerario');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Cargar datos del itinerario en el modal
+                $('#itinerarioId').val(data.id);
+                $('#numeroCustom').val(data.numero);
+                $('#origenCustom').val(data.origen);
+                $('#destinoCustom').val(data.destino);
+                $('#tipoCustom').val(data.tipo);
+                $('#materialCustom').val(data.material || '');
+                $('#observacionesCustom').val(data.observaciones || '');
+
+                // Formatear fecha para el campo de hora
+                if (data.fecha) {
+                    const fecha = new Date(data.fecha);
+                    const hora = fecha.toTimeString().slice(0, 5);
+                    $('#horaSalidaCustom').val(hora);
+                }
+
+                // Cargar estaciones del itinerario
+                cargarEstacionesParaEdicion(data.id);
+
+                // Cambiar título del modal
+                $('.modal-title').html('<i class="fas fa-edit text-primary"></i> Editar Tren Custom');
+
+                // Mostrar fecha seleccionada en el modal
+                const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                $('#fechaSeleccionadaModal').text(fechaFormateada);
+
+                // Abrir modal
+                $('#modalItinerarioCustom').modal('show');
+            })
+            .catch(error => {
+                console.error('Error al cargar datos del itinerario:', error);
+                alert('Error al cargar los datos del itinerario. Por favor, inténtalo de nuevo.');
+            })
+            .finally(() => {
+                // Restaurar el botón
+                btnEditar.prop('disabled', false).html(originalHtml);
+            });
+        }
 
         // Event listener para agregar estación
         $(document).on('click', '#btnAgregarEstacion', function () {
