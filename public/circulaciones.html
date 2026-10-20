@@ -804,11 +804,6 @@
 
         // Función para cargar datos de la circulación desde el servidor
         function cargarDatosCirculacion(circulacionId) {
-            // Mostrar indicador de carga
-            const btnEditar = $(`.editar-circulacion[data-id="${circulacionId}"]`);
-            const originalHtml = btnEditar.html();
-            btnEditar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-
             fetch(`/api/circulaciones/${circulacionId}`, {
                 headers: {
                     'Authorization': getAuthToken()
@@ -862,10 +857,6 @@
             .catch(error => {
                 console.error('Error al cargar datos de la circulación:', error);
                 alert('Error al cargar los datos de la circulación. Por favor, inténtalo de nuevo.');
-            })
-            .finally(() => {
-                // Restaurar el botón
-                btnEditar.prop('disabled', false).html(originalHtml);
             });
         }
 

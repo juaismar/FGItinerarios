@@ -299,6 +299,15 @@
                         dtParms.cs_DateStart = hour+":00:00";
                         dtParms.cs_DateEnd = (hour+1 ) +":00:00";
                     }
+                    if ($('#filtroOrigen').val()) {
+                        dtParms.cs_Origen = $('#filtroOrigen').val();
+                    }
+                    if ($('#filtroDestino').val()) {
+                        dtParms.cs_Destino = $('#filtroDestino').val();
+                    }
+                    if ($('#filtroTipo').val()) {
+                        dtParms.cs_Tipo = $('#filtroTipo').val();
+                    }
                     return dtParms
                 }
             },
@@ -458,6 +467,35 @@
                     });
                 break;
 
+                case 'th_origen':
+                    $(this).html('<select id="filtroOrigen" class="form-select form-select-sm"><option value="">Todos</option></select>');
+                    $('select', this).on('change', function () {
+                        tablaItinerarios.draw();
+                    });
+                break;
+
+                case 'th_destino':
+                    $(this).html('<select id="filtroDestino" class="form-select form-select-sm"><option value="">Todos</option></select>');
+                    $('select', this).on('change', function () {
+                        tablaItinerarios.draw();
+                    });
+                break;
+
+                case 'th_tipo':
+                    $(this).html(`<select id="filtroTipo" class="form-select form-select-sm">
+                        <option value="">Todos</option>
+                        <option value="ViajerosCalidad">Viajeros Calidad</option>
+                        <option value="ViajerosOrdinario">Viajeros Ordinario</option>
+                        <option value="Mercancias">Mercancías</option>
+                        <option value="ServicioInterior">Servicio Interior</option>
+                        <option value="MaquinasAisladas">Máquinas aisladas</option>
+                        <option value="Otro">Otro</option>
+                    </select>`);
+                    $('select', this).on('change', function () {
+                        tablaItinerarios.draw();
+                    });
+                break;
+
                 default:
                     $(this).html('<input type="text" style="width: 150px;" placeholder="Buscar ' + title + '" />');
                     // this select is for text input fields
@@ -469,6 +507,30 @@
                         }
                     });
             }
+        });
+
+        fetch('/api/estaciones', {
+            headers: getHeaders()
+        })
+        .then(response => response.json())
+        .then(estaciones => {
+            ['filtroOrigen', 'filtroDestino'].forEach(id => {
+                const select = document.getElementById(id);
+                if (!select || !Array.isArray(estaciones)) {
+                    return;
+                }
+                estaciones.forEach(estacion => {
+                    const option = document.createElement('option');
+                    option.value = estacion.nombre;
+                    option.textContent = estacion.codigo
+                        ? `${estacion.nombre} (${estacion.codigo})`
+                        : estacion.nombre;
+                    select.appendChild(option);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error al cargar estaciones para los filtros:', error);
         });
 
         // Manejar clic en seleccionar itinerario

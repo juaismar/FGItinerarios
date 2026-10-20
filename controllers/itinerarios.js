@@ -10,6 +10,24 @@ const { ssp } = require('../db/database');
 
 const logLocation = 'itinerarios.js: ';
 
+function filtroIgual(columna, valor) {
+    if (!valor) {
+        return null;
+    }
+    const limpio = String(valor).replace(/'/g, "''");
+    return `"${columna}" = '${limpio}'`;
+}
+
+function filtroTextoEstacion(columna, valor) {
+    if (!valor) {
+        return null;
+    }
+    const limpio = String(valor).replace(/'/g, "''");
+    const conTildes = 'áéíóúüñÁÉÍÓÚÜÑ';
+    const sinTildes = 'aeiouunAEIOUUN';
+    return `translate("${columna}", '${conTildes}', '${sinTildes}') ILIKE translate('%${limpio}%', '${conTildes}', '${sinTildes}')`;
+}
+
 // Función para manejar las estaciones de un itinerario
 async function manejarEstacionesItinerario(itinerarioId, estaciones) {
     if (!estaciones || !Array.isArray(estaciones)) {
@@ -75,7 +93,19 @@ router.get('/paginated', async (req, res) => {
         if (fechaEnd) {
             whereResult.push(`fecha < '${fechaEnd}'`);
         }
-        
+
+        const filtroOrigen = filtroTextoEstacion('origen', req.query.cs_Origen);
+        if (filtroOrigen) {
+            whereResult.push(filtroOrigen);
+        }
+        const filtroDestino = filtroTextoEstacion('destino', req.query.cs_Destino);
+        if (filtroDestino) {
+            whereResult.push(filtroDestino);
+        }
+        const filtroTipo = filtroIgual('tipo', req.query.cs_Tipo);
+        if (filtroTipo) {
+            whereResult.push(filtroTipo);
+        }
 
         const result = await ssp.Complex(req.query, 'Itinerarios', columns, whereResult, whereAll);
         res.json(result);
