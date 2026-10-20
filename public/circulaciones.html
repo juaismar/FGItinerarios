@@ -26,6 +26,21 @@
         color: white;
     }
 
+    .btn-cancelar {
+        background-color: #fd7e14;
+        color: white;
+        border: none;
+    }
+
+    .btn-cancelar:hover {
+        background-color: #e8590c;
+        color: white;
+    }
+
+    .btn-cancelar:disabled {
+        opacity: 0.45;
+    }
+
     .btn-eliminar {
         background-color: #dc3545;
         color: white;
@@ -505,6 +520,15 @@
                                         data-bs-placement="top"
                                         title="Editar circulación">
                                     <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-icon btn-cancelar cancelar-circulacion"
+                                        data-id="${data.id}"
+                                        data-numero="${data.numero}"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Cancelar circulación"
+                                        ${data.estado === 'CANCELADO' ? 'disabled' : ''}>
+                                    <i class="fas fa-ban"></i>
                                 </button>
                                 <button class="btn btn-icon btn-eliminar eliminar-circulacion" 
                                         data-id="${data.id}"
@@ -1047,6 +1071,42 @@
                     childRow.html('<div class="text-danger">Error al cargar las estaciones.</div>');
                 });
         }
+    });
+
+    $(document).on('click', '.cancelar-circulacion', function () {
+        const boton = $(this);
+        const id = boton.data('id');
+        const numero = boton.data('numero');
+
+        if (!confirm('¿Cancelar la circulación ' + numero + '? Seguirá en el día y el visor la mostrará como cancelada.')) {
+            return;
+        }
+
+        boton.prop('disabled', true);
+        fetch('/api/circulaciones/' + id + '/cancelar', {
+            method: 'POST',
+            headers: getHeaders()
+        })
+            .then(function (response) {
+                if (response.status === 401) {
+                    window.location.href = '/index.html';
+                    return;
+                }
+                if (response.status === 404) {
+                    alert('La circulación no fue encontrada.');
+                    boton.prop('disabled', false);
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error('Error al cancelar la circulación');
+                }
+                tablaCirculaciones.ajax.reload();
+            })
+            .catch(function (error) {
+                console.error('Error al cancelar la circulación:', error);
+                alert('Error al cancelar la circulación. Por favor, inténtalo de nuevo.');
+                boton.prop('disabled', false);
+            });
     });
 
     // Event listener para eliminar circulación

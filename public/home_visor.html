@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Racó</title>
+    <title>Visor</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <style>
@@ -76,6 +76,12 @@
             color: #fff;
             box-shadow: none;
             table-layout: fixed;
+        }
+        table.dataTable thead th,
+        table.dataTable tbody td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         table.dataTable thead th {
             background: #2d3a4b;
@@ -153,12 +159,7 @@
     <div class="container">
         <div class="header-bar">
             <div class="clock-top-left" id="clock"></div>
-            <select id="station-select" class="station-select">
-                <option>Racó</option>
-                <option>Central</option>
-                <option>Sur</option>
-                <option>Norte</option>
-            </select>
+            <select id="station-select" class="station-select"></select>
             <div class="logo-top-right">
                 <img src="/img/fglogotr.gif" alt="Logo FG" />
             </div>
@@ -175,13 +176,7 @@
                     <th>Observaciones</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr><td>07:25</td><td>Granja</td><td>Romulus 1</td><td>101</td><td>1</td><td>RETRASO</td></tr>
-                <tr><td>07:25</td><td>Granja</td><td>101</td><td>102</td><td>1</td><td></td></tr>
-                <tr><td>07:30</td><td>Granja</td><td>Romulus 1</td><td>103</td><td>1</td><td></td></tr>
-                <tr><td>07:38</td><td>Taller</td><td>M13</td><td>104</td><td>2</td><td>Mantenimiento</td></tr>
-                <tr><td>07:47</td><td>Granja</td><td>101</td><td>105</td><td>1</td><td></td></tr>
-            </tbody>
+            <tbody></tbody>
         </table>
         <table id="llegadas" class="display">
             <caption>Llegadas</caption>
@@ -195,102 +190,128 @@
                     <th>Observaciones</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr><td>07:10</td><td>Granja</td><td>101</td><td>601</td><td>1</td><td>RETRASO</td></tr>
-                <tr><td>07:18</td><td>Granja</td><td>Romulus 1</td><td>602</td><td>1</td><td></td></tr>
-                <tr><td>07:22</td><td>Granja</td><td>101</td><td>603</td><td>1</td><td></td></tr>
-                <tr><td>07:29</td><td>Taller</td><td>M13</td><td>604</td><td>2</td><td>Mantenimiento</td></tr>
-                <tr><td>07:40</td><td>Granja</td><td>Romulus 1</td><td>605</td><td>1</td><td></td></tr>
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
+        let tablaSalidas;
+        let tablaLlegadas;
+
         $(document).ready(function() {
-            cargarEstaciones()
-                .then(() => {
-                    inicializarTablas();
-                })
-                .catch(() => {
-                    inicializarTablas();
-                });
+            inicializarTablas();
+            cargarEstaciones();
+            $('#station-select').on('change', cargarVisor);
+            setInterval(cargarVisor, 15000);
         });
+
+        function fechaLocal() {
+            const ahora = new Date();
+            const dosDigitos = function (valor) {
+                return String(valor).padStart(2, '0');
+            };
+            return ahora.getFullYear() + '-' + dosDigitos(ahora.getMonth() + 1) + '-' + dosDigitos(ahora.getDate());
+        }
+
+        function marcarSituacion(row, data) {
+            if (data.retraso || data.cancelado) {
+                $('td', row).eq(5).addClass('retraso');
+            }
+        }
 
         function cargarEstaciones() {
             return fetch('/api/estaciones')
-                .then(response => response.json())
-                .then(estaciones => {
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('No se pudieron cargar las estaciones');
+                    }
+                    return response.json();
+                })
+                .then(function (estaciones) {
                     const select = document.getElementById('station-select');
-                    select.innerHTML = ''; // Limpiar opciones existentes
-                    
-                    estaciones.forEach(estacion => {
+                    const codigoActual = select.value;
+                    select.innerHTML = '';
+
+                    (estaciones || []).forEach(function (estacion) {
                         const option = document.createElement('option');
                         option.value = estacion.codigo;
                         option.textContent = estacion.nombre;
                         select.appendChild(option);
                     });
+
+                    if (codigoActual) {
+                        select.value = codigoActual;
+                    }
+                    cargarVisor();
                 })
-                .catch(error => {
+                .catch(function (error) {
                     console.error('Error al cargar estaciones:', error);
                 });
         }
 
-
-
         function inicializarTablas() {
-            $('#salidas').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '/api/panel/paginated'
-                },
+            const opciones = {
+                paging: false,
+                searching: false,
+                info: false,
+                ordering: false,
+                data: [],
+                createdRow: marcarSituacion
+            };
+
+            tablaSalidas = $('#salidas').DataTable(Object.assign({}, opciones, {
                 columns: [
+                    { data: 'hora' },
                     { data: 'destino' },
-                    { data: 'material' },
-                    { data: 2 },
-                    { data: 3 },
-                    { data: 4 },
-                    { data: 5 }
+                    { data: 'tren' },
+                    { data: 'numero' },
+                    { data: 'via' },
+                    { data: 'observaciones' }
                 ],
-                paging: false,
-                searching: false,
-                info: false,
-                order: [[0, 'asc']],
                 language: {
-                    emptyTable: "No hay salidas programadas",
-                    processing: "Procesando..."
+                    emptyTable: 'No hay salidas programadas'
                 }
-            });
-            
-            $('#llegadas').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '/api/panel/paginated'
-                },
+            }));
+
+            tablaLlegadas = $('#llegadas').DataTable(Object.assign({}, opciones, {
                 columns: [
-                    { title: 'Hora', data: 0 },
-                    { title: 'Procedencia', data: 1 },
-                    { title: 'Tren', data: 2 },
-                    { title: 'Nº', data: 3 },
-                    { title: 'Vía', data: 4 },
-                    { title: 'Observaciones', data: 5 }
+                    { data: 'hora' },
+                    { data: 'procedencia' },
+                    { data: 'tren' },
+                    { data: 'numero' },
+                    { data: 'via' },
+                    { data: 'observaciones' }
                 ],
-                paging: false,
-                searching: false,
-                info: false,
-                order: [[0, 'asc']],
                 language: {
-                    emptyTable: "No hay llegadas programadas",
-                    processing: "Procesando..."
+                    emptyTable: 'No hay llegadas programadas'
                 }
-            });
-            
-            // Resaltar los retrasos en rojo
-            $('td').filter(function() {
-                return $(this).text().trim().toUpperCase() === 'RETRASO';
-            }).addClass('retraso');
+            }));
+        }
+
+        function cargarVisor() {
+            const codigo = $('#station-select').val();
+            if (!codigo || !tablaSalidas || !tablaLlegadas) {
+                return;
+            }
+
+            const nombre = $('#station-select option:selected').text();
+            document.title = nombre || 'Visor';
+
+            fetch('/api/circulaciones/visor/' + encodeURIComponent(codigo) + '?fecha=' + fechaLocal())
+                .then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('No se pudo cargar el visor');
+                    }
+                    return response.json();
+                })
+                .then(function (datos) {
+                    tablaSalidas.clear().rows.add(datos.salidas || []).draw();
+                    tablaLlegadas.clear().rows.add(datos.llegadas || []).draw();
+                })
+                .catch(function (error) {
+                    console.error('Error al cargar el visor:', error);
+                });
         }
 
         // Pantalla completa automática

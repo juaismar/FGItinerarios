@@ -14,15 +14,22 @@ function horaActual() {
     return `${dosDigitos(ahora.getHours())}:${dosDigitos(ahora.getMinutes())}:${dosDigitos(ahora.getSeconds())}`;
 }
 
+function margenHoras(valor) {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero < 0) {
+        return 2;
+    }
+    return Math.min(numero, 24);
+}
+
 function consultaMovimientos(esSalida) {
+    const columnaHora = esSalida ? 'ise."horaProgramadaSalida"' : 'ise."horaProgramadaLlegada"';
     const condicionParada = esSalida
         ? `ise."horaProgramadaSalida" IS NOT NULL
-           AND ise."horaRealSalida" IS NULL
-           AND ise."horaProgramadaSalida" < $2::time`
+           AND ise."horaRealSalida" IS NULL`
         : `ise."horaProgramadaLlegada" IS NOT NULL
-           AND ise."horaRealLlegada" IS NULL
-           AND ise."horaProgramadaLlegada" < $2::time`;
-    const orden = esSalida ? 'ise."horaProgramadaSalida"' : 'ise."horaProgramadaLlegada"';
+           AND ise."horaRealLlegada" IS NULL`;
+    const orden = columnaHora;
 
     return `
         SELECT DISTINCT
@@ -43,7 +50,10 @@ function consultaMovimientos(esSalida) {
         WHERE ise."estacionId" = $1
         AND its.estado <> 'CANCELADO'
         AND ${condicionParada}
-        AND (its.fecha AT TIME ZONE 'Europe/Madrid')::date = $3::date
+        AND (
+            ((its.fecha AT TIME ZONE 'Europe/Madrid')::date + ${columnaHora})
+            AT TIME ZONE 'Europe/Madrid'
+        ) BETWEEN $2::timestamptz AND $3::timestamptz
         AND (
             NOT EXISTS (
                 SELECT 1
@@ -61,15 +71,21 @@ function consultaMovimientos(esSalida) {
 
 async function listarMovimientos(req, res, esSalida) {
     const estacion = req.query.cs_EstacionId;
-    const horaLimite = req.query.cs_HoraLimite;
-    const fecha = req.query.cs_Fecha;
+    const horas = margenHoras(req.query.cs_Horas);
+    const instante = new Date(req.query.cs_Ahora);
+    const ahora = Number.isNaN(instante.getTime()) ? new Date() : instante;
+    const milisegundos = horas * 60 * 60 * 1000;
 
-    if (!estacion || !horaLimite || !fecha) {
-        return res.status(400).json({ mensaje: 'Faltan la estación, la hora límite o la fecha' });
+    if (!estacion) {
+        return res.status(400).json({ mensaje: 'Falta la estación' });
     }
 
     const result = await sequelize.query(consultaMovimientos(esSalida), {
-        bind: [estacion, horaLimite, fecha],
+        bind: [
+            estacion,
+            new Date(ahora.getTime() - milisegundos).toISOString(),
+            new Date(ahora.getTime() + milisegundos).toISOString()
+        ],
         type: sequelize.QueryTypes.SELECT
     });
 
