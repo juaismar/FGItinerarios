@@ -170,35 +170,43 @@
             }
             
             // Función para configurar el selector de fecha
+            function fechaLocal(fecha) {
+                const dosDigitos = function (valor) {
+                    return String(valor).padStart(2, '0');
+                };
+                return fecha.getFullYear() + '-' + dosDigitos(fecha.getMonth() + 1) + '-' + dosDigitos(fecha.getDate());
+            }
+
+            function fechaDelCalendario(texto) {
+                const partes = texto.split('-');
+                return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]), 12, 0, 0);
+            }
+
             function configurarSelectorFecha() {
                 const inputFecha = $('#fechaPlanificador');
                 const hoy = new Date();
                 const maxFecha = new Date();
-                maxFecha.setDate(hoy.getDate() + 30); // Máximo 30 días en el futuro
+                maxFecha.setDate(hoy.getDate() + 30);
+                const diaHoy = fechaLocal(hoy);
 
-                // Configurar fecha mínima (hoy) y máxima (30 días)
-                inputFecha.attr('min', hoy.toISOString().split('T')[0]);
-                inputFecha.attr('max', maxFecha.toISOString().split('T')[0]);
-                
-                // Establecer fecha por defecto (hoy)
-                inputFecha.val(hoy.toISOString().split('T')[0]);
-                
-                // Event listener para cambio de fecha
+                inputFecha.attr('min', diaHoy);
+                inputFecha.attr('max', fechaLocal(maxFecha));
+                inputFecha.val(diaHoy);
+                window.fechaPlanificador = fechaDelCalendario(diaHoy);
+
                 inputFecha.on('change', function() {
-                    const nuevaFecha = new Date($(this).val());
+                    const nuevaFecha = fechaDelCalendario($(this).val());
                     if (!isNaN(nuevaFecha.getTime())) {
                         window.fechaPlanificador = nuevaFecha;
-                        // Disparar evento personalizado para notificar el cambio
                         $(document).trigger('fechaPlanificadorCambiada', [nuevaFecha]);
                     }
                 });
-                
-                // Event listener para botón "Hoy"
+
                 $('#btnHoyPlanificador').on('click', function() {
-                    const hoy = new Date();
-                    inputFecha.val(hoy.toISOString().split('T')[0]);
-                    window.fechaPlanificador = hoy;
-                    $(document).trigger('fechaPlanificadorCambiada', [hoy]);
+                    const dia = fechaLocal(new Date());
+                    inputFecha.val(dia);
+                    window.fechaPlanificador = fechaDelCalendario(dia);
+                    $(document).trigger('fechaPlanificadorCambiada', [window.fechaPlanificador]);
                 });
             }
         });
