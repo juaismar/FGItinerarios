@@ -1,16 +1,3 @@
-<style>
-    .table-container {
-        padding: 20px;
-    }
-
-    .header-container {
-        background-color: #f8f9fa;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-    }
-</style>
-
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center">
@@ -26,234 +13,249 @@
         </div>
     </div>
 
-    <!-- Tabla de llegadas-->
-    <div class="card">
-        Llegadas
-        <div class="card-body">
-            <table id="tablaLlegadas" class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>Número</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Hora</th>
-                        <th>Estado</th>
-                        <th>Tipo</th>
-                        <th>Material</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Se llenará dinámicamente -->
-                </tbody>
-            </table>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">Llegadas</div>
+                <div class="card-body">
+                    <table id="tablaLlegadas" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">Salidas</div>
+                <div class="card-body">
+                    <table id="tablaSalidas" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    $(document).ready(function () {
-        let tablaLlegadas;
+    $(function () {
         let fechaSeleccionada = window.fechaPlanificador || new Date();
-        let estaciones;
-        cargarEstaciones();
-        // Función para cargar estaciones desde la API
+        let cargando = false;
+
+        if (window.intervaloControlEstacion) {
+            clearInterval(window.intervaloControlEstacion);
+        }
+
+        cargarEstaciones().then(function () {
+            cargarMovimientos();
+        });
+        window.intervaloControlEstacion = setInterval(cargarMovimientos, 10000);
+
+        function fechaLocal(fecha) {
+            const dosDigitos = function (valor) {
+                return String(valor).padStart(2, '0');
+            };
+            return fecha.getFullYear() + '-' + dosDigitos(fecha.getMonth() + 1) + '-' + dosDigitos(fecha.getDate());
+        }
+
+        function horaLimite() {
+            if (fechaLocal(fechaSeleccionada) !== fechaLocal(new Date())) {
+                return '23:59:59';
+            }
+            const limite = new Date(Date.now() + 2 * 60 * 1000);
+            const dosDigitos = function (valor) {
+                return String(valor).padStart(2, '0');
+            };
+            return dosDigitos(limite.getHours()) + ':' + dosDigitos(limite.getMinutes()) + ':' + dosDigitos(limite.getSeconds());
+        }
+
+        function formatearHora(hora) {
+            if (!hora) {
+                return '-';
+            }
+            return String(hora).slice(0, 5);
+        }
+
         function cargarEstaciones() {
             return fetch('/api/estaciones', {
                 headers: getHeaders()
             })
-                .then(response => {
+                .then(function (response) {
                     if (response.status === 401) {
                         window.location.href = '/index.html';
-                        return;
+                        return [];
                     }
                     return response.json();
                 })
-                .then(data => {
-                    // Guardar las estaciones en la variable global
-                    estaciones = data;
-                    cargarEstacionesEnSelect();
+                .then(function (estaciones) {
+                    const select = document.getElementById('estacionSelector');
+                    select.innerHTML = '<option value="">Seleccionar estación</option>';
+                    (estaciones || []).forEach(function (estacion) {
+                        if (estacion.gestionado == true) {
+                            const option = document.createElement('option');
+                            option.value = estacion.id;
+                            option.textContent = estacion.nombre + ' (' + estacion.codigo + ')';
+                            select.appendChild(option);
+                        }
+                    });
+                    if (select.options.length > 1) {
+                        select.selectedIndex = 1;
+                    }
                 })
-                .catch(error => {
+                .catch(function (error) {
                     console.error('Error al cargar estaciones:', error);
                     alert('Error al cargar las estaciones');
                 });
         }
 
-        // Función para formatear fecha ignorando timezone (hora local)
-        function formatearFechaLocal(fecha) {
-            return fecha.getFullYear() + '-' + 
-                String(fecha.getMonth() + 1).padStart(2, '0') + '-' + 
-                String(fecha.getDate()).padStart(2, '0') + ' ' + 
-                String(fecha.getHours()).padStart(2, '0') + ':' + 
-                String(fecha.getMinutes()).padStart(2, '0') + ':' + 
-                String(fecha.getSeconds()).padStart(2, '0');
+        function urlMovimientos(tipo) {
+            const estacionId = $('#estacionSelector').val();
+            const params = new URLSearchParams({
+                cs_EstacionId: estacionId,
+                cs_Fecha: fechaLocal(fechaSeleccionada),
+                cs_HoraLimite: horaLimite()
+            });
+            return '/api/controlEstacion/' + tipo + '?' + params.toString();
         }
 
-        // Ejecutar cargarDatosLlegadas cada 10 segundos
-        setInterval(cargarDatosLlegadas(), 10000);
+        function cargarMovimientos(forzar) {
+            const estacionId = $('#estacionSelector').val();
+            if (!estacionId) {
+                pintarTabla('#tablaLlegadas', [], 'llegada', 'Selecciona una estación');
+                pintarTabla('#tablaSalidas', [], 'salida', 'Selecciona una estación');
+                return;
+            }
+            if (cargando && !forzar) {
+                return;
+            }
+            cargando = true;
 
-        function cargarDatosLlegadas() {
-            const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
-            const fechaInicio = fechaFormateada + ' 00:00:00';
-            
-                         // Calcular fecha fin como hora actual + 2 minutos
-             const ahora = new Date();
-             const fechaFin = new Date(ahora.getTime() + 2 * 60 * 1000); // +2 minutos
-             const fechaFinFormateada = formatearFechaLocal(fechaFin);
-            
-            const estacionId = $('#estacionSelector').val() || 1;
+            Promise.all([
+                fetch(urlMovimientos('llegadas'), { headers: getHeaders() }).then(leerJson),
+                fetch(urlMovimientos('salidas'), { headers: getHeaders() }).then(leerJson)
+            ])
+                .then(function (resultados) {
+                    pintarTabla('#tablaLlegadas', resultados[0], 'llegada', 'No hay llegadas');
+                    pintarTabla('#tablaSalidas', resultados[1], 'salida', 'No hay salidas');
+                })
+                .catch(function (error) {
+                    console.error('Error al cargar el control de estación:', error);
+                })
+                .finally(function () {
+                    cargando = false;
+                });
+        }
 
-            const url = `/api/controlEstacion/llegadas?cs_DateStart=${encodeURIComponent(fechaInicio)}&cs_DateEnd=${encodeURIComponent(fechaFinFormateada)}&cs_EstacionId=${estacionId}`;
+        function leerJson(response) {
+            if (response.status === 401) {
+                window.location.href = '/index.html';
+                return [];
+            }
+            if (!response.ok) {
+                throw new Error('Respuesta no válida');
+            }
+            return response.json();
+        }
 
-            fetch(url, {
-                headers: getHeaders()
-            })
-            .then(response => {
-                console.log('response: ' + response);
-                console.log(response);
-                if (response.status === 401) {
-                    window.location.href = '/index.html';
-                    return;
-                }
-                return response.json();
-            })
-            .then(data => {
-                actualizarTablaLlegadas(data);
-            })
-            .catch(error => {
-                console.error('Error al cargar datos de llegadas:', error);
+        function pintarTabla(selector, datos, accion, vacio) {
+            const tbody = document.querySelector(selector + ' tbody');
+            tbody.innerHTML = '';
+
+            if (!datos || datos.length === 0) {
+                const fila = document.createElement('tr');
+                fila.innerHTML = '<td colspan="6" class="text-center">' + vacio + '</td>';
+                tbody.appendChild(fila);
+                return;
+            }
+
+            const estados = {
+                'PENDIENTE': '<span class="badge bg-warning">Pendiente</span>',
+                'EN_PROGRESO': '<span class="badge bg-info">En progreso</span>',
+                'COMPLETADO': '<span class="badge bg-success">Completado</span>',
+                'CANCELADO': '<span class="badge bg-danger">Cancelado</span>'
+            };
+
+            datos.forEach(function (item) {
+                const hora = accion === 'llegada'
+                    ? (item.horaProgramadaLlegada || item.horaProgramadaSalida)
+                    : (item.horaProgramadaSalida || item.horaProgramadaLlegada);
+                const textoBoton = accion === 'llegada' ? 'Registrar llegada' : 'Registrar salida';
+                const fila = document.createElement('tr');
+                fila.innerHTML =
+                    '<td>' + item.numero + '</td>' +
+                    '<td>' + item.origen + '</td>' +
+                    '<td>' + item.destino + '</td>' +
+                    '<td>' + formatearHora(hora) + '</td>' +
+                    '<td>' + (estados[item.estado] || item.estado) + '</td>' +
+                    '<td><button type="button" class="btn btn-sm btn-primary registrar-movimiento" data-accion="' + accion + '" data-id="' + item.id + '">' + textoBoton + '</button></td>';
+                tbody.appendChild(fila);
             });
         }
 
-        function actualizarTablaLlegadas(data) {
-            const tbody = document.querySelector('#tablaLlegadas tbody');
-            tbody.innerHTML = '';
+        $('#estacionSelector').on('change', cargarMovimientos);
 
-            if (data && data.length > 0) {
-                data.forEach(item => {
-                    const row = document.createElement('tr');
-                    
-                    const fecha = new Date(item.fecha);
-                    const horaFormateada = fecha.toLocaleTimeString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-
-                    const estados = {
-                        'PENDIENTE': '<span class="badge bg-warning">Pendiente</span>',
-                        'EN_PROGRESO': '<span class="badge bg-info">En Progreso</span>',
-                        'COMPLETADO': '<span class="badge bg-success">Completado</span>',
-                        'CANCELADO': '<span class="badge bg-danger">Cancelado</span>'
-                    };
-
-                    row.innerHTML = `
-                        <td>${item.numero}</td>
-                        <td>${item.origen}</td>
-                        <td>${item.destino}</td>
-                        <td>${horaFormateada}</td>
-                        <td>${estados[item.estado] || item.estado}</td>
-                        <td>${item.tipo || '-'}</td>
-                        <td>${item.material || '-'}</td>
-                    `;
-                    
-                    tbody.appendChild(row);
-                });
-            } else {
-                const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="7" class="text-center">No hay datos disponibles</td>';
-                tbody.appendChild(row);
-            }
-        }
-
-        $('#estacionSelector').change(function () {
-            const estacionId = $('#estacionSelector').val();
-            cargarDatosLlegadas();
-        });
-
-        // Event listener para cambios en la fecha del planificador
-        $(document).on('fechaPlanificadorCambiada', function (event, nuevaFecha) {
+        $(document).off('fechaPlanificadorCambiada.controlEstacion').on('fechaPlanificadorCambiada.controlEstacion', function (event, nuevaFecha) {
             fechaSeleccionada = nuevaFecha;
-            // Recargar la tabla con la nueva fecha
-            cargarDatosLlegadas();
+            cargarMovimientos();
         });
 
-        // Función para cargar estaciones de una circulación
-        function cargarEstacionesCirculacion(circulacionId) {
-            return fetch(`/api/circulaciones/${circulacionId}/estaciones`, {
-                headers: {
-                    'Authorization': getAuthToken()
-                }
+        $(document).off('click.controlEstacion', '.registrar-movimiento').on('click.controlEstacion', '.registrar-movimiento', function () {
+            const boton = $(this);
+            const accion = boton.data('accion');
+            const circulacionId = boton.data('id');
+            const estacionId = $('#estacionSelector').val();
+            const verbo = accion === 'llegada' ? 'la llegada' : 'la salida';
+
+            if (!confirm('¿Registrar ' + verbo + ' del tren ' + boton.closest('tr').children().eq(0).text() + '?')) {
+                return;
+            }
+
+            boton.prop('disabled', true);
+            fetch('/api/controlEstacion/' + accion, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    circulacionId: circulacionId,
+                    estacionId: estacionId
+                })
             })
-                .then(response => {
+                .then(function (response) {
                     if (response.status === 401) {
                         window.location.href = '/index.html';
                         return;
                     }
-                    return response.json();
-                })
-                .catch(error => {
-                    console.error('Error al cargar estaciones de la circulación:', error);
-                    throw error;
-                });
-        }
-
-        // Función para formatear hora
-        function formatearHora(hora) {
-            if (!hora) return '-';
-            return hora;
-        }
-
-        // Botón nueva circulación
-        $('.btn-primary').click(function () {
-            if ($(this).text().includes('Nuevo tren custom')) {
-                abrirModalCirculacionCustom();
-            }
-        });
-
-
-        // Event listener para agregar estación
-        $(document).on('click', '#btnAgregarEstacion', function () {
-            agregarEstacionAlContenedor();
-        });
-
-
-
-
-        // Función para cargar estaciones en el select
-        function cargarEstacionesEnSelect() {
-            const select = document.getElementById('estacionSelector');
-            select.innerHTML = '<option value="">Seleccionar estación</option>';
-
-            if (estaciones) {
-                estaciones.forEach(estacion => {
-                    if (estacion.gestionado == true) {
-                        const option = document.createElement('option');
-                        option.value = estacion.id;
-                        option.textContent = `${estacion.nombre} (${estacion.codigo})`;
-                        select.appendChild(option);
+                    if (!response.ok) {
+                        return response.json().then(function (error) {
+                            throw new Error(error.mensaje || 'No se pudo registrar el movimiento');
+                        });
                     }
+                    cargarMovimientos(true);
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    alert(error.message);
+                    boton.prop('disabled', false);
                 });
-            }
-        }
-
-        // Event listener para eliminar circulación
-        $(document).on('click', '.eliminar-circulacion', function () {
-            const id = $(this).data('id');
-            const row = $(this).closest('tr');
-            const numero = row.find('td:eq(0)').text();
-            const origen = row.find('td:eq(1)').text();
-            const destino = row.find('td:eq(2)').text();
-            const hora = row.find('td:eq(3)').text();
-
-            const mensaje = `¿Estás seguro de que deseas eliminar la circulación?\n\n` +
-                `Esta acción no se puede deshacer.`;
-
-            if (confirm(mensaje)) {
-                eliminarCirculacion(id);
-            }
         });
-
-
     });
-
 </script>
