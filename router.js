@@ -22,7 +22,7 @@ router.use((req, res, next) => {
 
 // Importar controladores
 const itinerariosRoutes = require('./controllers/itinerarios');
-const itinerariosSeleccionadosRoutes = require('./controllers/itinerariosSeleccionados');
+const circulacionesRoutes = require('./controllers/circulaciones');
 const usuariosRoutes = require('./controllers/usuarios');
 const estacionesRoutes = require('./controllers/estaciones');
 const panel = require('./controllers/panel');
@@ -33,7 +33,7 @@ router.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas de la API
 router.use('/api/itinerarios', itinerariosRoutes);
-router.use('/api/itinerariosSeleccionados', itinerariosSeleccionadosRoutes);
+router.use('/api/circulaciones', circulacionesRoutes);
 router.use('/api/usuarios', usuariosRoutes);
 router.use('/api/estaciones', estacionesRoutes);
 router.use('/api/panel', panel);

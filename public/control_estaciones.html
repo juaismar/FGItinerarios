@@ -177,9 +177,9 @@
             cargarDatosLlegadas();
         });
 
-        // Función para cargar estaciones de un itinerario
-        function cargarEstacionesItinerario(itinerarioId) {
-            return fetch(`/api/itinerariosSeleccionados/${itinerarioId}/estaciones`, {
+        // Función para cargar estaciones de una circulación
+        function cargarEstacionesCirculacion(circulacionId) {
+            return fetch(`/api/circulaciones/${circulacionId}/estaciones`, {
                 headers: {
                     'Authorization': getAuthToken()
                 }
@@ -192,7 +192,7 @@
                     return response.json();
                 })
                 .catch(error => {
-                    console.error('Error al cargar estaciones del itinerario:', error);
+                    console.error('Error al cargar estaciones de la circulación:', error);
                     throw error;
                 });
         }
@@ -203,10 +203,10 @@
             return hora;
         }
 
-        // Botón nuevo itinerario custom
+        // Botón nueva circulación
         $('.btn-primary').click(function () {
             if ($(this).text().includes('Nuevo tren custom')) {
-                abrirModalItinerarioCustom();
+                abrirModalCirculacionCustom();
             }
         });
 
@@ -236,8 +236,8 @@
             }
         }
 
-        // Event listener para eliminar itinerario
-        $(document).on('click', '.eliminar-itinerario', function () {
+        // Event listener para eliminar circulación
+        $(document).on('click', '.eliminar-circulacion', function () {
             const id = $(this).data('id');
             const row = $(this).closest('tr');
             const numero = row.find('td:eq(0)').text();
@@ -245,11 +245,11 @@
             const destino = row.find('td:eq(2)').text();
             const hora = row.find('td:eq(3)').text();
 
-            const mensaje = `¿Estás seguro de que deseas eliminar el itinerario?\n\n` +
+            const mensaje = `¿Estás seguro de que deseas eliminar la circulación?\n\n` +
                 `Esta acción no se puede deshacer.`;
 
             if (confirm(mensaje)) {
-                eliminarItinerario(id);
+                eliminarCirculacion(id);
             }
         });
 

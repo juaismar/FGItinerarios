@@ -6,12 +6,12 @@ const { ssp } = require('../db/database');
 
 const logLocation = 'panel.js: ';
 
-// Obtener todas las estaciones de itinerarios seleccionados con paginación
+// Obtener todas las estaciones de circulaciones con paginación
 router.get('/paginated', async (req, res) => {
     try {
         const columns = [
             { db: 'id', dt: 'id', formatter: null },
-            { db: 'itinerarioSeleccionadoId', dt: 'itinerarioSeleccionadoId', formatter: null },
+            { db: 'circulacionId', dt: 'circulacionId', formatter: null },
             { db: 'estacionId', dt: 'estacionId', formatter: null },
             { db: 'orden', dt: 'orden', formatter: null },
             { db: 'horaProgramadaLlegada', dt: 'horaProgramadaLlegada', formatter: null },
@@ -35,11 +35,11 @@ router.get('/paginated', async (req, res) => {
             whereResult.push(`fecha < '${fechaEnd}'`);
         }
 
-        const result = await ssp.Complex(req.query, 'ItinerarioSeleccionadoEstacions', columns, whereResult, whereAll);
+        const result = await ssp.Complex(req.query, 'CirculacionEstaciones', columns, whereResult, whereAll);
         res.json(result);
     } catch (error) {
-        logger.error(logLocation + 'Error al obtener estaciones de itinerarios seleccionados paginadas:', error);
-        res.status(500).json({ mensaje: 'Error al obtener estaciones de itinerarios seleccionados' });
+        logger.error(logLocation + 'Error al obtener estaciones de circulaciones paginadas:', error);
+        res.status(500).json({ mensaje: 'Error al obtener estaciones de circulaciones' });
     }
 });
 

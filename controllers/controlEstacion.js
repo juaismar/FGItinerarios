@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
 const Itinerario = require('../models/Itinerario');
-const ItinerarioSeleccionado = require('../models/ItinerarioSeleccionado');
-const ItinerarioSeleccionadoEstacion = require('../models/ItinerarioSeleccionadoEstacion');
+const Circulacion = require('../models/Circulacion');
+const CirculacionEstacion = require('../models/CirculacionEstacion');
 const Estacion = require('../models/Estacion');
 const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
@@ -12,7 +12,7 @@ const { ssp, sequelize } = require('../db/database');
 
 const logLocation = 'controlEstacion.js: ';
 
-// Obtener todos los itinerarios
+// Obtener salidas de circulaciones
 router.get('/salidas', /*verificarAuth(['planificador', 'admin']),*/async (req, res) => {
     try {
         const fechaStart = req.query.cs_DateStart;
@@ -25,8 +25,8 @@ router.get('/salidas', /*verificarAuth(['planificador', 'admin']),*/async (req, 
                                       // Consulta SQL compleja que cumple con todos los requisitos especificados
               const query = `
               SELECT DISTINCT its.* 
-              FROM "ItinerarioSeleccionados" its
-              INNER JOIN "ItinerarioSeleccionadoEstacions" ise ON its.id = ise."itinerarioSeleccionadoId"
+              FROM "Circulaciones" its
+              INNER JOIN "CirculacionEstaciones" ise ON its.id = ise."circulacionId"
               INNER JOIN "Estacions" e ON ise."estacionId" = e.id
               WHERE ise."estacionId" = $1 
               AND its.estado <> 'CANCELADO'
@@ -38,9 +38,9 @@ router.get('/salidas', /*verificarAuth(['planificador', 'admin']),*/async (req, 
                   -- Si existe una estación previa según orden, debe estar activa, gestionada y tener horaRealSalida no nula
                   NOT EXISTS (
                       SELECT 1 
-                      FROM "ItinerarioSeleccionadoEstacions" ise_prev
+                      FROM "CirculacionEstaciones" ise_prev
                       INNER JOIN "Estacions" e_prev ON ise_prev."estacionId" = e_prev.id
-                      WHERE ise_prev."itinerarioSeleccionadoId" = its.id 
+                      WHERE ise_prev."circulacionId" = its.id 
                       AND ise_prev.orden < ise.orden
                       AND (e_prev.activa = false OR e_prev.gestionado = false OR ise_prev."horaRealSalida" IS NULL)
                   )
@@ -73,8 +73,8 @@ router.get('/llegadas', /*verificarAuth(['planificador', 'admin']),*/ async (req
                                       // Consulta SQL compleja que cumple con todos los requisitos especificados
               const query = `
               SELECT DISTINCT its.* 
-              FROM "ItinerarioSeleccionados" its
-              INNER JOIN "ItinerarioSeleccionadoEstacions" ise ON its.id = ise."itinerarioSeleccionadoId"
+              FROM "Circulaciones" its
+              INNER JOIN "CirculacionEstaciones" ise ON its.id = ise."circulacionId"
               INNER JOIN "Estacions" e ON ise."estacionId" = e.id
               WHERE ise."estacionId" = $1 
               AND its.estado <> 'CANCELADO'
@@ -86,9 +86,9 @@ router.get('/llegadas', /*verificarAuth(['planificador', 'admin']),*/ async (req
                   -- Si existe una estación previa según orden, debe estar activa, gestionada y tener horaRealSalida no nula
                   NOT EXISTS (
                       SELECT 1 
-                      FROM "ItinerarioSeleccionadoEstacions" ise_prev
+                      FROM "CirculacionEstaciones" ise_prev
                       INNER JOIN "Estacions" e_prev ON ise_prev."estacionId" = e_prev.id
-                      WHERE ise_prev."itinerarioSeleccionadoId" = its.id 
+                      WHERE ise_prev."circulacionId" = its.id 
                       AND ise_prev.orden < ise.orden
                       AND (e_prev.activa = false OR e_prev.gestionado = false OR ise_prev."horaRealSalida" IS NULL)
                   )

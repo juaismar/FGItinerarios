@@ -197,7 +197,7 @@
         // Función para cargar itinerarios ya seleccionados de la fecha seleccionada
         function cargarItinerariosYaSeleccionados() {
             const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
-            return fetch(`/api/itinerariosSeleccionados?date=${fechaFormateada}`, {
+            return fetch(`/api/circulaciones?date=${fechaFormateada}`, {
                 headers: getHeaders()
             })
             .then(response => {
@@ -508,7 +508,7 @@
             // Mostrar confirmación al usuario
             if (confirm(`¿Estás seguro de que quieres seleccionar ${itinerariosSeleccionados.size} itinerarios para el ${fechaSeleccionada.toLocaleDateString()}?`)) {
                 // Enviar petición al servidor
-                fetch('/api/itinerariosSeleccionados/select', {
+                fetch('/api/circulaciones/select', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -528,7 +528,7 @@
                 })
                 .then(data => {
                     if (data) {
-                        alert(`¡Éxito! Se han creado ${itinerariosSeleccionados.size} itinerarios seleccionados.`);
+                        alert(`¡Éxito! Se han creado ${itinerariosSeleccionados.size} circulaciones.`);
                         // Limpiar selección después del éxito
                         itinerariosSeleccionados.clear();
                         $('#tablaItinerarios tbody tr').removeClass('row-selected');
@@ -540,8 +540,8 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error al crear itinerarios seleccionados:', error);
-                    alert('Error al crear los itinerarios seleccionados. Por favor, inténtalo de nuevo.');
+                    console.error('Error al crear circulaciones:', error);
+                    alert('Error al crear las circulaciones. Por favor, inténtalo de nuevo.');
                 });
             }
         });

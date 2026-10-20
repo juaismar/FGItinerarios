@@ -230,8 +230,8 @@
         async function cargarMallaCirculaciones(fecha = null) {
             try {
                 const url = fecha 
-                    ? `/api/itinerariosSeleccionados/malla/circulaciones?fecha=${fecha}`
-                    : '/api/itinerariosSeleccionados/malla/circulaciones';
+                    ? `/api/circulaciones/malla/circulaciones?fecha=${fecha}`
+                    : '/api/circulaciones/malla/circulaciones';
                 
                 const response = await fetch(url, {
                     headers: {
@@ -331,7 +331,7 @@
             const links = mallaData.circulaciones.map(circulacion => ({
                 source: circulacion.desde.estacionId,
                 target: circulacion.hasta.estacionId,
-                itinerarioId: circulacion.itinerarioId,
+                circulacionId: circulacion.circulacionId,
                 numero: circulacion.numero,
                 tipo: circulacion.tipo,
                 estado: circulacion.estado,

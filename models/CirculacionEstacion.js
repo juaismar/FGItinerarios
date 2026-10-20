@@ -1,17 +1,17 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db/database');
 
-const ItinerarioSeleccionadoEstacion = sequelize.define('ItinerarioSeleccionadoEstacion', {
+const CirculacionEstacion = sequelize.define('CirculacionEstacion', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    itinerarioSeleccionadoId: {
+    circulacionId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'ItinerarioSeleccionados',
+            model: 'Circulaciones',
             key: 'id'
         }
     },
@@ -26,7 +26,7 @@ const ItinerarioSeleccionadoEstacion = sequelize.define('ItinerarioSeleccionadoE
     orden: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        comment: 'Orden de la estación en el itinerario seleccionado'
+        comment: 'Orden de la estación en la circulación'
     },
     horaProgramadaLlegada: {
         type: DataTypes.TIME,
@@ -57,6 +57,8 @@ const ItinerarioSeleccionadoEstacion = sequelize.define('ItinerarioSeleccionadoE
         type: DataTypes.TEXT,
         comment: 'Observaciones sobre la parada en esta estación'
     }
+}, {
+    tableName: 'CirculacionEstaciones'
 });
 
-module.exports = ItinerarioSeleccionadoEstacion; 
+module.exports = CirculacionEstacion; 

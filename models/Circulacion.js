@@ -1,9 +1,9 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db/database');
 const Estacion = require('./Estacion');
-const ItinerarioSeleccionadoEstacion = require('./ItinerarioSeleccionadoEstacion');
+const CirculacionEstacion = require('./CirculacionEstacion');
 
-const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
+const Circulacion = sequelize.define('Circulacion', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -24,7 +24,7 @@ const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
     fecha: {
         type: DataTypes.DATE,
         allowNull: false,
-        comment: 'Fecha y hora completa del itinerario'
+        comment: 'Fecha y hora completa de la circulación'
     },
     tipo: {
         type: DataTypes.STRING,
@@ -42,34 +42,39 @@ const ItinerarioSeleccionado = sequelize.define('ItinerarioSeleccionado', {
         defaultValue: 'PENDIENTE'
     },
 }, {
+    tableName: 'Circulaciones',
     indexes: [
         {
             unique: true,
             fields: ['numero', 'fecha'],
-            name: 'itinerario_seleccionado_numero_fecha_unique'
+            name: 'circulacion_numero_fecha_unique'
         }
     ]
 });
 
 // Relaciones
-ItinerarioSeleccionado.belongsToMany(Estacion, { 
-    through: ItinerarioSeleccionadoEstacion,
-    as: 'estaciones'
+Circulacion.belongsToMany(Estacion, { 
+    through: CirculacionEstacion,
+    as: 'estaciones',
+    foreignKey: 'circulacionId',
+    otherKey: 'estacionId'
 });
-Estacion.belongsToMany(ItinerarioSeleccionado, { 
-    through: ItinerarioSeleccionadoEstacion,
-    as: 'itinerariosSeleccionados'
+Estacion.belongsToMany(Circulacion, { 
+    through: CirculacionEstacion,
+    as: 'circulaciones',
+    foreignKey: 'estacionId',
+    otherKey: 'circulacionId'
 });
 
 // Métodos de instancia
-ItinerarioSeleccionado.prototype.obtenerEstacionesOrdenadas = async function() {
+Circulacion.prototype.obtenerEstacionesOrdenadas = async function() {
     return await this.getEstaciones({
         through: {
             attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida', 
                         'horaRealLlegada', 'horaRealSalida', 'observaciones']
         },
-        order: [[ItinerarioSeleccionadoEstacion, 'orden', 'ASC']]
+        order: [[CirculacionEstacion, 'orden', 'ASC']]
     });
 };
 
-module.exports = ItinerarioSeleccionado; 
+module.exports = Circulacion; 
