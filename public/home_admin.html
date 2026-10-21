@@ -58,18 +58,24 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#" data-page="itinerarios">Itinerarios</a>
+                        <a class="nav-link active" href="#" data-page="itinerarios" data-i18n="nav.itinerarios">Itinerarios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-page="estaciones">Estaciones</a>
+                        <a class="nav-link" href="#" data-page="estaciones" data-i18n="nav.estaciones">Estaciones</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" data-page="usuarios">Usuarios</a>
+                        <a class="nav-link" href="#" data-page="usuarios" data-i18n="nav.usuarios">Usuarios</a>
                     </li>
                 </ul>
-                <div class="d-flex">
+                <div class="d-flex align-items-center">
+                    <label for="selectorIdioma" class="text-white me-2 mb-0 small" data-i18n="comun.idioma">Idioma</label>
+                    <select id="selectorIdioma" class="form-select form-select-sm me-3" style="width: auto;">
+                        <option value="es-ES">Español</option>
+                        <option value="ca-ES-valencia">Valencià</option>
+                        <option value="en">English</option>
+                    </select>
                     <span class="nav-link text-white me-3" id="user-info">Usuario</span>
-                    <a class="nav-link" href="#" id="logout" onclick="cerrarSesion()">Cerrar Sesión</a>
+                    <a class="nav-link" href="#" id="logout" onclick="cerrarSesion()" data-i18n="comun.cerrarSesion">Cerrar Sesión</a>
                 </div>
             </div>
         </div>
@@ -86,10 +92,12 @@
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/js/i18n.js"></script>
     <script>
         $(document).ready(function() {
-            // Cargar itinerarios.html por defecto
-            cargarContenido('itinerarios');
+            window.idiomaListo.then(function () {
+                cargarContenido('itinerarios');
+            });
 
             // Manejar clicks en el menú
             $('.nav-link').click(function(e) {

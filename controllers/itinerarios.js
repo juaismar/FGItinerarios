@@ -6,6 +6,7 @@ const Estacion = require('../models/Estacion');
 const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
 const { ssp } = require('../db/database');
+const { prepararParadas } = require('../utils/orientarParadas');
 
 
 const logLocation = 'itinerarios.js: ';
@@ -33,6 +34,9 @@ async function manejarEstacionesItinerario(itinerarioId, estaciones) {
     if (!estaciones || !Array.isArray(estaciones)) {
         return;
     }
+
+    const itinerario = await Itinerario.findByPk(itinerarioId);
+    const orientadas = await prepararParadas(estaciones, itinerario && itinerario.origen, itinerario && itinerario.destino);
     
     // Eliminar todas las relaciones existentes
     await ItinerarioEstacion.destroy({ 
@@ -40,7 +44,7 @@ async function manejarEstacionesItinerario(itinerarioId, estaciones) {
     });
     
     // Crear las nuevas relaciones
-    const estacionesData = estaciones.map(estacion => ({
+    const estacionesData = orientadas.map(estacion => ({
         itinerarioId: parseInt(itinerarioId),
         estacionId: estacion.estacionId,
         orden: estacion.orden,

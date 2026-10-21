@@ -8,6 +8,7 @@ const router = express.Router();
 const { ssp, sequelize } = require('../db/database');
 const { aplicarGestionAutomatica } = require('./controlEstacion');
 const { Op } = require('sequelize');
+const { prepararParadas } = require('../utils/orientarParadas');
 
 const logLocation = 'circulaciones.js: ';
 
@@ -24,8 +25,14 @@ async function copiarItinerario(itinerarioOriginalId, circulacionId) {
         //console.log(`Estaciones encontradas para itinerario ${itinerarioOriginalId}:`, estacionesOriginales.length);
         
         if (estacionesOriginales.length > 0) {
-            // Crear las estaciones para la circulación
-            const estacionesData = estacionesOriginales.map(estacion => ({
+            const Itinerario = require('../models/Itinerario');
+            const itinerario = await Itinerario.findByPk(itinerarioOriginalId);
+            const orientadas = await prepararParadas(
+                estacionesOriginales.map(estacion => estacion.get({ plain: true })),
+                itinerario && itinerario.origen,
+                itinerario && itinerario.destino
+            );
+            const estacionesData = orientadas.map(estacion => ({
                 circulacionId: circulacionId,
                 estacionId: estacion.estacionId,
                 orden: estacion.orden,
@@ -53,13 +60,23 @@ async function copiarItinerario(itinerarioOriginalId, circulacionId) {
 
 // Función auxiliar para manejar las estaciones de la circulación
 async function manejarEstacionesCirculacion(circulacionId, estaciones) {
+    if (!Array.isArray(estaciones)) {
+        return;
+    }
+    const circulacion = await Circulacion.findByPk(circulacionId);
+    const orientadas = await prepararParadas(
+        estaciones,
+        circulacion && circulacion.origen,
+        circulacion && circulacion.destino
+    );
+
     // Eliminar todas las relaciones existentes
     await CirculacionEstacion.destroy({
         where: { circulacionId: circulacionId }
     });
 
     // Crear las nuevas relaciones
-    const estacionesData = estaciones.map(estacion => ({
+    const estacionesData = orientadas.map(estacion => ({
         circulacionId: circulacionId,
         estacionId: estacion.estacionId,
         orden: estacion.orden,
@@ -104,6 +121,9 @@ router.get('/paginated', async (req, res) => {
         res.status(500).json({ mensaje: 'Error al obtener circulaciones' });
     }
 });
+
+// Antes de /:id: si no, Express trata "mallacirculaciones" como un identificador.
+router.get('/mallacirculaciones', obtenerMallaCirculaciones);
 
 // Obtener una circulación por ID
 router.get('/:id', async(req, res) => {
@@ -374,7 +394,7 @@ router.post('/:id/cancelar', verificarAuth(['planificador', 'admin']), async (re
     try {
         const circulacion = await Circulacion.findByPk(req.params.id);
         if (!circulacion) {
-            return res.status(404).json({ mensaje: 'La circulación no fue encontrada.' });
+            return res.status(404).json({ codigo: 'CIRCULACION_NO_ENCONTRADA', mensaje: 'La circulación no fue encontrada.' });
         }
 
         if (circulacion.estado !== 'CANCELADO') {
@@ -405,112 +425,134 @@ router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) =>
     }
 });
 
-// Obtener malla de circulaciones entre estaciones
-router.get('/mallacirculaciones', async (req, res) => {
-    try {
-        const { fecha } = req.query;
-        
-        // Si no se proporciona fecha, usar hoy
-        let fechaConsulta;
-        if (fecha) {
-            fechaConsulta = new Date(fecha);
-            if (isNaN(fechaConsulta.getTime())) {
-                return res.status(400).json({ error: 'Formato de fecha inválido' });
-            }
-        } else {
-            fechaConsulta = new Date();
+function paradasMalla(circulacion) {
+    return (circulacion.estaciones || [])
+        .map(estacion => {
+            const parada = estacion.CirculacionEstacion || {};
+            return {
+                estacionId: estacion.id,
+                nombre: estacion.nombre,
+                codigo: estacion.codigo,
+                orden: parada.orden || 0,
+                horaLlegada: parada.horaProgramadaLlegada || null,
+                horaSalida: parada.horaProgramadaSalida || null
+            };
+        })
+        .sort((a, b) => a.orden - b.orden);
+}
+
+function primerMinutoMalla(tren) {
+    for (const parada of tren.paradas) {
+        const salida = minutosDelDia(parada.horaSalida);
+        if (salida != null) {
+            return salida;
         }
+        const llegada = minutosDelDia(parada.horaLlegada);
+        if (llegada != null) {
+            return llegada;
+        }
+    }
+    return 24 * 60;
+}
 
-        const inicioDia = new Date(fechaConsulta.getFullYear(), fechaConsulta.getMonth(), fechaConsulta.getDate(), 0, 0, 0);
-        const finDia = new Date(fechaConsulta.getFullYear(), fechaConsulta.getMonth(), fechaConsulta.getDate(), 23, 59, 59, 999);
+function estacionesEnOrdenDeLinea(trenes) {
+    const info = new Map();
+    trenes.forEach(tren => {
+        tren.paradas.forEach(parada => {
+            if (!info.has(parada.estacionId)) {
+                info.set(parada.estacionId, parada);
+            }
+        });
+    });
 
-        // Obtener todas las circulaciones para la fecha
-        const circulaciones = await Circulacion.findAll({
-            where: {
-                fecha: {
-                    [Op.gte]: inicioDia,
-                    [Op.lte]: finDia
+    let canon = [];
+    trenes.forEach(tren => {
+        const ids = tren.paradas.map(parada => parada.estacionId);
+        if (ids.length > canon.length) {
+            canon = ids.slice();
+        }
+    });
+
+    if (canon.length >= 2 && canon[0] > canon[canon.length - 1]) {
+        canon.reverse();
+    }
+
+    const colocadas = new Set(canon);
+    trenes.forEach(tren => {
+        tren.paradas.forEach((parada, indice) => {
+            const id = parada.estacionId;
+            if (colocadas.has(id)) {
+                return;
+            }
+            let anterior = -1;
+            for (let j = indice - 1; j >= 0; j -= 1) {
+                const posicion = canon.indexOf(tren.paradas[j].estacionId);
+                if (posicion !== -1) {
+                    anterior = posicion;
+                    break;
                 }
-            },
+            }
+            canon.splice(anterior + 1, 0, id);
+            colocadas.add(id);
+        });
+    });
+
+    return canon.map(id => {
+        const parada = info.get(id);
+        return {
+            id: parada.estacionId,
+            nombre: parada.nombre,
+            codigo: parada.codigo
+        };
+    });
+}
+
+async function obtenerMallaCirculaciones(req, res) {
+    try {
+        const fecha = fechaMadrid(req.query.fecha);
+        const circulaciones = await Circulacion.findAll({
+            where: sequelize.where(
+                sequelize.literal(`("Circulacion"."fecha" AT TIME ZONE 'Europe/Madrid')::date`),
+                fecha
+            ),
             include: [{
                 model: Estacion,
                 as: 'estaciones',
                 through: {
                     attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida']
-                },
-                order: [[CirculacionEstacion, 'orden', 'ASC']]
-            }],
-            order: [['fecha', 'ASC']]
-        });
-
-        // Procesar los datos para crear la malla
-        const malla = {
-            fecha: fechaConsulta.toISOString().split('T')[0],
-            estaciones: [],
-            circulaciones: []
-        };
-
-        // Obtener todas las estaciones únicas
-        const estacionesUnicas = new Set();
-        const estacionesMap = new Map();
-
-        circulaciones.forEach(circulacion => {
-            if (circulacion.estaciones) {
-                circulacion.estaciones.forEach(estacion => {
-                    estacionesUnicas.add(estacion.id);
-                    if (!estacionesMap.has(estacion.id)) {
-                        estacionesMap.set(estacion.id, {
-                            id: estacion.id,
-                            nombre: estacion.nombre,
-                            codigo: estacion.codigo
-                        });
-                    }
-                });
-            }
-        });
-
-        malla.estaciones = Array.from(estacionesMap.values());
-
-        // Crear las circulaciones
-        circulaciones.forEach(circulacion => {
-            if (circulacion.estaciones && circulacion.estaciones.length > 1) {
-                // Crear conexiones entre estaciones consecutivas
-                for (let i = 0; i < circulacion.estaciones.length - 1; i++) {
-                    const estacionActual = circulacion.estaciones[i];
-                    const estacionSiguiente = circulacion.estaciones[i + 1];
-                    
-                    const tramo = {
-                        circulacionId: circulacion.id,
-                        numero: circulacion.numero,
-                        origen: circulacion.origen,
-                        destino: circulacion.destino,
-                        tipo: circulacion.tipo,
-                        estado: circulacion.estado,
-                        desde: {
-                            estacionId: estacionActual.id,
-                            estacionNombre: estacionActual.nombre,
-                            estacionCodigo: estacionActual.codigo,
-                            horaSalida: estacionActual.CirculacionEstacion.horaProgramadaSalida
-                        },
-                        hasta: {
-                            estacionId: estacionSiguiente.id,
-                            estacionNombre: estacionSiguiente.nombre,
-                            estacionCodigo: estacionSiguiente.codigo,
-                            horaLlegada: estacionSiguiente.CirculacionEstacion.horaProgramadaLlegada
-                        }
-                    };
-                    
-                    malla.circulaciones.push(tramo);
                 }
-            }
+            }],
+            order: [['numero', 'ASC']]
         });
 
-        res.json(malla);
+        const trenes = circulaciones.map(circulacion => ({
+            id: circulacion.id,
+            numero: circulacion.numero,
+            origen: circulacion.origen,
+            destino: circulacion.destino,
+            tipo: circulacion.tipo,
+            estado: circulacion.estado,
+            paradas: paradasMalla(circulacion)
+        }));
+
+        trenes.sort((a, b) => {
+            const diferencia = primerMinutoMalla(a) - primerMinutoMalla(b);
+            if (diferencia !== 0) {
+                return diferencia;
+            }
+            return String(a.numero).localeCompare(String(b.numero), 'es', { numeric: true });
+        });
+
+        res.json({
+            fecha,
+            estaciones: estacionesEnOrdenDeLinea(trenes),
+            trenes
+        });
     } catch (error) {
         logger.error('Error al obtener malla de circulaciones:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
-});
+}
 
 const MARGEN_RETRASO_MINUTOS = 2;
 const MARGEN_SIN_MARCA_MINUTOS = 1;
@@ -610,7 +652,7 @@ function instanteProgramado(fechaCirculacion, hora) {
 
 function describirSituacion(estado, programada, real, fechaCirculacion) {
     if (estado === 'CANCELADO') {
-        return { texto: 'Cancelado', retraso: false, cancelado: true };
+        return { texto: 'Cancelado', retraso: false, cancelado: true, codigo: 'CANCELADO', minutos: 0 };
     }
 
     const minutosProgramados = minutosDelDia(programada);
@@ -623,22 +665,22 @@ function describirSituacion(estado, programada, real, fechaCirculacion) {
             diferencia += 24 * 60;
         }
         if (diferencia > MARGEN_RETRASO_MINUTOS) {
-            return { texto: textoRetraso(diferencia), retraso: true, cancelado: false };
+            return { texto: textoRetraso(diferencia), retraso: true, cancelado: false, codigo: 'RETRASO', minutos: diferencia };
         }
-        return { texto: '', retraso: false, cancelado: false };
+        return { texto: '', retraso: false, cancelado: false, codigo: '', minutos: 0 };
     }
 
     const instante = instanteProgramado(fechaCirculacion, programada);
     if (!instante) {
-        return { texto: '', retraso: false, cancelado: false };
+        return { texto: '', retraso: false, cancelado: false, codigo: '', minutos: 0 };
     }
 
     const minutosSinMarca = Math.floor((Date.now() - instante.getTime()) / 60000);
     if (minutosSinMarca >= MARGEN_SIN_MARCA_MINUTOS) {
-        return { texto: textoRetraso(minutosSinMarca), retraso: true, cancelado: false };
+        return { texto: textoRetraso(minutosSinMarca), retraso: true, cancelado: false, codigo: 'RETRASO', minutos: minutosSinMarca };
     }
 
-    return { texto: '', retraso: false, cancelado: false };
+    return { texto: '', retraso: false, cancelado: false, codigo: '', minutos: 0 };
 }
 
 function paradasOrdenadas(circulacion) {
@@ -658,6 +700,8 @@ function filaVisor(circulacion, parada, hora, columnas) {
         numero: circulacion.numero,
         via: parada.via || '',
         observaciones: observacion,
+        codigo: situacion.codigo || '',
+        minutos: situacion.minutos || 0,
         retraso: situacion.retraso,
         cancelado: situacion.cancelado,
         ...columnas.destino

@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
     const usuario = await Usuario.findOne({ where: { email } });
     
     if (!usuario || !(await usuario.verificarPassword(password))) {
-      return res.status(401).json({ mensaje: 'Credenciales inválidas' });
+      return res.status(401).json({ codigo: 'CREDENCIALES_INVALIDAS', mensaje: 'Credenciales inválidas' });
     }
 
     // Actualizar último acceso
@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
 
     res.json({ usuario, token });
   } catch (error) {
-    res.status(400).json({ mensaje: 'Error en el login' });
+    res.status(400).json({ codigo: 'ERROR_LOGIN', mensaje: 'Error en el login' });
   }
 });
 

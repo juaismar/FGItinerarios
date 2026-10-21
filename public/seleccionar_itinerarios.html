@@ -108,7 +108,7 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Seleccionar Itinerarios</h2>
+        <h2 data-i18n="seleccionar.titulo">Seleccionar Itinerarios</h2>
         <div>
             <button class="btn btn-success" id="btnConfirmarSeleccion" style="display: none;">
                 <i class="fas fa-check"></i> Confirmar Selección
@@ -187,6 +187,9 @@
 
 <script>
     $(document).ready(function () {
+        if (window.aplicarIdioma) {
+            aplicarIdioma(document.getElementById('main-content'));
+        }
         let tablaItinerarios;
         let itinerariosSeleccionados = new Set();
         let numerosTrenYaSeleccionados = new Set(); // Para almacenar los números de tren ya seleccionados
@@ -284,7 +287,7 @@
         // Inicializar DataTable
         tablaItinerarios = $('#tablaItinerarios').DataTable({
             language: {
-                url: '/datatable_lang/es-ES.json'
+                url: urlIdiomaTabla()
             },
             serverSide: true,
             processing: true,
@@ -542,13 +545,13 @@
             
             // Verificar si el itinerario ya está seleccionado en la sesión actual
             if (itinerariosSeleccionados.has(id)) {
-                alert('Este itinerario ya está seleccionado.');
+                alert(texto('seleccionar.yaSeleccionado', 'Este itinerario ya está seleccionado.'));
                 return;
             }
 
             // Verificar si el itinerario ya fue seleccionado para hoy
             if (numerosTrenYaSeleccionados.has(data.numero)) {
-                alert('Este itinerario ya fue seleccionado para hoy.');
+                alert(texto('seleccionar.yaHoy', 'Este itinerario ya fue seleccionado para hoy.'));
                 return;
             }
 
@@ -558,7 +561,7 @@
         // Manejar clic en confirmar selección
         $('#btnConfirmarSeleccion').click(function () {
             if (itinerariosSeleccionados.size === 0) {
-                alert('Por favor selecciona al menos un itinerario');
+                alert(texto('seleccionar.ninguno', 'Por favor selecciona al menos un itinerario'));
                 return;
             }
 
@@ -568,7 +571,10 @@
             const fechaSeleccion = fechaSeleccionada.toISOString();
             
             // Mostrar confirmación al usuario
-            if (confirm(`¿Estás seguro de que quieres seleccionar ${itinerariosSeleccionados.size} itinerarios para el ${fechaSeleccionada.toLocaleDateString()}?`)) {
+            if (confirm(texto('seleccionar.confirmarVarios', '¿Estás seguro de que quieres seleccionar ' + itinerariosSeleccionados.size + ' itinerarios para el ' + fechaSeleccionada.toLocaleDateString(idiomaActual()) + '?', {
+                n: itinerariosSeleccionados.size,
+                fecha: fechaSeleccionada.toLocaleDateString(idiomaActual())
+            }))) {
                 // Enviar petición al servidor
                 fetch('/api/circulaciones/select', {
                     method: 'POST',
@@ -590,7 +596,7 @@
                 })
                 .then(data => {
                     if (data) {
-                        alert(`¡Éxito! Se han creado ${itinerariosSeleccionados.size} circulaciones.`);
+                        alert(texto('seleccionar.exito', '¡Éxito! Se han creado ' + itinerariosSeleccionados.size + ' circulaciones.', { n: itinerariosSeleccionados.size }));
                         // Limpiar selección después del éxito
                         itinerariosSeleccionados.clear();
                         $('#tablaItinerarios tbody tr').removeClass('row-selected');
@@ -603,7 +609,7 @@
                 })
                 .catch(error => {
                     console.error('Error al crear circulaciones:', error);
-                    alert('Error al crear las circulaciones. Por favor, inténtalo de nuevo.');
+                    alert(texto('seleccionar.error', 'Error al crear las circulaciones. Por favor, inténtalo de nuevo.'));
                 });
             }
         });

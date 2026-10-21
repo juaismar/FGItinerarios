@@ -83,7 +83,7 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gestión de Itinerarios</h2>
+        <h2 data-i18n="itinerarios.titulo">Gestión de Itinerarios</h2>
         <button class="btn btn-primary nuevo-itinerario">
             <i class="fas fa-plus"></i> Nuevo Itinerario
         </button>
@@ -219,6 +219,9 @@
 
 <script>
     $(document).ready(function () {
+        if (window.aplicarIdioma) {
+            aplicarIdioma(document.getElementById('main-content'));
+        }
         let tablaItinerarios;
         let itinerarioModal;
         let estaciones;
@@ -244,7 +247,7 @@
                 })
                 .catch(error => {
                     console.error('Error al cargar estaciones:', error);
-                    alert('Error al cargar las estaciones');
+                    alert(texto('itinerarios.errorEstaciones', 'Error al cargar las estaciones'));
                 });
         }
 
@@ -324,13 +327,13 @@
             const horaProgramadaSalida = document.getElementById('horaSalida').value;
 
             if (!estacionId) {
-                alert('Por favor selecciona una estación');
+                alert(texto('itinerarios.sinEstacion', 'Por favor selecciona una estación'));
                 return;
             }
 
             // Verificar que la estación no esté ya agregada
             if (estacionesItinerario.some(e => e.estacionId === parseInt(estacionId))) {
-                alert('Esta estación ya está agregada al itinerario');
+                alert(texto('itinerarios.estacionRepetida', 'Esta estación ya está agregada al itinerario'));
                 return;
             }
 
@@ -379,7 +382,7 @@
         // Inicializar DataTable
         tablaItinerarios = $('#tablaItinerarios').DataTable({
             language: {
-                url: '/datatable_lang/es-ES.json'
+                url: urlIdiomaTabla()
             },
             serverSide: true,
             processing: true,
@@ -566,7 +569,7 @@
         // Manejar clic en eliminar
         $('#tablaItinerarios').on('click', '.eliminar-itinerario', function () {
             const id = $(this).data('id');
-            if (confirm('¿Estás seguro de que deseas eliminar este itinerario?')) {
+            if (confirm(texto('itinerarios.confirmarEliminar', '¿Estás seguro de que deseas eliminar este itinerario?'))) {
                 fetch(`/api/itinerarios/${id}`, {
                     method: 'DELETE',
                     headers: getHeaders()
@@ -584,7 +587,7 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error al eliminar el itinerario');
+                        alert(texto('itinerarios.errorEliminar', 'Error al eliminar el itinerario'));
                     });
             }
         });
@@ -635,7 +638,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al guardar el itinerario');
+                    alert(texto('itinerarios.errorGuardar', 'Error al guardar el itinerario'));
                 });
         });
     });

@@ -56,7 +56,7 @@
 </style>
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gestión de Usuarios</h2>
+        <h2 data-i18n="usuarios.titulo">Gestión de Usuarios</h2>
         <button class="btn btn-primary nuevo-usuario">
             <i class="fas fa-plus"></i> Nuevo Usuario
         </button>
@@ -135,6 +135,9 @@
 
 <script>
     $(document).ready(function () {
+        if (window.aplicarIdioma) {
+            aplicarIdioma(document.getElementById('main-content'));
+        }
         let tablaUsuarios;
         let usuarioModal;
 
@@ -147,7 +150,7 @@
         // Inicializar DataTable
         tablaUsuarios = $('#tablaUsuarios').DataTable({
             language: {
-                url: '/datatable_lang/es-ES.json'
+                url: urlIdiomaTabla()
             },
             serverSide: true,
             processing: true,
@@ -237,7 +240,7 @@
         // Manejar clic en eliminar
         $('#tablaUsuarios').on('click', '.eliminar-usuario', function () {
             const id = $(this).data('id');
-            if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+            if (confirm(texto('usuarios.confirmarEliminar', '¿Estás seguro de que deseas eliminar este usuario?'))) {
                 fetch(`/api/usuarios/${id}`, {
                     method: 'DELETE',
                     headers: getHeaders()
@@ -255,7 +258,7 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error al eliminar el usuario');
+                        alert(texto('usuarios.errorEliminar', 'Error al eliminar el usuario'));
                     });
             }
         });
@@ -298,7 +301,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al guardar el usuario');
+                    alert(texto('usuarios.errorGuardar', 'Error al guardar el usuario'));
                 });
         });
     });

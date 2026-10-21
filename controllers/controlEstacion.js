@@ -79,7 +79,7 @@ async function listarMovimientos(req, res, esSalida) {
     const milisegundos = horas * 60 * 60 * 1000;
 
     if (!estacion) {
-        return res.status(400).json({ mensaje: 'Falta la estación' });
+        return res.status(400).json({ codigo: 'FALTA_ESTACION', mensaje: 'Falta la estación' });
     }
 
     const result = await sequelize.query(consultaMovimientos(esSalida), {
@@ -131,12 +131,12 @@ router.post('/llegada', verificarAuth(['planificador', 'admin']), async (req, re
         const parada = await buscarParada(circulacionId, estacionId);
 
         if (!parada) {
-            return res.status(404).json({ mensaje: 'Parada no encontrada' });
+            return res.status(404).json({ codigo: 'PARADA_NO_ENCONTRADA', mensaje: 'Parada no encontrada' });
         }
 
         const circulacion = await Circulacion.findByPk(circulacionId);
         if (!circulacion || circulacion.estado === 'CANCELADO') {
-            return res.status(409).json({ mensaje: 'La circulación está cancelada' });
+            return res.status(409).json({ codigo: 'CIRCULACION_CANCELADA', mensaje: 'La circulación está cancelada' });
         }
 
         if (!parada.horaRealLlegada) {
@@ -166,12 +166,12 @@ router.post('/salida', verificarAuth(['planificador', 'admin']), async (req, res
         const parada = await buscarParada(circulacionId, estacionId);
 
         if (!parada) {
-            return res.status(404).json({ mensaje: 'Parada no encontrada' });
+            return res.status(404).json({ codigo: 'PARADA_NO_ENCONTRADA', mensaje: 'Parada no encontrada' });
         }
 
         const circulacion = await Circulacion.findByPk(circulacionId);
         if (!circulacion || circulacion.estado === 'CANCELADO') {
-            return res.status(409).json({ mensaje: 'La circulación está cancelada' });
+            return res.status(409).json({ codigo: 'CIRCULACION_CANCELADA', mensaje: 'La circulación está cancelada' });
         }
 
         if (!parada.horaRealSalida) {

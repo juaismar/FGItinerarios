@@ -59,23 +59,23 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Gestión de Estaciones</h2>
+        <h2 data-i18n="estaciones.titulo">Gestión de Estaciones</h2>
         <button class="btn btn-primary nueva-estacion">
-            <i class="fas fa-plus"></i> Nueva Estación
+            <i class="fas fa-plus"></i> <span data-i18n="estaciones.nueva">Nueva Estación</span>
         </button>
     </div>
 
     <div class="leyenda-estaciones">
-        <strong>Leyenda</strong>
+        <strong data-i18n="comun.leyenda">Leyenda</strong>
         <dl class="row mb-0 mt-2">
-            <dt class="col-sm-3">Activa</dt>
-            <dd class="col-sm-9">La parada cuenta para el control. Si se desmarca, la gestión pasa a sin gestión: no sale en el selector y no retiene al tren.</dd>
-            <dt class="col-sm-3">Sin gestión</dt>
-            <dd class="col-sm-9">No sale en el selector del control y no retiene al tren. Si pasa un minuto de la hora programada sin marca, el visor la muestra retrasada.</dd>
-            <dt class="col-sm-3">Gestión manual</dt>
-            <dd class="col-sm-9">Sale en el selector del control, donde se registran la llegada y la salida. La siguiente estación manual no muestra el tren hasta que aquí se registra la salida.</dd>
-            <dt class="col-sm-3">Gestión automática</dt>
-            <dd class="col-sm-9 mb-0">Al llegar la hora programada se anotan la llegada y la salida con esa hora. No sale en el selector y no retiene a la siguiente estación manual. El visor la muestra en hora.</dd>
+            <dt class="col-sm-3" data-i18n="comun.activa">Activa</dt>
+            <dd class="col-sm-9" data-i18n="estaciones.leyendaActiva">La parada cuenta para el control. Si se desmarca, la gestión pasa a sin gestión: no sale en el selector y no retiene al tren.</dd>
+            <dt class="col-sm-3" data-i18n="gestion.SIN_GESTION">Sin gestión</dt>
+            <dd class="col-sm-9" data-i18n="estaciones.leyendaSin">No sale en el selector del control y no retiene al tren. Si pasa un minuto de la hora programada sin marca, el visor la muestra retrasada.</dd>
+            <dt class="col-sm-3" data-i18n="gestion.MANUAL">Gestión manual</dt>
+            <dd class="col-sm-9" data-i18n="estaciones.leyendaManual">Sale en el selector del control, donde se registran la llegada y la salida. La siguiente estación manual no muestra el tren hasta que aquí se registra la salida.</dd>
+            <dt class="col-sm-3" data-i18n="gestion.AUTOMATICA">Gestión automática</dt>
+            <dd class="col-sm-9 mb-0" data-i18n="estaciones.leyendaAutomatica">Al llegar la hora programada se anotan la llegada y la salida con esa hora. No sale en el selector y no retiene a la siguiente estación manual. El visor la muestra en hora.</dd>
         </dl>
     </div>
 
@@ -85,13 +85,13 @@
             <table id="tablaEstaciones" class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Código</th>
-                        <th>Ubicación</th>
-                        <th>Activa</th>
-                        <th>Gestión</th>
-                        <th>Acciones</th>
+                        <th data-i18n="comun.id">ID</th>
+                        <th data-i18n="comun.nombre">Nombre</th>
+                        <th data-i18n="comun.codigo">Código</th>
+                        <th data-i18n="comun.ubicacion">Ubicación</th>
+                        <th data-i18n="comun.activa">Activa</th>
+                        <th data-i18n="comun.gestion">Gestión</th>
+                        <th data-i18n="comun.acciones">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,41 +106,41 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Nueva Estación</h5>
+                    <h5 class="modal-title" id="modalTitle" data-i18n="estaciones.nueva">Nueva Estación</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="estacionForm">
                         <input type="hidden" id="estacionId">
                         <div class="mb-3">
-                            <label for="nombre" class="form-label">Nombre</label>
+                            <label for="nombre" class="form-label" data-i18n="comun.nombre">Nombre</label>
                             <input type="text" class="form-control" id="nombre" required>
                         </div>
                         <div class="mb-3">
-                            <label for="codigo" class="form-label">Código</label>
+                            <label for="codigo" class="form-label" data-i18n="comun.codigo">Código</label>
                             <input type="text" class="form-control" id="codigo" required maxlength="3">
                         </div>
                         <div class="mb-3">
-                            <label for="ubicacion" class="form-label">Ubicación</label>
+                            <label for="ubicacion" class="form-label" data-i18n="comun.ubicacion">Ubicación</label>
                             <input type="text" class="form-control" id="ubicacion">
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="activa" checked>
-                            <label class="form-check-label" for="activa">Activa</label>
+                            <label class="form-check-label" for="activa" data-i18n="comun.activa">Activa</label>
                         </div>
                         <div class="mb-3">
-                            <label for="gestion" class="form-label">Gestión</label>
+                            <label for="gestion" class="form-label" data-i18n="comun.gestion">Gestión</label>
                             <select class="form-select" id="gestion">
-                                <option value="SIN_GESTION">Sin gestión</option>
-                                <option value="MANUAL">Gestión manual</option>
-                                <option value="AUTOMATICA">Gestión automática</option>
+                                <option value="SIN_GESTION" data-i18n="gestion.SIN_GESTION">Sin gestión</option>
+                                <option value="MANUAL" data-i18n="gestion.MANUAL">Gestión manual</option>
+                                <option value="AUTOMATICA" data-i18n="gestion.AUTOMATICA">Gestión automática</option>
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="comun.cancelar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardar" data-i18n="comun.guardar">Guardar</button>
                 </div>
             </div>
         </div>
@@ -149,6 +149,9 @@
 
 <script>
     $(document).ready(function () {
+        if (window.aplicarIdioma) {
+            aplicarIdioma(document.getElementById('main-content'));
+        }
         let tablaEstaciones;
         let estacionModal;
 
@@ -179,7 +182,7 @@
                 url: '/api/estaciones/paginated'
             },
             language: {
-                url: '/datatable_lang/es-ES.json'
+                url: urlIdiomaTabla()
             },
             columns: [
                 { data: 'id' },
@@ -189,20 +192,16 @@
                 {
                     data: 'activa',
                     render: function (data) {
-                        return marcada(data) ?
-                            '<span class="estacion-activa"><i class="fas fa-check-circle"></i> Sí</span>' :
-                            '<span class="estacion-inactiva"><i class="fas fa-times-circle"></i> No</span>';
+                        const marca = marcada(data) ? texto('comun.si', 'Sí') : texto('comun.no', 'No');
+                        const clase = marcada(data) ? 'estacion-activa' : 'estacion-inactiva';
+                        const icono = marcada(data) ? 'fa-check-circle' : 'fa-times-circle';
+                        return '<span class="' + clase + '"><i class="fas ' + icono + '"></i> ' + marca + '</span>';
                     }
                 },
                 {
                     data: 'gestion',
                     render: function (data) {
-                        const textos = {
-                            SIN_GESTION: 'Sin gestión',
-                            MANUAL: 'Manual',
-                            AUTOMATICA: 'Automática'
-                        };
-                        return textos[data] || 'Sin gestión';
+                        return texto('gestion.tabla.' + (data || 'SIN_GESTION'), 'Sin gestión');
                     }
                 },
                 {
@@ -214,14 +213,14 @@
                                         data-id="${data.id}"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
-                                        title="Editar estación">
+                                        title="${texto('estaciones.editar', 'Editar estación')}">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button class="btn btn-icon btn-eliminar eliminar-estacion" 
                                         data-id="${data.id}"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
-                                        title="Eliminar estación">
+                                        title="${texto('estaciones.eliminar', 'Eliminar estación')}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             `;
@@ -249,7 +248,7 @@
 
         // Manejar clic en nueva
         $('.nueva-estacion').on('click', function () {
-            $('#modalTitle').text('Nueva Estación');
+            $('#modalTitle').text(texto('estaciones.nueva', 'Nueva Estación'));
             $('#estacionForm')[0].reset();
             $('#estacionId').val('');
             $('#nombre').val();
@@ -267,7 +266,7 @@
             const id = $(this).data('id');
             const estacion = tablaEstaciones.row($(this).closest('tr')).data();
 
-            $('#modalTitle').text('Editar Estación');
+            $('#modalTitle').text(texto('estaciones.editar', 'Editar estación'));
             $('#estacionId').val(estacion.id);
             $('#nombre').val(estacion.nombre);
             $('#codigo').val(estacion.codigo);
@@ -282,7 +281,7 @@
         // Manejar clic en eliminar
         $('#tablaEstaciones').on('click', '.eliminar-estacion', function () {
             const id = $(this).data('id');
-            if (confirm('¿Estás seguro de que deseas eliminar esta estación?')) {
+            if (confirm(texto('estaciones.confirmarEliminar', '¿Estás seguro de que deseas eliminar esta estación?'))) {
                 fetch(`/api/estaciones/${id}`, {
                     method: 'DELETE',
                     headers: getHeaders()
@@ -300,7 +299,7 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error al eliminar la estación');
+                        alert(texto('estaciones.errorEliminar', 'Error al eliminar la estación'));
                     });
             }
         });
@@ -338,7 +337,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al guardar la estación');
+                    alert(texto('estaciones.errorGuardar', 'Error al guardar la estación'));
                 });
         });
     });

@@ -23,6 +23,10 @@ Una estación inactiva queda en sin gestión.
 
 En el recorrido de ejemplo, Granja y Racó son manuales, Aljibe, Font, Pista y Mirador son automáticas, y Taller está sin gestión. Si la salida automática es la del origen, la circulación pasa a en progreso. Completado sigue dependiendo de quien cierra la última parada.
 
+## Idioma
+
+El texto visible está en `public/i18n/`: `es-ES.json` (español, el idioma por defecto), `ca-ES-valencia.json` (valenciano) y `en.json` (inglés). El HTML sigue en español y sirve de respaldo. El selector guarda la elección en `localStorage` (`idioma`) y recarga la página. Las tablas usan el mismo código en `public/datatable_lang/`.
+
 ## Quién entra
 
 | Acceso | Qué hace |

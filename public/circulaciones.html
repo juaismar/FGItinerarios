@@ -234,14 +234,14 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>Circulaciones</h2>
+            <h2 data-i18n="circulaciones.titulo">Circulaciones</h2>
             <p class="text-muted mb-0">
                 <i class="fas fa-calendar-alt text-primary"></i>
-                Mostrando circulaciones del: <strong id="fechaMostrada"></strong>
+                <span data-i18n="circulaciones.mostrando">Mostrando circulaciones del:</span> <strong id="fechaMostrada"></strong>
             </p>
         </div>
         <button class="btn btn-primary">
-            <i class="fas fa-plus"></i> Nuevo tren custom
+            <i class="fas fa-plus"></i> <span data-i18n="circulaciones.nueva">Nuevo tren custom</span>
         </button>
     </div>
 
@@ -252,14 +252,14 @@
                 <thead>
                     <tr>
                         <th></th>
-                        <th>Número</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Hora</th>
-                        <th>Estado</th>
-                        <th>Tipo</th>
-                        <th>Material</th>
-                        <th>Acciones</th>
+                        <th data-i18n="comun.numero">Número</th>
+                        <th data-i18n="comun.origen">Origen</th>
+                        <th data-i18n="comun.destino">Destino</th>
+                        <th data-i18n="comun.hora">Hora</th>
+                        <th data-i18n="comun.estado">Estado</th>
+                        <th data-i18n="comun.tipo">Tipo</th>
+                        <th data-i18n="comun.material">Material</th>
+                        <th data-i18n="comun.acciones">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -417,6 +417,9 @@
 
 <script>
     $(document).ready(function () {
+        if (window.aplicarIdioma) {
+            aplicarIdioma(document.getElementById('main-content'));
+        }
         let tablaCirculaciones;
         let fechaSeleccionada = window.fechaPlanificador || new Date();
         let estaciones;
@@ -442,7 +445,7 @@
                 })
                 .catch(error => {
                     console.error('Error al cargar estaciones:', error);
-                    alert('Error al cargar las estaciones');
+                    alert(texto('circulaciones.errorEstaciones', 'Error al cargar las estaciones'));
                 });
         }
 
@@ -470,7 +473,7 @@
                 }
             },
             language: {
-                url: '/datatable_lang/es-ES.json'
+                url: urlIdiomaTabla()
             },
             columns: [
                 {
@@ -489,7 +492,7 @@
                     data: 'fecha',
                     render: function (data) {
                         const fecha = new Date(data);
-                        return fecha.toLocaleTimeString('es-ES', {
+                        return fecha.toLocaleTimeString(idiomaActual(), {
                             hour: '2-digit',
                             minute: '2-digit'
                         });
@@ -498,13 +501,7 @@
                 {
                     data: 'estado',
                     render: function (data) {
-                        const estados = {
-                            'PENDIENTE': '<span class="badge bg-warning">Pendiente</span>',
-                            'EN_PROGRESO': '<span class="badge bg-info">En Progreso</span>',
-                            'COMPLETADO': '<span class="badge bg-success">Completado</span>',
-                            'CANCELADO': '<span class="badge bg-danger">Cancelado</span>'
-                        };
-                        return estados[data] || data;
+                        return htmlEstado(data);
                     }
                 },
                 { data: 'tipo' },
@@ -553,7 +550,7 @@
 
         // Función para actualizar el indicador de fecha
         function actualizarIndicadorFecha() {
-            const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+            const fechaFormateada = fechaSeleccionada.toLocaleDateString(idiomaActual(), {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -622,7 +619,7 @@
             $('.modal-title').html('<i class="fas fa-plus-circle text-primary"></i> Nuevo Tren Custom');
 
             // Mostrar fecha seleccionada en el modal
-            const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+            const fechaFormateada = fechaSeleccionada.toLocaleDateString(idiomaActual(), {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -642,10 +639,10 @@
             const mensaje = document.getElementById('mensajeEstaciones');
             if (mensaje) {
                 if (contadorEstaciones === 0) {
-                    mensaje.textContent = 'No hay estaciones agregadas a la circulación';
+                    mensaje.textContent = texto('circulaciones.sinParadas', 'No hay estaciones agregadas a la circulación');
                     mensaje.className = 'text-muted';
                 } else {
-                    mensaje.textContent = `${contadorEstaciones} estación(es) agregada(s) a la circulación`;
+                    mensaje.textContent = texto('circulaciones.conParadas', contadorEstaciones + ' estación(es) agregada(s) a la circulación', { n: contadorEstaciones });
                     mensaje.className = 'text-success';
                 }
             }
@@ -660,13 +657,13 @@
             const observaciones = document.getElementById('observacionesEstacion') ? document.getElementById('observacionesEstacion').value : '';
 
             if (!estacionId) {
-                alert('Por favor selecciona una estación');
+                alert(texto('circulaciones.sinEstacion', 'Por favor selecciona una estación'));
                 return;
             }
 
             // Verificar que la estación no esté ya agregada
             if (estacionesCirculacion.some(e => e.estacionId === parseInt(estacionId))) {
-                alert('Esta estación ya está agregada a la circulación');
+                alert(texto('circulaciones.estacionRepetida', 'Esta estación ya está agregada a la circulación'));
                 return;
             }
 
@@ -867,7 +864,7 @@
                 $('.modal-title').html('<i class="fas fa-edit text-primary"></i> Editar Tren Custom');
 
                 // Mostrar fecha seleccionada en el modal
-                const fechaFormateada = fechaSeleccionada.toLocaleDateString('es-ES', {
+                const fechaFormateada = fechaSeleccionada.toLocaleDateString(idiomaActual(), {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -880,7 +877,7 @@
             })
             .catch(error => {
                 console.error('Error al cargar datos de la circulación:', error);
-                alert('Error al cargar los datos de la circulación. Por favor, inténtalo de nuevo.');
+                alert(texto('circulaciones.errorCargar', 'Error al cargar los datos de la circulación. Por favor, inténtalo de nuevo.'));
             });
         }
 
@@ -925,7 +922,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al guardar la circulación');
+                    alert(texto('circulaciones.errorGuardar', 'Error al guardar la circulación'));
                 });
         });
 
@@ -939,31 +936,31 @@
         const hora = $('#horaSalidaCustom').val();
 
         if (!numero) {
-            alert('Por favor ingresa el número de tren');
+            alert(texto('circulaciones.faltaNumero', 'Por favor ingresa el número de tren'));
             $('#numeroCustom').focus();
             return false;
         }
 
         if (!origen) {
-            alert('Por favor ingresa el origen');
+            alert(texto('circulaciones.faltaOrigen', 'Por favor ingresa el origen'));
             $('#origenCustom').focus();
             return false;
         }
 
         if (!destino) {
-            alert('Por favor ingresa el destino');
+            alert(texto('circulaciones.faltaDestino', 'Por favor ingresa el destino'));
             $('#destinoCustom').focus();
             return false;
         }
 
         if (!tipo) {
-            alert('Por favor selecciona el tipo de tren');
+            alert(texto('circulaciones.faltaTipo', 'Por favor selecciona el tipo de tren'));
             $('#tipoCustom').focus();
             return false;
         }
 
         if (!hora) {
-            alert('Por favor ingresa la hora de salida');
+            alert(texto('circulaciones.faltaHora', 'Por favor ingresa la hora de salida'));
             $('#horaSalidaCustom').focus();
             return false;
         }
@@ -1078,7 +1075,7 @@
         const id = boton.data('id');
         const numero = boton.data('numero');
 
-        if (!confirm('¿Cancelar la circulación ' + numero + '? Seguirá en el día y el visor la mostrará como cancelada.')) {
+        if (!confirm(texto('circulaciones.confirmarCancelar', '¿Cancelar la circulación ' + numero + '? Seguirá en el día y el visor la mostrará como cancelada.', { numero: numero }))) {
             return;
         }
 
@@ -1093,7 +1090,7 @@
                     return;
                 }
                 if (response.status === 404) {
-                    alert('La circulación no fue encontrada.');
+                    alert(texto('circulaciones.noEncontrada', 'La circulación no fue encontrada.'));
                     boton.prop('disabled', false);
                     return;
                 }
@@ -1104,7 +1101,7 @@
             })
             .catch(function (error) {
                 console.error('Error al cancelar la circulación:', error);
-                alert('Error al cancelar la circulación. Por favor, inténtalo de nuevo.');
+                alert(texto('circulaciones.errorCancelar', 'Error al cancelar la circulación. Por favor, inténtalo de nuevo.'));
                 boton.prop('disabled', false);
             });
     });
@@ -1118,7 +1115,7 @@
         const destino = row.find('td:eq(2)').text();
         const hora = row.find('td:eq(3)').text();
 
-        const mensaje = `¿Estás seguro de que deseas eliminar la circulación?\n\n` +
+        const mensaje = texto('circulaciones.confirmarEliminar', '¿Estás seguro de que deseas eliminar la circulación?') + '\n\n' +
             `Esta acción no se puede deshacer.`;
 
         if (confirm(mensaje)) {
@@ -1145,7 +1142,7 @@
                         return;
                     }
                     if (response.status === 404) {
-                        alert('La circulación no fue encontrada.');
+                        alert(texto('circulaciones.noEncontrada', 'La circulación no fue encontrada.'));
                         return;
                     }
                     if (response.status === 200) {
@@ -1156,7 +1153,7 @@
                 })
                 .catch(error => {
                     console.error('Error al eliminar circulación:', error);
-                    alert('Error al eliminar la circulación. Por favor, inténtalo de nuevo.');
+                    alert(texto('circulaciones.errorEliminar', 'Error al eliminar la circulación. Por favor, inténtalo de nuevo.'));
                 })
                 .finally(() => {
                     // Restaurar el botón

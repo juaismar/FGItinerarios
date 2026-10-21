@@ -153,41 +153,58 @@
             background: #fff;
             font-size: 1em;
         }
+        .idioma-visor {
+            position: fixed;
+            top: 86px;
+            left: 12px;
+            z-index: 120;
+            background: #1976d2;
+            color: #fff;
+            border: 0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            padding: 4px 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header-bar">
             <div class="clock-top-left" id="clock"></div>
+            <select id="selectorIdioma" class="idioma-visor">
+                <option value="es-ES">Español</option>
+                <option value="ca-ES-valencia">Valencià</option>
+                <option value="en">English</option>
+            </select>
             <select id="station-select" class="station-select"></select>
             <div class="logo-top-right">
                 <img src="/img/fglogotr.gif" alt="Logo FG" />
             </div>
         </div>
         <table id="salidas" class="display">
-            <caption>Salidas</caption>
+            <caption data-i18n="visor.salidas">Salidas</caption>
             <thead>
                 <tr>
-                    <th>Hora</th>
-                    <th>Destino</th>
-                    <th>Tren</th>
-                    <th>Nº</th>
-                    <th>Vía</th>
-                    <th>Observaciones</th>
+                    <th data-i18n="comun.hora">Hora</th>
+                    <th data-i18n="visor.destino">Destino</th>
+                    <th data-i18n="visor.tren">Tren</th>
+                    <th data-i18n="visor.numero">Nº</th>
+                    <th data-i18n="comun.via">Vía</th>
+                    <th data-i18n="comun.observaciones">Observaciones</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
         <table id="llegadas" class="display">
-            <caption>Llegadas</caption>
+            <caption data-i18n="visor.llegadas">Llegadas</caption>
             <thead>
                 <tr>
-                    <th>Hora</th>
-                    <th>Procedencia</th>
-                    <th>Tren</th>
-                    <th>Nº</th>
-                    <th>Vía</th>
-                    <th>Observaciones</th>
+                    <th data-i18n="comun.hora">Hora</th>
+                    <th data-i18n="visor.procedencia">Procedencia</th>
+                    <th data-i18n="visor.tren">Tren</th>
+                    <th data-i18n="visor.numero">Nº</th>
+                    <th data-i18n="comun.via">Vía</th>
+                    <th data-i18n="comun.observaciones">Observaciones</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -195,15 +212,18 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="/js/i18n.js"></script>
     <script>
         let tablaSalidas;
         let tablaLlegadas;
 
         $(document).ready(function() {
-            inicializarTablas();
-            cargarEstaciones();
-            $('#station-select').on('change', cargarVisor);
-            setInterval(cargarVisor, 15000);
+            window.idiomaListo.then(function () {
+                inicializarTablas();
+                cargarEstaciones();
+                $('#station-select').on('change', cargarVisor);
+                setInterval(cargarVisor, 15000);
+            });
         });
 
         function fechaLocal() {
@@ -267,10 +287,10 @@
                     { data: 'tren' },
                     { data: 'numero' },
                     { data: 'via' },
-                    { data: 'observaciones' }
+                    { data: null, render: function (data, type, row) { return textoSituacion(row); } }
                 ],
                 language: {
-                    emptyTable: 'No hay salidas programadas'
+                    emptyTable: texto('visor.vacioSalidas', 'No hay salidas programadas')
                 }
             }));
 
@@ -281,10 +301,10 @@
                     { data: 'tren' },
                     { data: 'numero' },
                     { data: 'via' },
-                    { data: 'observaciones' }
+                    { data: null, render: function (data, type, row) { return textoSituacion(row); } }
                 ],
                 language: {
-                    emptyTable: 'No hay llegadas programadas'
+                    emptyTable: texto('visor.vacioLlegadas', 'No hay llegadas programadas')
                 }
             }));
         }
