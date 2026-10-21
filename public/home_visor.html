@@ -11,24 +11,23 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            width: 100vw;
+            width: 100%;
             background: #181c24;
             color: #fff;
             font-family: 'Roboto', Arial, sans-serif;
         }
         body {
-            min-height: 100vh;
-            width: 100vw;
-            overflow-x: hidden;
+            height: 100vh;
+            overflow: hidden;
         }
         .container {
-            width: 100vw;
-            min-height: 100vh;
+            width: 100%;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
+            align-items: stretch;
             padding: 0;
+            box-sizing: border-box;
         }
         h1 {
             text-align: center;
@@ -66,16 +65,56 @@
             letter-spacing: 2px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.10);
         }
+        .paneles {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            gap: 10px;
+            padding: 0 10px 10px;
+            box-sizing: border-box;
+        }
+        .panel {
+            flex: 1 1 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: #232a36;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .panel h2 {
+            margin: 0;
+            padding: 14px 8px 10px;
+            text-align: center;
+            color: #ffb300;
+            font-size: 2em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: #181c24;
+        }
+        .panel-cuerpo {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+        }
         table.dataTable {
-            width: 100vw !important;
+            width: 100% !important;
             min-width: 0;
             margin: 0;
             border-radius: 0;
-            font-size: 1.25em;
+            font-size: 1.05em;
             background: #232a36;
             color: #fff;
             box-shadow: none;
             table-layout: fixed;
+        }
+        .panel-cuerpo .dataTables_wrapper {
+            width: 100% !important;
+        }
+        .panel-cuerpo thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
         table.dataTable thead th,
         table.dataTable tbody td {
@@ -100,6 +139,12 @@
             text-align: center;
             letter-spacing: 1px;
         }
+        table.dataTable td.dataTables_empty {
+            background: #232a36 !important;
+            color: #9aa4b2 !important;
+            font-weight: 400;
+            letter-spacing: 0;
+        }
         td.retraso {
             background: #c62828 !important;
             color: #fff !important;
@@ -113,20 +158,11 @@
         th.sorting_desc:after, th.sorting_desc:before {
             display: none !important;
         }
-        caption {
-            caption-side: top;
-            font-size: 2.2em;
-            font-weight: bold;
-            color: #ffb300;
-            margin-bottom: 8px;
-            background: transparent;
-            letter-spacing: 2px;
-        }
         .header-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            width: 100vw;
+            width: 100%;
             height: 80px;
             background: transparent;
             position: relative;
@@ -154,9 +190,10 @@
             font-size: 1em;
         }
         .idioma-visor {
-            position: fixed;
-            top: 86px;
-            left: 12px;
+            position: absolute;
+            right: 118px;
+            top: 50%;
+            transform: translateY(-50%);
             z-index: 120;
             background: #1976d2;
             color: #fff;
@@ -181,34 +218,44 @@
                 <img src="/img/fglogotr.gif" alt="Logo FG" />
             </div>
         </div>
-        <table id="salidas" class="display">
-            <caption data-i18n="visor.salidas">Salidas</caption>
-            <thead>
-                <tr>
-                    <th data-i18n="comun.hora">Hora</th>
-                    <th data-i18n="visor.destino">Destino</th>
-                    <th data-i18n="visor.tren">Tren</th>
-                    <th data-i18n="visor.numero">Nº</th>
-                    <th data-i18n="comun.via">Vía</th>
-                    <th data-i18n="comun.observaciones">Observaciones</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <table id="llegadas" class="display">
-            <caption data-i18n="visor.llegadas">Llegadas</caption>
-            <thead>
-                <tr>
-                    <th data-i18n="comun.hora">Hora</th>
-                    <th data-i18n="visor.procedencia">Procedencia</th>
-                    <th data-i18n="visor.tren">Tren</th>
-                    <th data-i18n="visor.numero">Nº</th>
-                    <th data-i18n="comun.via">Vía</th>
-                    <th data-i18n="comun.observaciones">Observaciones</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="paneles">
+            <section class="panel">
+                <h2 data-i18n="visor.salidas">Salidas</h2>
+                <div class="panel-cuerpo">
+                    <table id="salidas" class="display">
+                        <thead>
+                            <tr>
+                                <th data-i18n="comun.hora">Hora</th>
+                                <th data-i18n="visor.destino">Destino</th>
+                                <th data-i18n="visor.tren">Tren</th>
+                                <th data-i18n="visor.numero">Nº</th>
+                                <th data-i18n="comun.via">Vía</th>
+                                <th data-i18n="comun.observaciones">Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="panel">
+                <h2 data-i18n="visor.llegadas">Llegadas</h2>
+                <div class="panel-cuerpo">
+                    <table id="llegadas" class="display">
+                        <thead>
+                            <tr>
+                                <th data-i18n="comun.hora">Hora</th>
+                                <th data-i18n="visor.procedencia">Procedencia</th>
+                                <th data-i18n="visor.tren">Tren</th>
+                                <th data-i18n="visor.numero">Nº</th>
+                                <th data-i18n="comun.via">Vía</th>
+                                <th data-i18n="comun.observaciones">Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
