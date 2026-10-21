@@ -28,6 +28,7 @@
     "hoy": "Go to today",
     "seleccionarEstacion": "Select a station",
     "todos": "All",
+    "buscar": "Search",
     "id": "ID",
     "email": "Email",
     "password": "Password",
@@ -35,7 +36,10 @@
     "margen": "Window:",
     "horas": "hours",
     "gestion": "Operation",
-    "leyenda": "Key"
+    "leyenda": "Key",
+    "llegadaProgramada": "Scheduled arrival",
+    "salidaProgramada": "Scheduled departure",
+    "cargandoEstaciones": "Loading stations..."
   },
   "nav": {
     "itinerarios": "Timetables",
@@ -130,6 +134,24 @@
     "titulo": "Services",
     "mostrando": "Services for:",
     "nueva": "New custom train",
+    "agregar": "Add",
+    "crear": "Create service",
+    "tituloEditar": "Edit custom train",
+    "numeroTren": "Train number",
+    "tipoTren": "Train type",
+    "horaSalida": "Departure time",
+    "horaLlegada": "Arrival time",
+    "materialRodante": "Rolling stock",
+    "ejemploNumero": "e.g. 12345",
+    "ejemploOrigen": "e.g. Racó",
+    "ejemploDestino": "e.g. Granja",
+    "ejemploMaterial": "e.g. 101",
+    "observacionesAyuda": "Additional notes about this service...",
+    "observacionesCorta": "Notes...",
+    "nota": "Note:",
+    "notaFecha": "This service will be created for the date selected in the planner:",
+    "pasoEn": "Stop at {nombre}",
+    "quitarEstacion": "Remove station",
     "editar": "Edit service",
     "cancelar": "Cancel service",
     "eliminar": "Delete service",
@@ -149,7 +171,9 @@
     "confirmarEliminar": "Delete this service?",
     "errorEliminar": "Could not delete the service. Please try again.",
     "sinParadas": "No stations have been added to the service",
-    "conParadas": "{n} station(s) added to the service"
+    "conParadas": "{n} station(s) added to the service",
+    "tituloParadas": "Stations on this service",
+    "sinParadasAsignadas": "No stations are assigned to this service."
   },
   "itinerarios": {
     "titulo": "Timetable management",
@@ -161,7 +185,12 @@
     "estacionRepetida": "This station is already on the timetable",
     "confirmarEliminar": "Delete this timetable?",
     "errorEliminar": "Could not delete the timetable",
-    "errorGuardar": "Could not save the timetable"
+    "errorGuardar": "Could not save the timetable",
+    "tituloParadas": "Stations on this timetable",
+    "sinParadas": "No stations are assigned to this timetable.",
+    "agregar": "Add",
+    "pasoEn": "Stop at {nombre}",
+    "quitarEstacion": "Remove station"
   },
   "usuarios": {
     "titulo": "User management",
@@ -175,7 +204,11 @@
     "planificador": "Planner",
     "confirmarEliminar": "Delete this user?",
     "errorEliminar": "Could not delete the user",
-    "errorGuardar": "Could not save the user"
+    "errorGuardar": "Could not save the user",
+    "ultimoAcceso": "Last access",
+    "estadoActivo": "Active",
+    "estadoInactivo": "Inactive",
+    "nunca": "Never"
   },
   "seleccionar": {
     "titulo": "Select timetables",
@@ -186,7 +219,15 @@
     "ninguno": "Please select at least one timetable",
     "confirmarVarios": "Select {n} timetables for {fecha}?",
     "exito": "Done. {n} services were created.",
-    "error": "Could not create the services. Please try again."
+    "error": "Could not create the services. Please try again.",
+    "leyenda": "Status key",
+    "leyendaNormal": "Normal. Available to select",
+    "leyendaSesion": "Green. Selected in this session",
+    "leyendaHoy": "Orange. Already selected for today",
+    "leyendaActivo": "Active button",
+    "leyendaDeshabilitado": "Disabled button",
+    "boton": "Select",
+    "botonHecho": "Already selected"
   },
   "malla": {
     "titulo": "Service graph",

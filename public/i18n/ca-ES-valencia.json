@@ -28,6 +28,7 @@
     "hoy": "Ves a hui",
     "seleccionarEstacion": "Selecciona una estació",
     "todos": "Tots",
+    "buscar": "Busca",
     "id": "ID",
     "email": "Correu",
     "password": "Contrasenya",
@@ -35,7 +36,10 @@
     "margen": "Marge:",
     "horas": "hores",
     "gestion": "Gestió",
-    "leyenda": "Llegenda"
+    "leyenda": "Llegenda",
+    "llegadaProgramada": "Arribada programada",
+    "salidaProgramada": "Eixida programada",
+    "cargandoEstaciones": "S'estan carregant les estacions..."
   },
   "nav": {
     "itinerarios": "Itineraris",
@@ -130,6 +134,24 @@
     "titulo": "Circulacions",
     "mostrando": "Circulacions del dia:",
     "nueva": "Tren nou a mida",
+    "agregar": "Afig",
+    "crear": "Crea la circulació",
+    "tituloEditar": "Edita el tren a mida",
+    "numeroTren": "Número de tren",
+    "tipoTren": "Tipus de tren",
+    "horaSalida": "Hora d'eixida",
+    "horaLlegada": "Hora d'arribada",
+    "materialRodante": "Material rodant",
+    "ejemploNumero": "Ex.: 12345",
+    "ejemploOrigen": "Ex.: Racó",
+    "ejemploDestino": "Ex.: Granja",
+    "ejemploMaterial": "Ex.: 101",
+    "observacionesAyuda": "Observacions addicionals sobre la circulació...",
+    "observacionesCorta": "Observacions...",
+    "nota": "Nota:",
+    "notaFecha": "Esta circulació es crearà per a la data seleccionada en el planificador:",
+    "pasoEn": "Parada a {nombre}",
+    "quitarEstacion": "Trau l'estació",
     "editar": "Edita la circulació",
     "cancelar": "Cancel·la la circulació",
     "eliminar": "Elimina la circulació",
@@ -149,7 +171,9 @@
     "confirmarEliminar": "Segur que vols eliminar la circulació?",
     "errorEliminar": "Error en eliminar la circulació. Torna-ho a provar.",
     "sinParadas": "No hi ha estacions afegides a la circulació",
-    "conParadas": "{n} estació/estacions afegida/es a la circulació"
+    "conParadas": "{n} estació/estacions afegida/es a la circulació",
+    "tituloParadas": "Estacions de la circulació",
+    "sinParadasAsignadas": "No hi ha estacions assignades a esta circulació."
   },
   "itinerarios": {
     "titulo": "Gestió d'itineraris",
@@ -161,7 +185,12 @@
     "estacionRepetida": "Esta estació ja està en l'itinerari",
     "confirmarEliminar": "Segur que vols eliminar este itinerari?",
     "errorEliminar": "Error en eliminar l'itinerari",
-    "errorGuardar": "Error en guardar l'itinerari"
+    "errorGuardar": "Error en guardar l'itinerari",
+    "tituloParadas": "Estacions de l'itinerari",
+    "sinParadas": "No hi ha estacions assignades a este itinerari.",
+    "agregar": "Afig",
+    "pasoEn": "Parada a {nombre}",
+    "quitarEstacion": "Trau l'estació"
   },
   "usuarios": {
     "titulo": "Gestió d'usuaris",
@@ -175,7 +204,11 @@
     "planificador": "Planificador",
     "confirmarEliminar": "Segur que vols eliminar este usuari?",
     "errorEliminar": "Error en eliminar l'usuari",
-    "errorGuardar": "Error en guardar l'usuari"
+    "errorGuardar": "Error en guardar l'usuari",
+    "ultimoAcceso": "Últim accés",
+    "estadoActivo": "Actiu",
+    "estadoInactivo": "Inactiu",
+    "nunca": "Mai"
   },
   "seleccionar": {
     "titulo": "Selecciona itineraris",
@@ -186,7 +219,15 @@
     "ninguno": "Selecciona almenys un itinerari",
     "confirmarVarios": "Segur que vols seleccionar {n} itineraris per al {fecha}?",
     "exito": "Fet. S'han creat {n} circulacions.",
-    "error": "Error en crear les circulacions. Torna-ho a provar."
+    "error": "Error en crear les circulacions. Torna-ho a provar.",
+    "leyenda": "Llegenda d'estats",
+    "leyendaNormal": "Normal. Disponible per a seleccionar",
+    "leyendaSesion": "Verd. Seleccionat en esta sessió",
+    "leyendaHoy": "Taronja. Ja seleccionat per a hui",
+    "leyendaActivo": "Botó actiu",
+    "leyendaDeshabilitado": "Botó desactivat",
+    "boton": "Selecciona",
+    "botonHecho": "Ja seleccionat"
   },
   "malla": {
     "titulo": "Malla de circulacions",

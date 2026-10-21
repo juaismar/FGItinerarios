@@ -240,7 +240,7 @@
                 <span data-i18n="circulaciones.mostrando">Mostrando circulaciones del:</span> <strong id="fechaMostrada"></strong>
             </p>
         </div>
-        <button class="btn btn-primary">
+        <button class="btn btn-primary" id="btnNuevaCirculacion">
             <i class="fas fa-plus"></i> <span data-i18n="circulaciones.nueva">Nuevo tren custom</span>
         </button>
     </div>
@@ -276,7 +276,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-plus-circle text-primary"></i> Nuevo Tren Custom
+                    <i class="fas fa-plus-circle text-primary"></i> <span data-i18n="circulaciones.nueva">Nuevo tren custom</span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -286,21 +286,21 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Número de Tren *</label>
+                                <label class="form-label"><span data-i18n="circulaciones.numeroTren">Número de tren</span> *</label>
                                 <input type="text" class="form-control" id="numeroCustom" required
-                                    placeholder="Ej: 12345">
+                                    data-i18n-placeholder="circulaciones.ejemploNumero" placeholder="Ej: 12345">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Tipo de Tren *</label>
+                                <label class="form-label"><span data-i18n="circulaciones.tipoTren">Tipo de tren</span> *</label>
                                 <select class="form-select" id="tipoCustom" required>
-                                    <option value="ViajerosCalidad" selected>Viajeros Calidad</option>
-                                    <option value="ViajerosOrdinario" selected>Viajeros Ordinario</option>
-                                    <option value="Mercancias" selected>Mercancias</option>
-                                    <option value="ServicioInterior">Servicio Interior</option>
-                                    <option value="MaquinasAisladas">Máquinas aisladas</option>
-                                    <option value="Otro">Otro</option>
+                                    <option value="ViajerosCalidad" data-i18n="tipoTren.ViajerosCalidad" selected>Viajeros Calidad</option>
+                                    <option value="ViajerosOrdinario" data-i18n="tipoTren.ViajerosOrdinario" selected>Viajeros Ordinario</option>
+                                    <option value="Mercancias" data-i18n="tipoTren.Mercancias" selected>Mercancias</option>
+                                    <option value="ServicioInterior" data-i18n="tipoTren.ServicioInterior">Servicio Interior</option>
+                                    <option value="MaquinasAisladas" data-i18n="tipoTren.MaquinasAisladas">Máquinas aisladas</option>
+                                    <option value="Otro" data-i18n="tipoTren.Otro">Otro</option>
                                 </select>
                             </div>
                         </div>
@@ -309,16 +309,16 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Origen *</label>
+                                <label class="form-label"><span data-i18n="comun.origen">Origen</span> *</label>
                                 <input type="text" class="form-control" id="origenCustom" required
-                                    placeholder="Ej: Racó">
+                                    data-i18n-placeholder="circulaciones.ejemploOrigen" placeholder="Ej: Racó">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Destino *</label>
+                                <label class="form-label"><span data-i18n="comun.destino">Destino</span> *</label>
                                 <input type="text" class="form-control" id="destinoCustom" required
-                                    placeholder="Ej: Granja">
+                                    data-i18n-placeholder="circulaciones.ejemploDestino" placeholder="Ej: Granja">
                             </div>
                         </div>
                     </div>
@@ -326,22 +326,22 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Material Rodante</label>
-                                <input type="text" class="form-control" id="materialCustom" placeholder="Ej: 101">
+                                <label class="form-label" data-i18n="circulaciones.materialRodante">Material rodante</label>
+                                <input type="text" class="form-control" id="materialCustom" data-i18n-placeholder="circulaciones.ejemploMaterial" placeholder="Ej: 101">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="form-label">Hora de Salida *</label>
+                                <label class="form-label"><span data-i18n="circulaciones.horaSalida">Hora de salida</span> *</label>
                                 <input type="time" class="form-control" id="horaSalidaCustom" required>
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Observaciones</label>
+                        <label class="form-label" data-i18n="comun.observaciones">Observaciones</label>
                         <textarea class="form-control" id="observacionesCustom" rows="3"
-                            placeholder="Observaciones adicionales sobre la circulación..."></textarea>
+                            data-i18n-placeholder="circulaciones.observacionesAyuda" placeholder="Observaciones adicionales sobre la circulación..."></textarea>
                     </div>
 
                 </form>
@@ -349,34 +349,34 @@
                 <!-- Sección de Estaciones de la circulación -->
                 <hr class="my-4">
                 <div class="mb-3">
-                    <h6><i class="fas fa-route"></i> Estaciones de la circulación</h6>
+                    <h6><i class="fas fa-route"></i> <span data-i18n="circulaciones.tituloParadas">Estaciones de la circulación</span></h6>
                     <div class="row">
                         <div class="col-md-4">
-                            <label for="estacionSelect" class="form-label">Estación</label>
+                            <label for="estacionSelect" class="form-label" data-i18n="comun.estacion">Estación</label>
                             <select class="form-select" id="estacionSelect">
-                                <option value="">Seleccionar estación</option>
+                                <option value="" data-i18n="comun.seleccionarEstacion">Seleccionar estación</option>
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label for="ordenEstacion" class="form-label">Orden</label>
+                            <label for="ordenEstacion" class="form-label" data-i18n="comun.orden">Orden</label>
                             <input type="number" class="form-control" id="ordenEstacion" min="1" value="1">
                         </div>
                         <div class="col-md-2">
-                            <label for="horaLlegada" class="form-label">Llegada</label>
+                            <label for="horaLlegada" class="form-label" data-i18n="comun.llegada">Llegada</label>
                             <input type="time" class="form-control" id="horaLlegada" step="3600">
                         </div>
                         <div class="col-md-2">
-                            <label for="horaSalida" class="form-label">Salida</label>
+                            <label for="horaSalida" class="form-label" data-i18n="comun.salida">Salida</label>
                             <input type="time" class="form-control" id="horaSalida" step="3600">
                         </div>
                         <div class="col-md-2">
-                            <label for="observacionesEstacion" class="form-label">Observaciones</label>
-                            <input type="text" class="form-control" id="observacionesEstacion" placeholder="Observaciones...">
+                            <label for="observacionesEstacion" class="form-label" data-i18n="comun.observaciones">Observaciones</label>
+                            <input type="text" class="form-control" id="observacionesEstacion" data-i18n-placeholder="circulaciones.observacionesCorta" placeholder="Observaciones...">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">&nbsp;</label>
                             <button type="button" class="btn btn-success btn-sm w-100" id="btnAgregarEstacion">
-                                <i class="fas fa-plus"></i> Agregar
+                                <i class="fas fa-plus"></i> <span data-i18n="circulaciones.agregar">Agregar</span>
                             </button>
                         </div>
                     </div>
@@ -389,13 +389,12 @@
                 
                 <!-- Mensaje de estaciones -->
                 <div class="mt-3">
-                    <small id="mensajeEstaciones" class="text-muted">No hay estaciones agregadas a la circulación</small>
+                    <small id="mensajeEstaciones" class="text-muted" data-i18n="circulaciones.sinParadas">No hay estaciones agregadas a la circulación</small>
                 </div>
 
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>
-                    <strong>Nota:</strong> Esta circulación se creará para la fecha seleccionada en el
-                    planificador:
+                    <strong data-i18n="circulaciones.nota">Nota:</strong> <span data-i18n="circulaciones.notaFecha">Esta circulación se creará para la fecha seleccionada en el planificador:</span>
                     <strong id="fechaSeleccionadaModal"></strong>
                 </div>
 
@@ -405,10 +404,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Cancelar
+                    <i class="fas fa-times"></i> <span data-i18n="comun.cancelar">Cancelar</span>
                 </button>
                 <button type="button" class="btn btn-primary" id="btnGuardarCustom">
-                    <i class="fas fa-save"></i> Crear circulación
+                    <i class="fas fa-save"></i> <span data-i18n="circulaciones.crear">Crear circulación</span>
                 </button>
             </div>
         </div>
@@ -510,12 +509,16 @@
                     data: null,
                     className: 'acciones-cell',
                     render: function (data) {
+                        const tituloEditar = texto('circulaciones.editar', 'Editar circulación');
+                        const tituloCancelar = texto('circulaciones.cancelar', 'Cancelar circulación');
+                        const tituloEliminar = texto('circulaciones.eliminar', 'Eliminar circulación');
                         return `
                                 <button class="btn btn-icon btn-editar editar-circulacion" 
                                         data-id="${data.id}"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
-                                        title="Editar circulación">
+                                        title="${tituloEditar}"
+                                        aria-label="${tituloEditar}">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <button class="btn btn-icon btn-cancelar cancelar-circulacion"
@@ -523,7 +526,8 @@
                                         data-numero="${data.numero}"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
-                                        title="Cancelar circulación"
+                                        title="${tituloCancelar}"
+                                        aria-label="${tituloCancelar}"
                                         ${data.estado === 'CANCELADO' ? 'disabled' : ''}>
                                     <i class="fas fa-ban"></i>
                                 </button>
@@ -531,7 +535,8 @@
                                         data-id="${data.id}"
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
-                                        title="Eliminar circulación">
+                                        title="${tituloEliminar}"
+                                        aria-label="${tituloEliminar}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             `;
@@ -598,11 +603,20 @@
         actualizarIndicadorFecha();
 
         // Botón nueva circulación
-        $('.btn-primary').click(function () {
-            if ($(this).text().includes('Nuevo tren custom')) {
-                abrirModalCirculacionCustom();
-            }
+        $('#btnNuevaCirculacion').click(function () {
+            abrirModalCirculacionCustom();
         });
+
+        function prepararModalCirculacion(editar) {
+            const titulo = editar
+                ? texto('circulaciones.tituloEditar', 'Editar tren custom')
+                : texto('circulaciones.nueva', 'Nuevo tren custom');
+            const icono = editar ? 'fa-edit' : 'fa-plus-circle';
+            $('#modalCirculacionCustom .modal-title').html('<i class="fas ' + icono + ' text-primary"></i> ' + titulo);
+            $('#btnGuardarCustom span').text(editar
+                ? texto('comun.guardar', 'Guardar')
+                : texto('circulaciones.crear', 'Crear circulación'));
+        }
 
         // Función para abrir modal de circulación
         function abrirModalCirculacionCustom() {
@@ -615,8 +629,7 @@
             contadorEstaciones = 0;
             actualizarMensajeEstaciones();
 
-            // Cambiar título del modal
-            $('.modal-title').html('<i class="fas fa-plus-circle text-primary"></i> Nuevo Tren Custom');
+            prepararModalCirculacion(false);
 
             // Mostrar fecha seleccionada en el modal
             const fechaFormateada = fechaSeleccionada.toLocaleDateString(idiomaActual(), {
@@ -678,7 +691,7 @@
                     orden: orden,
                     horaProgramadaLlegada: horaProgramadaLlegada || null,
                     horaProgramadaSalida: horaProgramadaSalida || null,
-                    observaciones: observaciones || `Paso en ${estacionSeleccionada.nombre}`
+                    observaciones: observaciones || texto('circulaciones.pasoEn', 'Paso en {nombre}', { nombre: estacionSeleccionada.nombre })
                 };
 
                 estacionesCirculacion.push(nuevaEstacion);
@@ -714,28 +727,28 @@
             estacionElement.innerHTML = `
                 <div class="estacion-header">
                     <div class="estacion-numero">${estacion.orden}</div>
-                    <button type="button" class="btn-eliminar-estacion" onclick="eliminarEstacionDelContenedor(${index})">
+                    <button type="button" class="btn-eliminar-estacion" onclick="eliminarEstacionDelContenedor(${index})" title="${texto('circulaciones.quitarEstacion', 'Quitar estación')}">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="estacion-campos">
                     <div class="form-group">
-                        <label class="form-label">Estación</label>
+                        <label class="form-label">${texto('comun.estacion', 'Estación')}</label>
                         <select class="form-select estacion-select" disabled>
                             <option value="${estacion.estacionId}" selected>${estacion.nombre} (${estacion.codigo})</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Hora Llegada</label>
+                        <label class="form-label">${texto('circulaciones.horaLlegada', 'Hora de llegada')}</label>
                         <input type="time" class="form-control hora-llegada" value="${estacion.horaProgramadaLlegada || ''}" step="3600">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Hora Salida</label>
+                        <label class="form-label">${texto('circulaciones.horaSalida', 'Hora de salida')}</label>
                         <input type="time" class="form-control hora-salida" value="${estacion.horaProgramadaSalida || ''}" step="3600">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Observaciones</label>
-                        <input type="text" class="form-control observaciones" value="${estacion.observaciones || ''}" placeholder="Observaciones...">
+                        <label class="form-label">${texto('comun.observaciones', 'Observaciones')}</label>
+                        <input type="text" class="form-control observaciones" value="${estacion.observaciones || ''}" placeholder="${texto('circulaciones.observacionesCorta', 'Observaciones...')}">
                     </div>
                 </div>
             `;
@@ -860,8 +873,7 @@
                 // Cargar estaciones de la circulación
                 cargarEstacionesParaEdicion(data.id);
 
-                // Cambiar título del modal
-                $('.modal-title').html('<i class="fas fa-edit text-primary"></i> Editar Tren Custom');
+                prepararModalCirculacion(true);
 
                 // Mostrar fecha seleccionada en el modal
                 const fechaFormateada = fechaSeleccionada.toLocaleDateString(idiomaActual(), {
@@ -974,7 +986,7 @@
     // Función para cargar estaciones en el select
     function cargarEstacionesEnSelect() {
         const select = document.getElementById('estacionSelect');
-        select.innerHTML = '<option value="">Seleccionar estación</option>';
+        select.innerHTML = '<option value="">' + texto('comun.seleccionarEstacion', 'Seleccionar estación') + '</option>';
 
         if (estaciones) {
             estaciones.forEach(estacion => {
@@ -1014,7 +1026,8 @@
             $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
         } else {
             // Abrir esta fila
-            const childRow = $('<div class="loading-details">Cargando estaciones...</div>');
+            const childRow = $('<div class="loading-details"></div>')
+                .text(texto('comun.cargandoEstaciones', 'Cargando estaciones...'));
             row.child(childRow).show();
             tr.addClass('shown');
             $(this).find('i').removeClass('fa-plus-circle').addClass('fa-minus-circle');
@@ -1023,20 +1036,22 @@
             cargarEstacionesCirculacion(circulacionId)
                 .then(estaciones => {
                     if (estaciones.length === 0) {
-                        childRow.html('<div class="text-muted">No hay estaciones asignadas a esta circulación.</div>');
+                        childRow.empty().append(
+                            $('<div class="text-muted"></div>').text(texto('circulaciones.sinParadasAsignadas', 'No hay estaciones asignadas a esta circulación.'))
+                        );
                     } else {
                         let estacionesHtml = `
                                     <div class="details-row">
-                                        <h6><i class="fas fa-route"></i> Estaciones de la circulación</h6>
+                                        <h6><i class="fas fa-route"></i> ${texto('circulaciones.tituloParadas', 'Estaciones de la circulación')}</h6>
                                         <table class="details-table table table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Orden</th>
-                                                    <th>Estación</th>
-                                                    <th>Código</th>
-                                                    <th>Llegada Programada</th>
-                                                    <th>Salida Programada</th>
-                                                    <th>Observaciones</th>
+                                                    <th>${texto('comun.orden', 'Orden')}</th>
+                                                    <th>${texto('comun.estacion', 'Estación')}</th>
+                                                    <th>${texto('comun.codigo', 'Código')}</th>
+                                                    <th>${texto('comun.llegadaProgramada', 'Llegada programada')}</th>
+                                                    <th>${texto('comun.salidaProgramada', 'Salida programada')}</th>
+                                                    <th>${texto('comun.observaciones', 'Observaciones')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1065,7 +1080,9 @@
                     }
                 })
                 .catch(error => {
-                    childRow.html('<div class="text-danger">Error al cargar las estaciones.</div>');
+                    childRow.empty().append(
+                        $('<div class="text-danger"></div>').text(texto('circulaciones.errorEstaciones', 'Error al cargar las estaciones'))
+                    );
                 });
         }
     });

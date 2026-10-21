@@ -28,6 +28,7 @@
     "hoy": "Ir a hoy",
     "seleccionarEstacion": "Seleccionar estación",
     "todos": "Todos",
+    "buscar": "Buscar",
     "id": "ID",
     "email": "Email",
     "password": "Contraseña",
@@ -35,7 +36,10 @@
     "margen": "Margen:",
     "horas": "horas",
     "gestion": "Gestión",
-    "leyenda": "Leyenda"
+    "leyenda": "Leyenda",
+    "llegadaProgramada": "Llegada programada",
+    "salidaProgramada": "Salida programada",
+    "cargandoEstaciones": "Cargando estaciones..."
   },
   "nav": {
     "itinerarios": "Itinerarios",
@@ -130,6 +134,24 @@
     "titulo": "Circulaciones",
     "mostrando": "Mostrando circulaciones del:",
     "nueva": "Nuevo tren custom",
+    "agregar": "Agregar",
+    "crear": "Crear circulación",
+    "tituloEditar": "Editar tren custom",
+    "numeroTren": "Número de tren",
+    "tipoTren": "Tipo de tren",
+    "horaSalida": "Hora de salida",
+    "horaLlegada": "Hora de llegada",
+    "materialRodante": "Material rodante",
+    "ejemploNumero": "Ej: 12345",
+    "ejemploOrigen": "Ej: Racó",
+    "ejemploDestino": "Ej: Granja",
+    "ejemploMaterial": "Ej: 101",
+    "observacionesAyuda": "Observaciones adicionales sobre la circulación...",
+    "observacionesCorta": "Observaciones...",
+    "nota": "Nota:",
+    "notaFecha": "Esta circulación se creará para la fecha seleccionada en el planificador:",
+    "pasoEn": "Paso en {nombre}",
+    "quitarEstacion": "Quitar estación",
     "editar": "Editar circulación",
     "cancelar": "Cancelar circulación",
     "eliminar": "Eliminar circulación",
@@ -149,7 +171,9 @@
     "confirmarEliminar": "¿Estás seguro de que deseas eliminar la circulación?",
     "errorEliminar": "Error al eliminar la circulación. Por favor, inténtalo de nuevo.",
     "sinParadas": "No hay estaciones agregadas a la circulación",
-    "conParadas": "{n} estación(es) agregada(s) a la circulación"
+    "conParadas": "{n} estación(es) agregada(s) a la circulación",
+    "tituloParadas": "Estaciones de la circulación",
+    "sinParadasAsignadas": "No hay estaciones asignadas a esta circulación."
   },
   "itinerarios": {
     "titulo": "Gestión de Itinerarios",
@@ -161,7 +185,12 @@
     "estacionRepetida": "Esta estación ya está agregada al itinerario",
     "confirmarEliminar": "¿Estás seguro de que deseas eliminar este itinerario?",
     "errorEliminar": "Error al eliminar el itinerario",
-    "errorGuardar": "Error al guardar el itinerario"
+    "errorGuardar": "Error al guardar el itinerario",
+    "tituloParadas": "Estaciones del itinerario",
+    "sinParadas": "No hay estaciones asignadas a este itinerario.",
+    "agregar": "Agregar",
+    "pasoEn": "Paso en {nombre}",
+    "quitarEstacion": "Quitar estación"
   },
   "usuarios": {
     "titulo": "Gestión de Usuarios",
@@ -175,7 +204,11 @@
     "planificador": "Planificador",
     "confirmarEliminar": "¿Estás seguro de que deseas eliminar este usuario?",
     "errorEliminar": "Error al eliminar el usuario",
-    "errorGuardar": "Error al guardar el usuario"
+    "errorGuardar": "Error al guardar el usuario",
+    "ultimoAcceso": "Último acceso",
+    "estadoActivo": "Activo",
+    "estadoInactivo": "Inactivo",
+    "nunca": "Nunca"
   },
   "seleccionar": {
     "titulo": "Seleccionar Itinerarios",
@@ -186,7 +219,15 @@
     "ninguno": "Por favor selecciona al menos un itinerario",
     "confirmarVarios": "¿Estás seguro de que quieres seleccionar {n} itinerarios para el {fecha}?",
     "exito": "¡Éxito! Se han creado {n} circulaciones.",
-    "error": "Error al crear las circulaciones. Por favor, inténtalo de nuevo."
+    "error": "Error al crear las circulaciones. Por favor, inténtalo de nuevo.",
+    "leyenda": "Leyenda de estados",
+    "leyendaNormal": "Normal. Disponible para seleccionar",
+    "leyendaSesion": "Verde. Seleccionado en esta sesión",
+    "leyendaHoy": "Naranja. Ya seleccionado para hoy",
+    "leyendaActivo": "Botón activo",
+    "leyendaDeshabilitado": "Botón deshabilitado",
+    "boton": "Seleccionar",
+    "botonHecho": "Ya seleccionado"
   },
   "malla": {
     "titulo": "Malla de Circulaciones",

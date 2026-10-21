@@ -58,7 +58,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 data-i18n="usuarios.titulo">Gestión de Usuarios</h2>
         <button class="btn btn-primary nuevo-usuario">
-            <i class="fas fa-plus"></i> Nuevo Usuario
+            <i class="fas fa-plus"></i> <span data-i18n="usuarios.nuevo">Nuevo Usuario</span>
         </button>
     </div>
 
@@ -68,13 +68,13 @@
             <table id="tablaUsuarios" class="table table-striped">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Estado</th>
-                        <th>Último Acceso</th>
-                        <th>Acciones</th>
+                        <th data-i18n="comun.id">ID</th>
+                        <th data-i18n="comun.nombre">Nombre</th>
+                        <th data-i18n="comun.email">Email</th>
+                        <th data-i18n="comun.rol">Rol</th>
+                        <th data-i18n="comun.estado">Estado</th>
+                        <th data-i18n="usuarios.ultimoAcceso">Último acceso</th>
+                        <th data-i18n="comun.acciones">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,44 +89,43 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Nuevo Usuario</h5>
+                    <h5 class="modal-title" id="modalTitle" data-i18n="usuarios.nuevo">Nuevo Usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="usuarioForm">
                         <input type="hidden" id="usuarioId">
                         <div class="mb-3">
-                            <label for="nombre" class="form-label">Nombre</label>
+                            <label for="nombre" class="form-label" data-i18n="comun.nombre">Nombre</label>
                             <input type="text" class="form-control" id="nombre" required>
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label" data-i18n="comun.email">Email</label>
                             <input type="email" class="form-control" id="email" required>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña</label>
+                            <label for="password" class="form-label" data-i18n="comun.password">Contraseña</label>
                             <input type="password" class="form-control" id="password">
-                            <small class="text-muted">Dejar en blanco para mantener la contraseña actual al
-                                editar</small>
-                            <small class="text-muted">Minimo 6 caracteres</small>
+                            <small class="text-muted" data-i18n="usuarios.passwordAyuda">Dejar en blanco para mantener la contraseña actual al editar</small>
+                            <small class="text-muted" data-i18n="usuarios.passwordMinimo">Mínimo 6 caracteres</small>
 
                         </div>
                         <div class="mb-3">
-                            <label for="rol" class="form-label">Rol</label>
+                            <label for="rol" class="form-label" data-i18n="comun.rol">Rol</label>
                             <select class="form-select" id="rol" required>
-                                <option value="admin">Administrador</option>
-                                <option value="planificador">Planificador</option>
+                                <option value="admin" data-i18n="usuarios.admin">Administrador</option>
+                                <option value="planificador" data-i18n="usuarios.planificador">Planificador</option>
                             </select>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="activo" checked>
-                            <label class="form-check-label" for="activo">Usuario Activo</label>
+                            <label class="form-check-label" for="activo" data-i18n="usuarios.activo">Usuario Activo</label>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="comun.cancelar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardar" data-i18n="comun.guardar">Guardar</button>
                 </div>
             </div>
         </div>
@@ -164,29 +163,38 @@
                 { data: 'id' },
                 { data: 'nombre' },
                 { data: 'email' },
-                { data: 'rol' },
+                {
+                    data: 'rol',
+                    render: function (data) {
+                        return texto('usuarios.' + data, data || '');
+                    }
+                },
                 {
                     data: 'activo',
                     render: function (data) {
                         return data ?
-                            '<span class="usuario-activo"><i class="fas fa-check-circle"></i> Activo</span>' :
-                            '<span class="usuario-inactivo"><i class="fas fa-times-circle"></i> Inactivo</span>';
+                            '<span class="usuario-activo"><i class="fas fa-check-circle"></i> ' + texto('usuarios.estadoActivo', 'Activo') + '</span>' :
+                            '<span class="usuario-inactivo"><i class="fas fa-times-circle"></i> ' + texto('usuarios.estadoInactivo', 'Inactivo') + '</span>';
                     }
                 },
                 {
                     data: 'ultimoAcceso',
                     render: function (data) {
-                        return data ? new Date(data).toLocaleString() : 'Nunca';
+                        return data ? new Date(data).toLocaleString(idiomaActual()) : texto('usuarios.nunca', 'Nunca');
                     }
                 },
                 {
                     data: null,
                     render: function (data) {
+                        const tituloEditar = texto('usuarios.editar', 'Editar usuario');
+                        const tituloEliminar = texto('usuarios.eliminar', 'Eliminar usuario');
                         return `
-                                <button class="btn btn-sm btn-primary editar-usuario" data-id="${data.id}">
+                                <button class="btn btn-sm btn-primary editar-usuario" data-id="${data.id}"
+                                        title="${tituloEditar}" aria-label="${tituloEditar}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger eliminar-usuario" data-id="${data.id}">
+                                <button class="btn btn-sm btn-danger eliminar-usuario" data-id="${data.id}"
+                                        title="${tituloEliminar}" aria-label="${tituloEliminar}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             `;
@@ -194,7 +202,7 @@
                 }
             ],
             pageLength: 10,
-            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, texto('comun.todos', 'Todos')]],
             order: [[1, 'asc']], // Ordenar por nombre por defecto
             drawCallback: function () {
                 // Reinicializar tooltips después de cada redibujado
@@ -207,7 +215,7 @@
 
         // Manejar clic en nueva
         $('.nuevo-usuario').on('click', function () {
-            $('#modalTitle').text('Nuevo Usuario');
+            $('#modalTitle').text(texto('usuarios.nuevo', 'Nuevo Usuario'));
             $('#usuarioForm')[0].reset();
             $('#usuarioId').val('');
             $('#password').prop('required', true);
@@ -225,7 +233,7 @@
             const id = $(this).data('id');
             const usuario = tablaUsuarios.row($(this).closest('tr')).data();
 
-            $('#modalTitle').text('Editar Usuario');
+            $('#modalTitle').text(texto('usuarios.editar', 'Editar usuario'));
             $('#usuarioId').val(usuario.id);
             $('#nombre').val(usuario.nombre);
             $('#email').val(usuario.email);

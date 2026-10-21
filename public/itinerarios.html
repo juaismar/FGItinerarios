@@ -85,7 +85,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 data-i18n="itinerarios.titulo">Gestión de Itinerarios</h2>
         <button class="btn btn-primary nuevo-itinerario">
-            <i class="fas fa-plus"></i> Nuevo Itinerario
+            <i class="fas fa-plus"></i> <span data-i18n="itinerarios.nueva">Nuevo Itinerario</span>
         </button>
     </div>
 
@@ -96,14 +96,14 @@
                 <thead>
                     <tr>
                         <th></th>
-                        <th>ID</th>
-                        <th>Número</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Material</th>
-                        <th>Acciones</th>
+                        <th data-i18n="comun.id">ID</th>
+                        <th data-i18n="comun.numero">Número</th>
+                        <th data-i18n="comun.origen">Origen</th>
+                        <th data-i18n="comun.destino">Destino</th>
+                        <th data-i18n="comun.hora">Hora</th>
+                        <th data-i18n="comun.tipo">Tipo</th>
+                        <th data-i18n="comun.material">Material</th>
+                        <th data-i18n="comun.acciones">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -118,41 +118,41 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalTitle">Nuevo Itinerario</h5>
+                    <h5 class="modal-title" id="modalTitle" data-i18n="itinerarios.nueva">Nuevo Itinerario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <form id="itinerarioForm">
                         <input type="hidden" id="itinerarioId">
                         <div class="mb-3">
-                            <label for="numero" class="form-label">Número</label>
+                            <label for="numero" class="form-label" data-i18n="comun.numero">Número</label>
                             <input type="text" class="form-control" id="numero" required>
                         </div>
                         <div class="mb-3">
-                            <label for="origen" class="form-label">Origen</label>
+                            <label for="origen" class="form-label" data-i18n="comun.origen">Origen</label>
                             <input type="text" class="form-control" id="origen" required>
                         </div>
                         <div class="mb-3">
-                            <label for="destino" class="form-label">Destino</label>
+                            <label for="destino" class="form-label" data-i18n="comun.destino">Destino</label>
                             <input type="text" class="form-control" id="destino" required>
                         </div>
                         <div class="mb-3">
-                            <label for="fecha" class="form-label">Hora</label>
+                            <label for="fecha" class="form-label" data-i18n="comun.hora">Hora</label>
                             <input type="time" class="form-control" id="fecha" step="3600" required>
                         </div>
                         <div class="mb-3">
-                            <label for="tipo" class="form-label">Tipo</label>
+                            <label for="tipo" class="form-label" data-i18n="comun.tipo">Tipo</label>
                             <select class="form-select" id="tipo" required>
-                                <option value="ViajerosCalidad" selected>Viajeros Calidad</option>
-                                <option value="ViajerosOrdinario" selected>Viajeros Ordinario</option>
-                                <option value="Mercancias" selected>Mercancias</option>
-                                <option value="ServicioInterior">Servicio Interior</option>
-                                <option value="MaquinasAisladas">Máquinas aisladas</option>
-                                <option value="Otro">Otro</option>
+                                <option value="ViajerosCalidad" data-i18n="tipoTren.ViajerosCalidad" selected>Viajeros Calidad</option>
+                                <option value="ViajerosOrdinario" data-i18n="tipoTren.ViajerosOrdinario" selected>Viajeros Ordinario</option>
+                                <option value="Mercancias" data-i18n="tipoTren.Mercancias" selected>Mercancias</option>
+                                <option value="ServicioInterior" data-i18n="tipoTren.ServicioInterior">Servicio Interior</option>
+                                <option value="MaquinasAisladas" data-i18n="tipoTren.MaquinasAisladas">Máquinas aisladas</option>
+                                <option value="Otro" data-i18n="tipoTren.Otro">Otro</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="material" class="form-label">Material</label>
+                            <label for="material" class="form-label" data-i18n="comun.material">Material</label>
                             <input type="text" class="form-control" id="material">
                         </div>
                     </form>
@@ -160,30 +160,30 @@
                     <!-- Sección de Estaciones del Itinerario -->
                     <hr class="my-4">
                     <div class="mb-3">
-                        <h6><i class="fas fa-route"></i> Estaciones del Itinerario</h6>
+                        <h6><i class="fas fa-route"></i> <span data-i18n="itinerarios.tituloParadas">Estaciones del itinerario</span></h6>
                         <div class="row">
                             <div class="col-md-4">
-                                <label for="estacionSelect" class="form-label">Estación</label>
+                                <label for="estacionSelect" class="form-label" data-i18n="comun.estacion">Estación</label>
                                 <select class="form-select" id="estacionSelect">
-                                    <option value="">Seleccionar estación</option>
+                                    <option value="" data-i18n="comun.seleccionarEstacion">Seleccionar estación</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label for="ordenEstacion" class="form-label">Orden</label>
+                                <label for="ordenEstacion" class="form-label" data-i18n="comun.orden">Orden</label>
                                 <input type="number" class="form-control" id="ordenEstacion" min="1" value="1">
                             </div>
                             <div class="col-md-2">
-                                <label for="horaLlegada" class="form-label">Llegada</label>
+                                <label for="horaLlegada" class="form-label" data-i18n="comun.llegada">Llegada</label>
                                 <input type="time" class="form-control" id="horaLlegada" step="3600">
                             </div>
                             <div class="col-md-2">
-                                <label for="horaSalida" class="form-label">Salida</label>
+                                <label for="horaSalida" class="form-label" data-i18n="comun.salida">Salida</label>
                                 <input type="time" class="form-control" id="horaSalida" step="3600">
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">&nbsp;</label>
                                 <button type="button" class="btn btn-success btn-sm w-100" id="btnAgregarEstacion">
-                                    <i class="fas fa-plus"></i> Agregar
+                                    <i class="fas fa-plus"></i> <span data-i18n="itinerarios.agregar">Agregar</span>
                                 </button>
                             </div>
                         </div>
@@ -194,12 +194,12 @@
                         <table class="table table-sm table-bordered" id="tablaEstacionesItinerario">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Orden</th>
-                                    <th>Estación</th>
-                                    <th>Código</th>
-                                    <th>Llegada</th>
-                                    <th>Salida</th>
-                                    <th>Acciones</th>
+                                    <th data-i18n="comun.orden">Orden</th>
+                                    <th data-i18n="comun.estacion">Estación</th>
+                                    <th data-i18n="comun.codigo">Código</th>
+                                    <th data-i18n="comun.llegada">Llegada</th>
+                                    <th data-i18n="comun.salida">Salida</th>
+                                    <th data-i18n="comun.acciones">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -209,8 +209,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="comun.cancelar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardar" data-i18n="comun.guardar">Guardar</button>
                 </div>
             </div>
         </div>
@@ -284,7 +284,7 @@
         // Función para cargar estaciones en el select
         function cargarEstacionesEnSelect() {
             const select = document.getElementById('estacionSelect');
-            select.innerHTML = '<option value="">Seleccionar estación</option>';
+            select.innerHTML = '<option value="">' + texto('comun.seleccionarEstacion', 'Seleccionar estación') + '</option>';
 
             if (estaciones) {
                 estaciones.forEach(estacion => {
@@ -310,7 +310,7 @@
                     <td>${formatearHora(estacion.horaProgramadaLlegada)}</td>
                     <td>${formatearHora(estacion.horaProgramadaSalida)}</td>
                     <td>
-                        <button class="btn btn-sm btn-danger eliminar-estacion-itinerario" data-index="${index}">
+                        <button class="btn btn-sm btn-danger eliminar-estacion-itinerario" data-index="${index}" title="${texto('itinerarios.quitarEstacion', 'Quitar estación')}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -348,7 +348,7 @@
                     orden: orden,
                     horaProgramadaLlegada: horaProgramadaLlegada || null,
                     horaProgramadaSalida: horaProgramadaSalida || null,
-                    observaciones: `Paso en ${estacionSeleccionada.nombre}`
+                    observaciones: texto('itinerarios.pasoEn', 'Paso en {nombre}', { nombre: estacionSeleccionada.nombre })
                 };
 
                 estacionesItinerario.push(nuevaEstacion);
@@ -412,17 +412,26 @@
                         return data || '';
                     }
                 },
-                { data: 'tipo' },
+                {
+                    data: 'tipo',
+                    render: function (data) {
+                        return texto('tipoTren.' + data, data || '');
+                    }
+                },
                 { data: 'material' },
                 {
                     data: null,
                     className: 'acciones-cell',
                     render: function (data) {
+                        const tituloEditar = texto('itinerarios.editar', 'Editar itinerario');
+                        const tituloEliminar = texto('itinerarios.eliminar', 'Eliminar itinerario');
                         return `
-                                <button class="btn btn-sm btn-primary editar-itinerario" data-id="${data.id}">
+                                <button class="btn btn-sm btn-primary editar-itinerario" data-id="${data.id}"
+                                        title="${tituloEditar}" aria-label="${tituloEditar}">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger eliminar-itinerario" data-id="${data.id}">
+                                <button class="btn btn-sm btn-danger eliminar-itinerario" data-id="${data.id}"
+                                        title="${tituloEliminar}" aria-label="${tituloEliminar}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             `;
@@ -430,7 +439,7 @@
                 }
             ],
             pageLength: 10,
-            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, texto('comun.todos', 'Todos')]],
             order: [[1, 'asc']], // Ordenar por número por defecto
             drawCallback: function () {
                 // Reinicializar tooltips después de cada redibujado
@@ -454,7 +463,8 @@
                 $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
             } else {
                 // Abrir esta fila
-                const childRow = $('<div class="loading-details">Cargando estaciones...</div>');
+                const childRow = $('<div class="loading-details"></div>')
+                    .text(texto('comun.cargandoEstaciones', 'Cargando estaciones...'));
                 row.child(childRow).show();
                 tr.addClass('shown');
                 $(this).find('i').removeClass('fa-plus-circle').addClass('fa-minus-circle');
@@ -463,20 +473,22 @@
                 cargarEstacionesItinerario(itinerarioId)
                     .then(estaciones => {
                         if (estaciones.length === 0) {
-                            childRow.html('<div class="text-muted">No hay estaciones asignadas a este itinerario.</div>');
+                            childRow.empty().append(
+                                $('<div class="text-muted"></div>').text(texto('itinerarios.sinParadas', 'No hay estaciones asignadas a este itinerario.'))
+                            );
                         } else {
                             let estacionesHtml = `
                                 <div class="details-row">
-                                    <h6><i class="fas fa-route"></i> Estaciones del Itinerario</h6>
+                                    <h6><i class="fas fa-route"></i> ${texto('itinerarios.tituloParadas', 'Estaciones del itinerario')}</h6>
                                     <table class="details-table table table-sm">
                                         <thead>
                                             <tr>
-                                                <th>Orden</th>
-                                                <th>Estación</th>
-                                                <th>Código</th>
-                                                <th>Llegada Programada</th>
-                                                <th>Salida Programada</th>
-                                                <th>Observaciones</th>
+                                                <th>${texto('comun.orden', 'Orden')}</th>
+                                                <th>${texto('comun.estacion', 'Estación')}</th>
+                                                <th>${texto('comun.codigo', 'Código')}</th>
+                                                <th>${texto('comun.llegadaProgramada', 'Llegada programada')}</th>
+                                                <th>${texto('comun.salidaProgramada', 'Salida programada')}</th>
+                                                <th>${texto('comun.observaciones', 'Observaciones')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -505,14 +517,16 @@
                         }
                     })
                     .catch(error => {
-                        childRow.html('<div class="text-danger">Error al cargar las estaciones.</div>');
+                        childRow.empty().append(
+                            $('<div class="text-danger"></div>').text(texto('itinerarios.errorEstaciones', 'Error al cargar las estaciones'))
+                        );
                     });
             }
         });
 
         // Manejar clic en nuevo
         $('.nuevo-itinerario').on('click', function () {
-            $('#modalTitle').text('Nuevo Itinerario');
+            $('#modalTitle').text(texto('itinerarios.nueva', 'Nuevo Itinerario'));
             $('#itinerarioForm')[0].reset();
             $('#itinerarioId').val('');
 
@@ -532,7 +546,7 @@
             const id = $(this).data('id');
             const itinerario = tablaItinerarios.row($(this).closest('tr')).data();
 
-            $('#modalTitle').text('Editar Itinerario');
+            $('#modalTitle').text(texto('itinerarios.editar', 'Editar itinerario'));
             $('#itinerarioId').val(itinerario.id);
             $('#numero').val(itinerario.numero);
             $('#fecha').val(itinerario.fecha || '');

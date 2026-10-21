@@ -111,10 +111,10 @@
         <h2 data-i18n="seleccionar.titulo">Seleccionar Itinerarios</h2>
         <div>
             <button class="btn btn-success" id="btnConfirmarSeleccion" style="display: none;">
-                <i class="fas fa-check"></i> Confirmar Selección
+                <i class="fas fa-check"></i> <span data-i18n="seleccionar.confirmar">Confirmar selección</span>
             </button>
             <button class="btn btn-secondary" id="btnLimpiarSeleccion" style="display: none;">
-                <i class="fas fa-times"></i> Limpiar Selección
+                <i class="fas fa-times"></i> <span data-i18n="seleccionar.limpiar">Limpiar selección</span>
             </button>
         </div>
     </div>
@@ -124,19 +124,19 @@
         <div class="card-body py-2">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <h6 class="mb-2"><i class="fas fa-info-circle text-info"></i> Leyenda de Estados:</h6>
+                    <h6 class="mb-2"><i class="fas fa-info-circle text-info"></i> <span data-i18n="seleccionar.leyenda">Leyenda de estados</span></h6>
                     <div class="d-flex flex-wrap gap-3">
                         <div class="d-flex align-items-center">
                             <div class="color-indicator bg-white border" style="width: 20px; height: 20px; border-radius: 4px;"></div>
-                            <span class="ms-2 small">Normal - Disponible para seleccionar</span>
+                            <span class="ms-2 small" data-i18n="seleccionar.leyendaNormal">Normal. Disponible para seleccionar</span>
                         </div>
                         <div class="d-flex align-items-center">
                             <div class="color-indicator" style="width: 20px; height: 20px; border-radius: 4px; background-color: #d4edda; border: 1px solid #c3e6cb;"></div>
-                            <span class="ms-2 small">Verde - Seleccionado en esta sesión</span>
+                            <span class="ms-2 small" data-i18n="seleccionar.leyendaSesion">Verde. Seleccionado en esta sesión</span>
                         </div>
                         <div class="d-flex align-items-center">
                             <div class="color-indicator" style="width: 20px; height: 20px; border-radius: 4px; background-color: #ffe6cc; border: 1px solid #ffcc80;"></div>
-                            <span class="ms-2 small">Naranja - Ya seleccionado para hoy</span>
+                            <span class="ms-2 small" data-i18n="seleccionar.leyendaHoy">Naranja. Ya seleccionado para hoy</span>
                         </div>
                     </div>
                 </div>
@@ -144,15 +144,15 @@
                     <div class="d-flex flex-wrap gap-3">
                         <div class="d-flex align-items-center">
                             <button class="btn btn-sm btn-success" disabled style="opacity: 0.6;">
-                                <i class="fas fa-check"></i> Seleccionar
+                                <i class="fas fa-check"></i> <span data-i18n="seleccionar.boton">Seleccionar</span>
                             </button>
-                            <span class="ms-2 small">Botón activo</span>
+                            <span class="ms-2 small" data-i18n="seleccionar.leyendaActivo">Botón activo</span>
                         </div>
                         <div class="d-flex align-items-center">
                             <button class="btn btn-sm btn-secondary" disabled style="opacity: 0.6;">
-                                <i class="fas fa-ban"></i> Ya Seleccionado
+                                <i class="fas fa-ban"></i> <span data-i18n="seleccionar.botonHecho">Ya seleccionado</span>
                             </button>
-                            <span class="ms-2 small">Botón deshabilitado</span>
+                            <span class="ms-2 small" data-i18n="seleccionar.leyendaDeshabilitado">Botón deshabilitado</span>
                         </div>
                     </div>
                 </div>
@@ -167,14 +167,14 @@
                 <thead>
                     <tr>
                         <th id="th_mas"></th>
-                        <th id="th_id">ID</th>
-                        <th id="th_numero">Número</th>
-                        <th id="th_origen">Origen</th>
-                        <th id="th_destino">Destino</th>
-                        <th id="th_fecha">Hora</th>
-                        <th id="th_tipo">Tipo</th>
-                        <th id="th_material">Material</th>
-                        <th id="th_acciones">Acciones</th>
+                        <th id="th_id" data-i18n="comun.id">ID</th>
+                        <th id="th_numero" data-i18n="comun.numero">Número</th>
+                        <th id="th_origen" data-i18n="comun.origen">Origen</th>
+                        <th id="th_destino" data-i18n="comun.destino">Destino</th>
+                        <th id="th_fecha" data-i18n="comun.hora">Hora</th>
+                        <th id="th_tipo" data-i18n="comun.tipo">Tipo</th>
+                        <th id="th_material" data-i18n="comun.material">Material</th>
+                        <th id="th_acciones" data-i18n="comun.acciones">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -254,7 +254,7 @@
             if (itinerariosSeleccionados.size > 0) {
                 btnConfirmar.show();
                 btnLimpiar.show();
-                btnConfirmar.text(`Confirmar Selección (${itinerariosSeleccionados.size})`);
+                btnConfirmar.html('<i class="fas fa-check"></i> ' + texto('seleccionar.confirmar', 'Confirmar selección') + ' (' + itinerariosSeleccionados.size + ')');
             } else {
                 btnConfirmar.hide();
                 btnLimpiar.hide();
@@ -342,7 +342,9 @@
                     render: function (data) {
                         const yaSeleccionado = numerosTrenYaSeleccionados.has(data.numero);
                         const buttonClass = yaSeleccionado ? 'btn btn-sm btn-disabled' : 'btn btn-sm btn-success seleccionar-itinerario';
-                        const buttonText = yaSeleccionado ? 'Ya Seleccionado' : 'Seleccionar';
+                        const buttonText = yaSeleccionado
+                            ? texto('seleccionar.botonHecho', 'Ya seleccionado')
+                            : texto('seleccionar.boton', 'Seleccionar');
                         const iconClass = yaSeleccionado ? 'fas fa-ban' : 'fas fa-check';
                         const disabled = yaSeleccionado ? 'disabled' : '';
                         
@@ -355,7 +357,7 @@
                 }
             ],
             pageLength: 10,
-            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, texto('comun.todos', 'Todos')]],
             order: [[1, 'asc']], // Ordenar por número por defecto
             drawCallback: function () {
                 // Reinicializar tooltips después de cada redibujado
@@ -382,7 +384,8 @@
                 $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
             } else {
                 // Abrir esta fila
-                const childRow = $('<div class="loading-details">Cargando estaciones...</div>');
+                const childRow = $('<div class="loading-details"></div>')
+                    .text(texto('comun.cargandoEstaciones', 'Cargando estaciones...'));
                 row.child(childRow).show();
                 tr.addClass('shown');
                 $(this).find('i').removeClass('fa-plus-circle').addClass('fa-minus-circle');
@@ -391,20 +394,22 @@
                 cargarEstacionesItinerario(itinerarioId)
                     .then(estaciones => {
                         if (estaciones.length === 0) {
-                            childRow.html('<div class="text-muted">No hay estaciones asignadas a este itinerario.</div>');
+                            childRow.empty().append(
+                                $('<div class="text-muted"></div>').text(texto('itinerarios.sinParadas', 'No hay estaciones asignadas a este itinerario.'))
+                            );
                         } else {
                             let estacionesHtml = `
                                 <div class="details-row">
-                                    <h6><i class="fas fa-route"></i> Estaciones del Itinerario</h6>
+                                    <h6><i class="fas fa-route"></i> ${texto('itinerarios.tituloParadas', 'Estaciones del itinerario')}</h6>
                                     <table class="details-table table table-sm">
                                         <thead>
                                             <tr>
-                                                <th>Orden</th>
-                                                <th>Estación</th>
-                                                <th>Código</th>
-                                                <th>Llegada Programada</th>
-                                                <th>Salida Programada</th>
-                                                <th>Observaciones</th>
+                                                <th>${texto('comun.orden', 'Orden')}</th>
+                                                <th>${texto('comun.estacion', 'Estación')}</th>
+                                                <th>${texto('comun.codigo', 'Código')}</th>
+                                                <th>${texto('comun.llegadaProgramada', 'Llegada programada')}</th>
+                                                <th>${texto('comun.salidaProgramada', 'Salida programada')}</th>
+                                                <th>${texto('comun.observaciones', 'Observaciones')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -433,7 +438,9 @@
                         }
                     })
                     .catch(error => {
-                        childRow.html('<div class="text-danger">Error al cargar las estaciones.</div>');
+                        childRow.empty().append(
+                            $('<div class="text-danger"></div>').text(texto('itinerarios.errorEstaciones', 'Error al cargar las estaciones'))
+                        );
                     });
             }
         });
@@ -471,14 +478,14 @@
                 break;
 
                 case 'th_origen':
-                    $(this).html('<select id="filtroOrigen" class="form-select form-select-sm"><option value="">Todos</option></select>');
+                    $(this).html('<select id="filtroOrigen" class="form-select form-select-sm"><option value="">' + texto('comun.todos', 'Todos') + '</option></select>');
                     $('select', this).on('change', function () {
                         tablaItinerarios.draw();
                     });
                 break;
 
                 case 'th_destino':
-                    $(this).html('<select id="filtroDestino" class="form-select form-select-sm"><option value="">Todos</option></select>');
+                    $(this).html('<select id="filtroDestino" class="form-select form-select-sm"><option value="">' + texto('comun.todos', 'Todos') + '</option></select>');
                     $('select', this).on('change', function () {
                         tablaItinerarios.draw();
                     });
@@ -486,13 +493,13 @@
 
                 case 'th_tipo':
                     $(this).html(`<select id="filtroTipo" class="form-select form-select-sm">
-                        <option value="">Todos</option>
-                        <option value="ViajerosCalidad">Viajeros Calidad</option>
-                        <option value="ViajerosOrdinario">Viajeros Ordinario</option>
-                        <option value="Mercancias">Mercancías</option>
-                        <option value="ServicioInterior">Servicio Interior</option>
-                        <option value="MaquinasAisladas">Máquinas aisladas</option>
-                        <option value="Otro">Otro</option>
+                        <option value="">${texto('comun.todos', 'Todos')}</option>
+                        <option value="ViajerosCalidad">${texto('tipoTren.ViajerosCalidad', 'Viajeros Calidad')}</option>
+                        <option value="ViajerosOrdinario">${texto('tipoTren.ViajerosOrdinario', 'Viajeros Ordinario')}</option>
+                        <option value="Mercancias">${texto('tipoTren.Mercancias', 'Mercancías')}</option>
+                        <option value="ServicioInterior">${texto('tipoTren.ServicioInterior', 'Servicio Interior')}</option>
+                        <option value="MaquinasAisladas">${texto('tipoTren.MaquinasAisladas', 'Máquinas aisladas')}</option>
+                        <option value="Otro">${texto('tipoTren.Otro', 'Otro')}</option>
                     </select>`);
                     $('select', this).on('change', function () {
                         tablaItinerarios.draw();
@@ -500,7 +507,7 @@
                 break;
 
                 default:
-                    $(this).html('<input type="text" style="width: 150px;" placeholder="Buscar ' + title + '" />');
+                    $(this).html('<input type="text" style="width: 150px;" placeholder="' + texto('comun.buscar', 'Buscar') + ' ' + title + '" />');
                     // this select is for text input fields
                     $('input', this).on('keyup change', function () {
                         if (tablaItinerarios.column(index).search() !== this.value) {
