@@ -139,9 +139,12 @@
                     <h2 class="mb-1"><i class="fas fa-route"></i> <span data-i18n="malla.titulo">Malla de Circulaciones</span></h2>
                     <p class="text-muted mb-0" data-i18n="malla.ayuda">Gráfico de marcha de las circulaciones del día</p>
                 </div>
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center gap-2">
                     <label for="fechaSelector" class="form-label me-2 mb-0" data-i18n="malla.fecha">Fecha:</label>
                     <input type="date" id="fechaSelector" class="form-control" style="width: auto;">
+                    <button id="btnExportarPdf" class="btn btn-outline-dark" type="button" disabled>
+                        <i class="fas fa-file-pdf"></i> <span data-i18n="malla.exportarPdf">Exportar PDF</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -394,6 +397,162 @@
         function mensaje(clase, icono, textoPlano) {
             document.getElementById('mallaVisualizacion').innerHTML =
                 '<div class="' + clase + '"><i class="fas ' + icono + ' fa-2x"></i><p>' + escapar(textoPlano) + '</p></div>';
+            botonPdf(false);
+        }
+
+        function botonPdf(activo) {
+            const boton = document.getElementById('btnExportarPdf');
+            if (boton) {
+                boton.disabled = !activo;
+            }
+        }
+
+        function cargarScript(url) {
+            if (document.querySelector('script[src="' + url + '"]')) {
+                return Promise.resolve();
+            }
+            return new Promise(function (resolve, reject) {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = function () { resolve(); };
+                script.onerror = function () { reject(new Error(url)); };
+                document.head.appendChild(script);
+            });
+        }
+
+        let bibliotecasPdf = null;
+        function asegurarPdf() {
+            if (window.jspdf && window.jspdf.jsPDF && typeof window.jspdf.jsPDF.API.svg === 'function') {
+                return Promise.resolve();
+            }
+            if (!bibliotecasPdf) {
+                bibliotecasPdf = cargarScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js')
+                    .then(function () {
+                        return cargarScript('https://cdn.jsdelivr.net/npm/svg2pdf.js@2.2.4/dist/svg2pdf.umd.min.js');
+                    })
+                    .catch(function (error) {
+                        bibliotecasPdf = null;
+                        throw error;
+                    });
+            }
+            return bibliotecasPdf;
+        }
+
+        function hojaParaPdf() {
+            const original = document.querySelector('#mallaVisualizacion svg');
+            if (!original) {
+                return null;
+            }
+            const anchoGrafico = Number(original.getAttribute('width'));
+            const altoGrafico = Number(original.getAttribute('height'));
+            const margen = 118;
+            const cabecera = 54;
+            const ancho = margen + anchoGrafico + margen;
+            const alto = cabecera + altoGrafico + 12;
+            const svg = svgEl('svg', {
+                xmlns: SVG_NS,
+                width: ancho,
+                height: alto,
+                viewBox: '0 0 ' + ancho + ' ' + alto
+            });
+            svg.appendChild(svgEl('rect', { width: ancho, height: alto, fill: '#ffffff' }));
+
+            const marca = svgEl('text', { x: 12, y: 28, 'font-size': 16, 'font-weight': 700, fill: '#111' });
+            marca.textContent = 'FG  ' + textoMalla('malla.ferrocarril', 'Ferrocarril de La Granja');
+            svg.appendChild(marca);
+
+            const titulo = svgEl('text', {
+                x: ancho / 2,
+                y: 28,
+                'text-anchor': 'middle',
+                'font-size': 16,
+                'font-weight': 700,
+                fill: '#111'
+            });
+            titulo.textContent = (document.querySelector('.hoja-titulo') || {}).textContent
+                || textoMalla('malla.grafico', 'Gráfico de circulación de trenes');
+            svg.appendChild(titulo);
+
+            const fechaNodo = document.querySelector('.hoja-fecha');
+            const lineasFecha = fechaNodo ? fechaNodo.innerText.split('\n') : [];
+            const fecha = svgEl('text', { x: ancho - 12, y: 22, 'text-anchor': 'end', 'font-size': 12, fill: '#111' });
+            fecha.textContent = lineasFecha[0] || '';
+            svg.appendChild(fecha);
+            const recuento = svgEl('text', { x: ancho - 12, y: 38, 'text-anchor': 'end', 'font-size': 11, fill: '#555' });
+            recuento.textContent = lineasFecha[1] || '';
+            svg.appendChild(recuento);
+            svg.appendChild(svgEl('line', { x1: 8, x2: ancho - 8, y1: 46, y2: 46, stroke: '#111', 'stroke-width': 1.5 }));
+
+            const nombres = Array.from(document.querySelectorAll('.nombres-estacion:not(.derecha) .fila-estacion'));
+            nombres.forEach(function (fila, indice) {
+                const y = cabecera + EJE_HORAS + indice * ALTO_FILA + ALTO_FILA / 2 + 4;
+                const izquierda = svgEl('text', {
+                    x: margen - 10,
+                    y: y,
+                    'text-anchor': 'end',
+                    'font-size': 11,
+                    'font-weight': 700,
+                    fill: '#111'
+                });
+                izquierda.textContent = fila.textContent.toUpperCase();
+                const derecha = svgEl('text', {
+                    x: margen + anchoGrafico + 10,
+                    y: y,
+                    'text-anchor': 'start',
+                    'font-size': 11,
+                    'font-weight': 700,
+                    fill: '#111'
+                });
+                derecha.textContent = fila.textContent.toUpperCase();
+                svg.appendChild(izquierda);
+                svg.appendChild(derecha);
+            });
+
+            const grupo = svgEl('g', { transform: 'translate(' + margen + ' ' + cabecera + ')' });
+            Array.from(original.childNodes).forEach(function (nodo) {
+                grupo.appendChild(nodo.cloneNode(true));
+            });
+            grupo.querySelectorAll('text').forEach(function (texto) {
+                if (!texto.getAttribute('stroke')) {
+                    return;
+                }
+                texto.removeAttribute('stroke');
+                texto.removeAttribute('stroke-width');
+                texto.removeAttribute('paint-order');
+            });
+            svg.appendChild(grupo);
+            return { svg: svg, ancho: ancho, alto: alto };
+        }
+
+        async function exportarPdf() {
+            const hoja = hojaParaPdf();
+            const boton = document.getElementById('btnExportarPdf');
+            if (!hoja || !boton) {
+                return;
+            }
+            const etiqueta = boton.querySelector('span');
+            const textoBoton = etiqueta.textContent;
+            boton.disabled = true;
+            etiqueta.textContent = textoMalla('malla.exportando', 'Generando el PDF...');
+            try {
+                await asegurarPdf();
+                const { jsPDF } = window.jspdf;
+                const documento = new jsPDF({
+                    orientation: hoja.ancho >= hoja.alto ? 'landscape' : 'portrait',
+                    unit: 'px',
+                    format: [hoja.ancho, hoja.alto],
+                    hotfixes: ['px_scaling']
+                });
+                await documento.svg(hoja.svg, { x: 0, y: 0, width: hoja.ancho, height: hoja.alto });
+                const dia = (mallaOriginal && mallaOriginal.fecha) || 'dia';
+                documento.save('grafico-circulacion-' + dia + '.pdf');
+            } catch (error) {
+                console.error(error);
+                alert(textoMalla('malla.errorPdf', 'No se ha podido crear el PDF'));
+            } finally {
+                etiqueta.textContent = textoBoton;
+                boton.disabled = !document.querySelector('#mallaVisualizacion svg');
+            }
         }
 
         function quitarTooltip() {
@@ -726,6 +885,7 @@
             cuerpo.appendChild(derecha);
             hoja.appendChild(cuerpo);
             contenedor.appendChild(hoja);
+            botonPdf(true);
         }
 
         async function cargarMalla(fecha) {
@@ -767,6 +927,7 @@
             document.getElementById('btnActualizar').addEventListener('click', function () {
                 cargarMalla(input.value);
             });
+            document.getElementById('btnExportarPdf').addEventListener('click', exportarPdf);
             input.addEventListener('change', function () {
                 if (/^\d{4}-\d{2}-\d{2}$/.test(input.value)) {
                     const partes = input.value.split('-');
