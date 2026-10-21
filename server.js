@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { inicializarConexion, ejecutarSeed, cerrarConexion, getSequelize } = require('./db/database');
+const { aplicarGestionAutomatica } = require('./controllers/controlEstacion');
 const logger = require('./logger').logger;
 
 // Determinar el entorno
@@ -51,6 +52,17 @@ async function iniciarServidor() {
     
     // Ejecutar seed en desarrollo
     await ejecutarSeed();
+
+    try {
+      await aplicarGestionAutomatica();
+    } catch (error) {
+      logger.error(logLocation + 'Error en la gestión automática: ' + error);
+    }
+    const temporizadorGestion = setInterval(() => {
+      aplicarGestionAutomatica().catch(error => {
+        logger.error(logLocation + 'Error en la gestión automática: ' + error);
+      });
+    }, 15000);
     
     // Iniciar el servidor
     const server = app.listen(PORT, () => {
@@ -60,6 +72,7 @@ async function iniciarServidor() {
     // Manejar el cierre del servidor
     server.on('close', async () => {
       try {
+        clearInterval(temporizadorGestion);
         await cerrarConexion();
         logger.info(logLocation + 'Servidor y conexiones cerradas correctamente');
       } catch (error) {

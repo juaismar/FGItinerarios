@@ -33,7 +33,7 @@ async function seedEstaciones() {
                     codigo: 'G',
                     ubicacion: '-',
                     activa: true,
-                    gestionado: true
+                    gestion: 'MANUAL'
                 },
                 {
                     id: 2,
@@ -41,7 +41,7 @@ async function seedEstaciones() {
                     codigo: 'A',
                     ubicacion: '-',
                     activa: true,
-                    gestionado: false
+                    gestion: 'AUTOMATICA'
                 },
                 {
                     id: 3,
@@ -49,7 +49,7 @@ async function seedEstaciones() {
                     codigo: 'F',
                     ubicacion: '-',
                     activa: true,
-                    gestionado: false
+                    gestion: 'AUTOMATICA'
                 },
                 {
                     id: 4,
@@ -57,14 +57,15 @@ async function seedEstaciones() {
                     codigo: 'P',
                     ubicacion: '-',
                     activa: true,
-                    gestionado: false
+                    gestion: 'AUTOMATICA'
                 },
                 {
                     id: 5,
                     nombre: 'Mirador',
                     codigo: 'M',
                     ubicacion: '-',
-                    activa: true
+                    activa: true,
+                    gestion: 'AUTOMATICA'
                 },
                 {
                     id: 6,
@@ -72,7 +73,7 @@ async function seedEstaciones() {
                     codigo: 'R',
                     ubicacion: '-',
                     activa: true,
-                    gestionado: true
+                    gestion: 'MANUAL'
                 },
                 {
                     id: 7,
@@ -80,7 +81,7 @@ async function seedEstaciones() {
                     codigo: 'T',
                     ubicacion: '-',
                     activa: true,
-                    gestionado: false
+                    gestion: 'SIN_GESTION'
                 }
             ];
 

@@ -11,6 +11,18 @@ Son dos cosas distintas:
 
 El planificador elige itinerarios del catálogo y, para un día, la aplicación crea las circulaciones. La malla dibuja esas circulaciones.
 
+## Gestión de la estación
+
+Cada estación activa tiene uno de estos modos:
+
+- **Sin gestión.** No aparece en el control de estación y no retiene al tren. Si pasa un minuto de la hora programada sin marca, el visor la muestra retrasada.
+- **Gestión manual.** Aparece en el control. La siguiente estación manual no muestra el tren hasta que aquí se registra la salida.
+- **Gestión automática.** Al llegar la hora programada, el servidor anota la llegada y la salida con esa misma hora. No aparece en el control y no retiene a la siguiente estación manual. El visor la muestra en hora.
+
+Una estación inactiva queda en sin gestión.
+
+En el recorrido de ejemplo, Granja y Racó son manuales, Aljibe, Font, Pista y Mirador son automáticas, y Taller está sin gestión. Si la salida automática es la del origen, la circulación pasa a en progreso. Completado sigue dependiendo de quien cierra la última parada.
+
 ## Quién entra
 
 | Acceso | Qué hace |

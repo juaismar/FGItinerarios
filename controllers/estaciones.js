@@ -7,6 +7,21 @@ const { ssp } = require('../db/database');
 
 const logLocation = 'estaciones.js: ';
 
+function esMarcada(valor) {
+    return valor === true || valor === 'true' || valor === 't' || valor === 1 || valor === '1';
+}
+
+const GESTIONES = ['SIN_GESTION', 'MANUAL', 'AUTOMATICA'];
+
+function marcasEstacion(activa, gestion) {
+    const estaActiva = esMarcada(activa);
+    const modo = GESTIONES.includes(gestion) ? gestion : 'SIN_GESTION';
+    return {
+        activa: estaActiva,
+        gestion: estaActiva ? modo : 'SIN_GESTION'
+    };
+}
+
 // Obtener estaciones paginadas
 router.get('/paginated', async (req, res) => {
     try {
@@ -15,7 +30,8 @@ router.get('/paginated', async (req, res) => {
             { db: 'nombre', dt: 'nombre', formatter: null },
             { db: 'codigo', dt: 'codigo', formatter: null },
             { db: 'ubicacion', dt: 'ubicacion', formatter: null },
-            { db: 'activa', dt: 'activa', formatter: null }
+            { db: 'activa', dt: 'activa', formatter: null },
+            { db: 'gestion', dt: 'gestion', formatter: null }
         ];
 
         const result = await ssp.Simple(req.query, 'Estacions', columns);
@@ -44,8 +60,9 @@ router.get('/', async (req, res) => {
 // Crear una nueva estación (solo admin)
 router.post('/', verificarAuth('admin'), async (req, res) => {
     try {
-        const { nombre, codigo, ubicacion, activa } = req.body;
-        const estacion = await Estacion.create({ nombre, codigo, ubicacion, activa });
+        const { nombre, codigo, ubicacion, activa, gestion } = req.body;
+        const marcas = marcasEstacion(activa, gestion);
+        const estacion = await Estacion.create({ nombre, codigo, ubicacion, ...marcas });
         logger.info(logLocation + 'Estación creada exitosamente');
         res.status(201).json(estacion);
     } catch (error) {
@@ -71,8 +88,9 @@ router.delete('/:id', verificarAuth('admin'), async (req, res) => {
 router.put('/:id', verificarAuth('admin'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, codigo, ubicacion, activa } = req.body;
-        await Estacion.update({ nombre, codigo, ubicacion, activa }, { where: { id } });
+        const { nombre, codigo, ubicacion, activa, gestion } = req.body;
+        const marcas = marcasEstacion(activa, gestion);
+        await Estacion.update({ nombre, codigo, ubicacion, ...marcas }, { where: { id } });
         logger.info(logLocation + 'Estación actualizada exitosamente');
         res.status(204).send();
     } catch (error) {

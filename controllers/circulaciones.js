@@ -6,6 +6,7 @@ const logger = require('../logger').logger;
 const express = require('express');
 const router = express.Router();
 const { ssp, sequelize } = require('../db/database');
+const { aplicarGestionAutomatica } = require('./controlEstacion');
 const { Op } = require('sequelize');
 
 const logLocation = 'circulaciones.js: ';
@@ -666,6 +667,7 @@ function filaVisor(circulacion, parada, hora, columnas) {
 // Obtener datos del visor para una estación específica
 router.get('/visor/:estacionCodigo', async (req, res) => {
     try {
+        await aplicarGestionAutomatica();
         const { estacionCodigo } = req.params;
         const fecha = fechaMadrid(req.query.fecha);
 

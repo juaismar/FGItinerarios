@@ -23,9 +23,11 @@ const Estacion = sequelize.define('Estacion', {
         type: DataTypes.BOOLEAN,
         defaultValue: true
     },
-    gestionado: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
+    gestion: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        defaultValue: 'SIN_GESTION',
+        comment: 'SIN_GESTION, MANUAL o AUTOMATICA'
     },
 });
 
