@@ -89,7 +89,7 @@ async function manejarEstacionesCirculacion(circulacionId, estaciones) {
 }
 
 // Obtener todas las circulaciones con paginación
-router.get('/paginated', async (req, res) => {
+router.get('/paginated', verificarAuth('planificador'), async (req, res) => {
     try {
         const columns = [
             { db: 'id', dt: 'id', formatter: null },
@@ -123,10 +123,10 @@ router.get('/paginated', async (req, res) => {
 });
 
 // Antes de /:id: si no, Express trata "mallacirculaciones" como un identificador.
-router.get('/mallacirculaciones', obtenerMallaCirculaciones);
+router.get('/mallacirculaciones', verificarAuth('planificador'), obtenerMallaCirculaciones);
 
 // Obtener una circulación por ID
-router.get('/:id', async(req, res) => {
+router.get('/:id', verificarAuth('planificador'), async(req, res) => {
     try {
         const { id } = req.params;
         const circulacion = await Circulacion.findByPk(id, {
@@ -153,7 +153,22 @@ router.get('/:id', async(req, res) => {
 });
 
 // Obtener estaciones de una circulación
-router.get('/:id/estaciones', async (req, res) => {
+// Lista pública para el selector del visor. Solo código y nombre.
+// Va antes de /:id/estaciones: si no, Express toma "visor" como identificador.
+router.get('/visor/estaciones', async (req, res) => {
+    try {
+        const estaciones = await Estacion.findAll({
+            attributes: ['codigo', 'nombre'],
+            order: [['nombre', 'ASC']]
+        });
+        res.json(estaciones);
+    } catch (error) {
+        logger.error(logLocation + 'Error al obtener estaciones del visor:', error);
+        res.status(500).json({ mensaje: 'Error al obtener estaciones' });
+    }
+});
+
+router.get('/:id/estaciones', verificarAuth('planificador'), async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -206,7 +221,7 @@ router.get('/:id/estaciones', async (req, res) => {
 });
 
 // Obtener circulaciones por fecha
-router.get('/', async (req, res) => {
+router.get('/', verificarAuth('planificador'), async (req, res) => {
     try {
         const date = req.query.date;
         
@@ -243,7 +258,7 @@ router.get('/', async (req, res) => {
 });
 
 // Eliminar una circulación
-router.delete('/:id',verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.delete('/:id',verificarAuth('planificador'), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -267,7 +282,7 @@ router.delete('/:id',verificarAuth(['planificador', 'admin']), async (req, res) 
 });
 
 // recibe en el post una lista de id de itinerarios para ser usados en el dia incicado en post
-router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.post('/select', verificarAuth('planificador'), async (req, res) => {
     try {
         const { itinerarioIds, fecha } = req.body;
         
@@ -373,7 +388,7 @@ router.post('/select', verificarAuth(['planificador', 'admin']), async (req, res
 });
 
 // Crear circulación
-router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.post('/', verificarAuth('planificador'), async (req, res) => {
     try {
         const { estaciones, ...circulacionData } = req.body;
         
@@ -390,7 +405,7 @@ router.post('/', verificarAuth(['planificador', 'admin']), async (req, res) => {
 });
 
 // Cancelar una circulación sin borrar sus paradas
-router.post('/:id/cancelar', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.post('/:id/cancelar', verificarAuth('planificador'), async (req, res) => {
     try {
         const circulacion = await Circulacion.findByPk(req.params.id);
         if (!circulacion) {
@@ -409,7 +424,7 @@ router.post('/:id/cancelar', verificarAuth(['planificador', 'admin']), async (re
 });
 
 // Actualizar circulación
-router.put('/:id', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.put('/:id', verificarAuth('planificador'), async (req, res) => {
     try {
         const { id } = req.params;
         const { estaciones, ...circulacionData } = req.body;

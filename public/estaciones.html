@@ -179,7 +179,10 @@
             processing: true,
             serverSide: true,
             ajax: {
-                url: '/api/estaciones/paginated'
+                url: '/api/estaciones/paginated',
+                headers: {
+                    'Authorization': getAuthToken()
+                }
             },
             language: {
                 url: urlIdiomaTabla()

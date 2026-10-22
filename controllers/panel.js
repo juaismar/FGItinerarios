@@ -7,7 +7,7 @@ const { ssp } = require('../db/database');
 const logLocation = 'panel.js: ';
 
 // Obtener todas las estaciones de circulaciones con paginación
-router.get('/paginated', async (req, res) => {
+router.get('/paginated', verificarAuth('planificador'), async (req, res) => {
     try {
         const columns = [
             { db: 'id', dt: 'id', formatter: null },

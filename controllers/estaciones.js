@@ -23,7 +23,7 @@ function marcasEstacion(activa, gestion) {
 }
 
 // Obtener estaciones paginadas
-router.get('/paginated', async (req, res) => {
+router.get('/paginated', verificarAuth('admin'), async (req, res) => {
     try {
         const columns = [
             { db: 'id', dt: 'id', formatter: null },
@@ -43,7 +43,7 @@ router.get('/paginated', async (req, res) => {
 });
 
 // Obtener todas las estaciones
-router.get('/', async (req, res) => {
+router.get('/', verificarAuth(['admin', 'planificador']), async (req, res) => {
     try {
         const estaciones = await Estacion.findAll({
             order: [['nombre', 'ASC']]

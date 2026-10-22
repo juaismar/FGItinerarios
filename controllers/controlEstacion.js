@@ -96,7 +96,7 @@ async function listarMovimientos(req, res, esSalida) {
     res.json(result);
 }
 
-router.get('/salidas', async (req, res) => {
+router.get('/salidas', verificarAuth('planificador'), async (req, res) => {
     try {
         await listarMovimientos(req, res, true);
     } catch (error) {
@@ -105,7 +105,7 @@ router.get('/salidas', async (req, res) => {
     }
 });
 
-router.get('/llegadas', async (req, res) => {
+router.get('/llegadas', verificarAuth('planificador'), async (req, res) => {
     try {
         await listarMovimientos(req, res, false);
     } catch (error) {
@@ -135,7 +135,7 @@ async function buscarParada(circulacionId, estacionId) {
     });
 }
 
-router.post('/llegada', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.post('/llegada', verificarAuth('planificador'), async (req, res) => {
     try {
         const { circulacionId, estacionId } = req.body;
         const parada = await buscarParada(circulacionId, estacionId);
@@ -168,7 +168,7 @@ router.post('/llegada', verificarAuth(['planificador', 'admin']), async (req, re
     }
 });
 
-router.post('/salida', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.post('/salida', verificarAuth('planificador'), async (req, res) => {
     try {
         const { circulacionId, estacionId } = req.body;
         const parada = await buscarParada(circulacionId, estacionId);
@@ -249,7 +249,7 @@ function horasCoinciden(actual, esperada) {
     return String(actual).slice(0, 8) === String(esperada).slice(0, 8);
 }
 
-router.post('/retraso', verificarAuth(['planificador', 'admin']), async (req, res) => {
+router.post('/retraso', verificarAuth('planificador'), async (req, res) => {
     try {
         const { circulacionId, estacionId } = req.body;
         const retraso = minutosRetrasoValidos(req.body.minutos);

@@ -288,7 +288,7 @@
         }
 
         function cargarEstaciones() {
-            return fetch('/api/estaciones')
+            return fetch('/api/circulaciones/visor/estaciones')
                 .then(function (response) {
                     if (!response.ok) {
                         throw new Error('No se pudieron cargar las estaciones');
