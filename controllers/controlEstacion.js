@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Circulacion = require('../models/Circulacion');
 const CirculacionEstacion = require('../models/CirculacionEstacion');
+const Estacion = require('../models/Estacion');
 const { verificarAuth } = require('../middleware/auth');
 const logger = require('../logger').logger;
 const { sequelize } = require('../db/database');
@@ -48,7 +49,7 @@ function consultaMovimientos(esSalida) {
         INNER JOIN "CirculacionEstaciones" ise ON its.id = ise."circulacionId"
         INNER JOIN "Estacions" e ON ise."estacionId" = e.id
         WHERE ise."estacionId" = $1
-        AND e.gestion = 'MANUAL'
+        AND e.gestion IN ('MANUAL', 'AUTOMATICA')
         AND e.activa = true
         AND its.estado <> 'CANCELADO'
         AND ${condicionParada}
@@ -192,6 +193,43 @@ router.post('/salida', verificarAuth(['planificador', 'admin']), async (req, res
     } catch (error) {
         logger.error(logLocation + 'Error al registrar la salida:', error);
         res.status(500).json({ mensaje: 'Error al registrar la salida' });
+    }
+});
+
+const GESTIONES_CONTROL = ['MANUAL', 'AUTOMATICA'];
+
+router.put('/gestion', verificarAuth('planificador'), async (req, res) => {
+    try {
+        const { estacionId, gestion } = req.body;
+
+        if (!estacionId) {
+            return res.status(400).json({ codigo: 'FALTA_ESTACION', mensaje: 'Falta la estación' });
+        }
+
+        if (!GESTIONES_CONTROL.includes(gestion)) {
+            return res.status(400).json({
+                codigo: 'GESTION_NO_VALIDA',
+                mensaje: 'La gestión debe ser manual o automática'
+            });
+        }
+
+        const estacion = await Estacion.findByPk(estacionId);
+        if (!estacion || estacion.activa !== true || !GESTIONES_CONTROL.includes(estacion.gestion)) {
+            return res.status(404).json({
+                codigo: 'ESTACION_NO_GESTIONABLE',
+                mensaje: 'La estación no admite cambio de gestión desde el control'
+            });
+        }
+
+        if (estacion.gestion !== gestion) {
+            await estacion.update({ gestion });
+            logger.info(logLocation + `Estación ${estacion.id} pasa a gestión ${gestion}`);
+        }
+
+        res.json({ id: estacion.id, gestion: estacion.gestion });
+    } catch (error) {
+        logger.error(logLocation + 'Error al cambiar la gestión:', error);
+        res.status(500).json({ mensaje: 'Error al cambiar la gestión' });
     }
 });
 

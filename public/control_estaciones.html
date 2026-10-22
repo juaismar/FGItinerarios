@@ -20,6 +20,13 @@
                     <option value="" data-i18n="comun.seleccionarEstacion">Seleccionar estación</option>
                 </select>
             </div>
+            <div class="d-none align-items-center ms-3" id="bloqueGestion">
+                <label for="gestionEstacion" class="form-label me-2 mb-0" data-i18n="control.cambiarGestion">Gestión:</label>
+                <select class="form-select" id="gestionEstacion" style="width: 190px;">
+                    <option value="MANUAL" data-i18n="gestion.MANUAL">Gestión manual</option>
+                    <option value="AUTOMATICA" data-i18n="gestion.AUTOMATICA">Gestión automática</option>
+                </select>
+            </div>
             <div class="d-flex align-items-center ms-3">
                 <label for="margenHoras" class="form-label me-2 mb-0" data-i18n="comun.margen">Margen:</label>
                 <input type="number" class="form-control" id="margenHoras" min="0" max="24" step="1" value="2" style="width: 80px;">
@@ -32,9 +39,9 @@
         <strong data-i18n="comun.leyenda">Leyenda</strong>
         <dl class="row mb-0 mt-2">
             <dt class="col-sm-3" data-i18n="gestion.MANUAL">Gestión manual</dt>
-            <dd class="col-sm-9" data-i18n="control.leyendaManual">Este control solo lista estas estaciones. Aquí se registran la llegada y la salida. El tren aparece cuando la estación manual anterior ya ha registrado la salida.</dd>
+            <dd class="col-sm-9" data-i18n="control.leyendaManual">Sale en este selector. Aquí se registran la llegada y la salida. El tren aparece cuando la estación manual anterior ya ha registrado la salida.</dd>
             <dt class="col-sm-3" data-i18n="gestion.AUTOMATICA">Gestión automática</dt>
-            <dd class="col-sm-9" data-i18n="control.leyendaAutomatica">Al llegar la hora programada se anotan solas la llegada y la salida. No aparece en el selector y no retiene a la siguiente estación manual.</dd>
+            <dd class="col-sm-9" data-i18n="control.leyendaAutomatica">Sale en este selector. Al llegar la hora programada se anotan solas la llegada y la salida, salvo que aquí se registre antes. No retiene a la siguiente estación manual.</dd>
             <dt class="col-sm-3" data-i18n="gestion.SIN_GESTION">Sin gestión</dt>
             <dd class="col-sm-9 mb-0" data-i18n="control.leyendaSin">No aparece en el selector y no retiene al tren. Si pasa la hora sin marca, el visor la muestra retrasada.</dd>
         </dl>
@@ -90,6 +97,8 @@
             aplicarIdioma(document.getElementById('main-content'));
         }
         let cargando = false;
+        let cambiandoGestion = false;
+        let estacionesControl = [];
 
         if (window.intervaloControlEstacion) {
             clearInterval(window.intervaloControlEstacion);
@@ -115,7 +124,34 @@
             return String(hora).slice(0, 5);
         }
 
+        function esGestionable(estacion) {
+            return estacion && estacion.activa !== false
+                && (estacion.gestion === 'MANUAL' || estacion.gestion === 'AUTOMATICA');
+        }
+
+        function estacionSeleccionada() {
+            const id = $('#estacionSelector').val();
+            return estacionesControl.find(function (estacion) {
+                return String(estacion.id) === String(id);
+            }) || null;
+        }
+
+        function pintarGestion() {
+            const bloque = document.getElementById('bloqueGestion');
+            const select = document.getElementById('gestionEstacion');
+            const estacion = estacionSeleccionada();
+            if (!estacion) {
+                bloque.classList.add('d-none');
+                bloque.classList.remove('d-flex');
+                return;
+            }
+            bloque.classList.remove('d-none');
+            bloque.classList.add('d-flex');
+            select.value = estacion.gestion;
+        }
+
         function cargarEstaciones() {
+            const seleccion = $('#estacionSelector').val();
             return fetch('/api/estaciones', {
                 headers: getHeaders()
             })
@@ -127,19 +163,35 @@
                     return response.json();
                 })
                 .then(function (estaciones) {
+                    estacionesControl = (estaciones || []).filter(esGestionable);
                     const select = document.getElementById('estacionSelector');
                     select.innerHTML = '<option value="">' + texto('comun.seleccionarEstacion', 'Seleccionar estación') + '</option>';
-                    (estaciones || []).forEach(function (estacion) {
-                        if (estacion.gestion === 'MANUAL' && estacion.activa !== false) {
+                    ['MANUAL', 'AUTOMATICA'].forEach(function (modo) {
+                        const delModo = estacionesControl.filter(function (estacion) {
+                            return estacion.gestion === modo;
+                        });
+                        if (delModo.length === 0) {
+                            return;
+                        }
+                        const grupo = document.createElement('optgroup');
+                        grupo.label = texto('gestion.' + modo, modo);
+                        delModo.forEach(function (estacion) {
                             const option = document.createElement('option');
                             option.value = estacion.id;
                             option.textContent = estacion.nombre + ' (' + estacion.codigo + ')';
-                            select.appendChild(option);
-                        }
+                            grupo.appendChild(option);
+                        });
+                        select.appendChild(grupo);
                     });
-                    if (select.options.length > 1) {
+                    const sigue = seleccion && estacionesControl.some(function (estacion) {
+                        return String(estacion.id) === String(seleccion);
+                    });
+                    if (sigue) {
+                        select.value = seleccion;
+                    } else if (select.options.length > 1) {
                         select.selectedIndex = 1;
                     }
+                    pintarGestion();
                 })
                 .catch(function (error) {
                     console.error('Error al cargar estaciones:', error);
@@ -233,7 +285,64 @@
             });
         }
 
-        $('#estacionSelector').on('change', cargarMovimientos);
+        $('#estacionSelector').on('change', function () {
+            pintarGestion();
+            cargarMovimientos();
+        });
+
+        $('#gestionEstacion').on('change', function () {
+            const select = this;
+            const estacion = estacionSeleccionada();
+            const nueva = select.value;
+            if (!estacion || cambiandoGestion || nueva === estacion.gestion) {
+                return;
+            }
+            const nombreGestion = texto('gestion.' + nueva, nueva);
+            if (!confirm(texto('control.confirmarGestion', '¿Pasar ' + estacion.nombre + ' a ' + nombreGestion + '?', {
+                estacion: estacion.nombre,
+                gestion: nombreGestion
+            }))) {
+                select.value = estacion.gestion;
+                return;
+            }
+
+            cambiandoGestion = true;
+            select.disabled = true;
+            fetch('/api/controlEstacion/gestion', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    estacionId: estacion.id,
+                    gestion: nueva
+                })
+            })
+                .then(function (response) {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return null;
+                    }
+                    if (!response.ok) {
+                        return response.json().then(function (error) {
+                            throw new Error(mensajeApi(error, texto('control.errorGestion', 'No se pudo cambiar la gestión')));
+                        });
+                    }
+                    return cargarEstaciones();
+                })
+                .then(function (resultado) {
+                    if (resultado !== null) {
+                        cargarMovimientos(true);
+                    }
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    alert(error.message);
+                    select.value = estacion.gestion;
+                })
+                .finally(function () {
+                    cambiandoGestion = false;
+                    select.disabled = false;
+                });
+        });
         $('#margenHoras').on('change', function () {
             cargarMovimientos(true);
         });

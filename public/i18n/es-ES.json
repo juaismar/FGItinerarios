@@ -106,7 +106,7 @@
     "leyendaActiva": "La parada cuenta para el control. Si se desmarca, la gestión pasa a sin gestión: no sale en el selector y no retiene al tren.",
     "leyendaSin": "No sale en el selector del control y no retiene al tren. Si pasa un minuto de la hora programada sin marca, el visor la muestra retrasada.",
     "leyendaManual": "Sale en el selector del control, donde se registran la llegada y la salida. La siguiente estación manual no muestra el tren hasta que aquí se registra la salida.",
-    "leyendaAutomatica": "Al llegar la hora programada se anotan la llegada y la salida con esa hora. No sale en el selector y no retiene a la siguiente estación manual. El visor la muestra en hora.",
+    "leyendaAutomatica": "Al llegar la hora programada se anotan la llegada y la salida con esa hora, salvo que en el control se haya anotado antes. Sale en el control y no retiene a la siguiente estación manual.",
     "confirmarEliminar": "¿Estás seguro de que deseas eliminar esta estación?",
     "errorEliminar": "Error al eliminar la estación",
     "errorGuardar": "Error al guardar la estación"
@@ -116,8 +116,11 @@
     "estacion": "Estación:",
     "llegadas": "Llegadas",
     "salidas": "Salidas",
-    "leyendaManual": "Este control solo lista estas estaciones. Aquí se registran la llegada y la salida. El tren aparece cuando la estación manual anterior ya ha registrado la salida.",
-    "leyendaAutomatica": "Al llegar la hora programada se anotan solas la llegada y la salida. No aparece en el selector y no retiene a la siguiente estación manual.",
+    "leyendaManual": "Sale en este selector. Aquí se registran la llegada y la salida. El tren aparece cuando la estación manual anterior ya ha registrado la salida.",
+    "leyendaAutomatica": "Sale en este selector. Al llegar la hora programada se anotan solas la llegada y la salida, salvo que aquí se registre antes. No retiene a la siguiente estación manual.",
+    "cambiarGestion": "Gestión:",
+    "confirmarGestion": "¿Pasar {estacion} a {gestion}?",
+    "errorGestion": "No se pudo cambiar la gestión",
     "leyendaSin": "No aparece en el selector y no retiene al tren. Si pasa la hora sin marca, el visor la muestra retrasada.",
     "registrarLlegada": "Registrar llegada",
     "registrarSalida": "Registrar salida",
@@ -263,6 +266,8 @@
     "PARADA_NO_ENCONTRADA": "Parada no encontrada",
     "CIRCULACION_CANCELADA": "La circulación está cancelada",
     "CIRCULACION_NO_ENCONTRADA": "La circulación no fue encontrada.",
-    "FALTA_ESTACION": "Falta la estación"
+    "FALTA_ESTACION": "Falta la estación",
+    "GESTION_NO_VALIDA": "La gestión debe ser manual o automática",
+    "ESTACION_NO_GESTIONABLE": "La estación no admite cambio de gestión desde el control"
   }
 }

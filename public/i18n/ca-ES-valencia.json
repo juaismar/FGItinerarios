@@ -106,7 +106,7 @@
     "leyendaActiva": "La parada compta per al control. Si es desmarca, la gestió passa a sense gestió: no ix en el selector i no reté el tren.",
     "leyendaSin": "No ix en el selector del control i no reté el tren. Si passa un minut de l'hora programada sense marca, el visor la mostra amb retard.",
     "leyendaManual": "Ix en el selector del control, on es registren l'arribada i l'eixida. L'estació manual següent no mostra el tren fins que ací es registra l'eixida.",
-    "leyendaAutomatica": "En arribar l'hora programada s'anoten l'arribada i l'eixida amb esta hora. No ix en el selector i no reté l'estació manual següent. El visor la mostra en hora.",
+    "leyendaAutomatica": "En arribar l'hora programada s'anoten l'arribada i l'eixida amb esta hora, llevat que en el control s'haja anotat abans. Ix en el control i no reté l'estació manual següent.",
     "confirmarEliminar": "Segur que vols eliminar esta estació?",
     "errorEliminar": "Error en eliminar l'estació",
     "errorGuardar": "Error en guardar l'estació"
@@ -116,8 +116,11 @@
     "estacion": "Estació:",
     "llegadas": "Arribades",
     "salidas": "Eixides",
-    "leyendaManual": "Este control només llista estes estacions. Ací es registren l'arribada i l'eixida. El tren apareix quan l'estació manual anterior ja ha registrat l'eixida.",
-    "leyendaAutomatica": "En arribar l'hora programada s'anoten soles l'arribada i l'eixida. No apareix en el selector i no reté l'estació manual següent.",
+    "leyendaManual": "Ix en este selector. Ací es registren l'arribada i l'eixida. El tren apareix quan l'estació manual anterior ja ha registrat l'eixida.",
+    "leyendaAutomatica": "Ix en este selector. En arribar l'hora programada s'anoten soles l'arribada i l'eixida, llevat que ací es registre abans. No reté l'estació manual següent.",
+    "cambiarGestion": "Gestió:",
+    "confirmarGestion": "Passar {estacion} a {gestion}?",
+    "errorGestion": "No s'ha pogut canviar la gestió",
     "leyendaSin": "No apareix en el selector i no reté el tren. Si passa l'hora sense marca, el visor la mostra amb retard.",
     "registrarLlegada": "Registra l'arribada",
     "registrarSalida": "Registra l'eixida",
@@ -263,6 +266,8 @@
     "PARADA_NO_ENCONTRADA": "No s'ha trobat la parada",
     "CIRCULACION_CANCELADA": "La circulació està cancel·lada",
     "CIRCULACION_NO_ENCONTRADA": "No s'ha trobat la circulació.",
-    "FALTA_ESTACION": "Falta l'estació"
+    "FALTA_ESTACION": "Falta l'estació",
+    "GESTION_NO_VALIDA": "La gestió ha de ser manual o automàtica",
+    "ESTACION_NO_GESTIONABLE": "L'estació no admet canvi de gestió des del control"
   }
 }

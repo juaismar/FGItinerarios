@@ -106,7 +106,7 @@
     "leyendaActiva": "The stop counts for station control. Clearing it sets the station to not operated: it leaves the selector and does not hold the train.",
     "leyendaSin": "It does not appear in the station control selector and does not hold the train. One minute after the scheduled time with no mark, the display board shows it as delayed.",
     "leyendaManual": "It appears in the station control selector, where arrival and departure are recorded. The next manual station does not show the train until the departure is recorded here.",
-    "leyendaAutomatica": "When the scheduled time is reached, arrival and departure are recorded at that time. It does not appear in the selector and does not hold the next manual station. The display board shows it on time.",
+    "leyendaAutomatica": "When the scheduled time is reached, arrival and departure are recorded at that time, unless they were already recorded in station control. It appears in station control and does not hold the next manual station.",
     "confirmarEliminar": "Delete this station?",
     "errorEliminar": "Could not delete the station",
     "errorGuardar": "Could not save the station"
@@ -116,8 +116,11 @@
     "estacion": "Station:",
     "llegadas": "Arrivals",
     "salidas": "Departures",
-    "leyendaManual": "This screen only lists these stations. Arrival and departure are recorded here. The train appears when the previous manual station has recorded its departure.",
-    "leyendaAutomatica": "When the scheduled time is reached, arrival and departure are recorded on their own. The station does not appear in the selector and does not hold the next manual station.",
+    "leyendaManual": "It appears in this selector. Arrival and departure are recorded here. The train appears when the previous manual station has recorded its departure.",
+    "leyendaAutomatica": "It appears in this selector. When the scheduled time is reached, arrival and departure are recorded on their own, unless they were recorded here first. It does not hold the next manual station.",
+    "cambiarGestion": "Operation:",
+    "confirmarGestion": "Switch {estacion} to {gestion}?",
+    "errorGestion": "Could not change the operation mode",
     "leyendaSin": "It does not appear in the selector and does not hold the train. If the time passes with no mark, the display board shows it as delayed.",
     "registrarLlegada": "Record arrival",
     "registrarSalida": "Record departure",
@@ -263,6 +266,8 @@
     "PARADA_NO_ENCONTRADA": "Stop not found",
     "CIRCULACION_CANCELADA": "The service is cancelled",
     "CIRCULACION_NO_ENCONTRADA": "The service was not found.",
-    "FALTA_ESTACION": "The station is missing"
+    "FALTA_ESTACION": "The station is missing",
+    "GESTION_NO_VALIDA": "Operation must be manual or automatic",
+    "ESTACION_NO_GESTIONABLE": "This station cannot change operation mode from station control"
   }
 }
