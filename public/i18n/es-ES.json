@@ -105,8 +105,8 @@
     "eliminar": "Eliminar estación",
     "leyendaActiva": "La parada cuenta para el control. Si se desmarca, la gestión pasa a sin gestión: no sale en el selector y no retiene al tren.",
     "leyendaSin": "No sale en el selector del control y no retiene al tren. Si pasa un minuto de la hora programada sin marca, el visor la muestra retrasada.",
-    "leyendaManual": "Sale en el selector del control, donde se registran la llegada y la salida. La siguiente estación manual no muestra el tren hasta que aquí se registra la salida.",
-    "leyendaAutomatica": "Al llegar la hora programada se anotan la llegada y la salida con esa hora, salvo que en el control se haya anotado antes. Sale en el control y no retiene a la siguiente estación manual.",
+    "leyendaManual": "Sale en el selector del control, donde se registran la llegada y la salida. Se puede anotar un retraso previsto y el visor lo muestra hasta que se registra la pasada. La siguiente estación manual no muestra el tren hasta que aquí se registra la salida.",
+    "leyendaAutomatica": "Al llegar la hora programada se anotan la llegada y la salida. Si hay un retraso previsto, se suman esos minutos. En el control también se pueden registrar a mano. Sale en el control y no retiene a la siguiente estación manual.",
     "confirmarEliminar": "¿Estás seguro de que deseas eliminar esta estación?",
     "errorEliminar": "Error al eliminar la estación",
     "errorGuardar": "Error al guardar la estación"
@@ -116,8 +116,8 @@
     "estacion": "Estación:",
     "llegadas": "Llegadas",
     "salidas": "Salidas",
-    "leyendaManual": "Sale en este selector. Aquí se registran la llegada y la salida. El tren aparece cuando la estación manual anterior ya ha registrado la salida.",
-    "leyendaAutomatica": "Sale en este selector. Al llegar la hora programada se anotan solas la llegada y la salida, salvo que aquí se registre antes. No retiene a la siguiente estación manual.",
+    "leyendaManual": "Sale en este selector. Aquí se registran la llegada y la salida. Se puede anotar un retraso previsto y el visor lo muestra hasta que se registra la pasada. El tren aparece cuando la estación manual anterior ya ha registrado la salida.",
+    "leyendaAutomatica": "Sale en este selector. Al llegar la hora programada se anotan la llegada y la salida. Si hay un retraso previsto, se suman esos minutos. También se pueden registrar a mano. No retiene a la siguiente estación manual.",
     "cambiarGestion": "Gestión:",
     "confirmarGestion": "¿Pasar {estacion} a {gestion}?",
     "errorGestion": "No se pudo cambiar la gestión",
@@ -131,7 +131,14 @@
     "laLlegada": "la llegada",
     "laSalida": "la salida",
     "errorEstaciones": "Error al cargar las estaciones",
-    "errorRegistro": "No se pudo registrar el movimiento"
+    "errorRegistro": "No se pudo registrar el movimiento",
+    "anotarRetraso": "Anotar retraso",
+    "minutosCortos": "min",
+    "minutosRetraso": "Minutos de retraso previsto",
+    "confirmarRetraso": "¿Anotar un retraso previsto de {minutos} min en el tren {tren}?",
+    "quitarRetraso": "¿Quitar el retraso previsto del tren {tren}?",
+    "retrasoInvalido": "El retraso tiene que ser entre {minimo} y {maximo} minutos",
+    "errorRetraso": "No se pudo anotar el retraso"
   },
   "circulaciones": {
     "titulo": "Circulaciones",
@@ -250,8 +257,12 @@
     "grafico": "Gráfico de circulación de trenes",
     "ferrocarril": "Ferrocarril de La Granja",
     "leyenda": "Leyenda",
-    "leyendaTren": "Circulación",
+    "leyendaTren": "Horario",
+    "leyendaPrevista": "Hora prevista",
+    "leyendaReal": "Resultado real",
     "leyendaCancelada": "Cancelada",
+    "prevista": "prevista {hora}",
+    "real": "real {hora}",
     "leyendaEje": "El tiempo va en horizontal. Las estaciones del recorrido van en vertical, con Granja abajo.",
     "vacio": "No hay circulaciones para este día",
     "error": "No se ha podido cargar el gráfico",
@@ -268,6 +279,10 @@
     "CIRCULACION_NO_ENCONTRADA": "La circulación no fue encontrada.",
     "FALTA_ESTACION": "Falta la estación",
     "GESTION_NO_VALIDA": "La gestión debe ser manual o automática",
-    "ESTACION_NO_GESTIONABLE": "La estación no admite cambio de gestión desde el control"
+    "ESTACION_NO_GESTIONABLE": "La estación no admite cambio de gestión desde el control",
+    "MOVIMIENTO_NO_VALIDO": "El movimiento no es válido",
+    "RETRASO_NO_VALIDO": "El retraso tiene que ser entre {minimo} y {maximo} minutos",
+    "ESTACION_NO_AUTOMATICA": "El retraso previsto solo se anota en una estación de gestión manual o automática",
+    "HORA_NO_PROGRAMADA": "Esa parada no tiene hora programada"
   }
 }

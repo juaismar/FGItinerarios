@@ -105,8 +105,8 @@
     "eliminar": "Delete station",
     "leyendaActiva": "The stop counts for station control. Clearing it sets the station to not operated: it leaves the selector and does not hold the train.",
     "leyendaSin": "It does not appear in the station control selector and does not hold the train. One minute after the scheduled time with no mark, the display board shows it as delayed.",
-    "leyendaManual": "It appears in the station control selector, where arrival and departure are recorded. The next manual station does not show the train until the departure is recorded here.",
-    "leyendaAutomatica": "When the scheduled time is reached, arrival and departure are recorded at that time, unless they were already recorded in station control. It appears in station control and does not hold the next manual station.",
+    "leyendaManual": "It appears in the station control selector, where arrival and departure are recorded. An expected delay can be entered and the display board shows it until the passage is recorded. The next manual station does not show the train until the departure is recorded here.",
+    "leyendaAutomatica": "When the scheduled time is reached, arrival and departure are recorded. If there is an expected delay, those minutes are added. They can also be recorded by hand in station control. It appears in station control and does not hold the next manual station.",
     "confirmarEliminar": "Delete this station?",
     "errorEliminar": "Could not delete the station",
     "errorGuardar": "Could not save the station"
@@ -116,8 +116,8 @@
     "estacion": "Station:",
     "llegadas": "Arrivals",
     "salidas": "Departures",
-    "leyendaManual": "It appears in this selector. Arrival and departure are recorded here. The train appears when the previous manual station has recorded its departure.",
-    "leyendaAutomatica": "It appears in this selector. When the scheduled time is reached, arrival and departure are recorded on their own, unless they were recorded here first. It does not hold the next manual station.",
+    "leyendaManual": "It appears in this selector. Arrival and departure are recorded here. An expected delay can be entered and the display board shows it until the passage is recorded. The train appears when the previous manual station has recorded its departure.",
+    "leyendaAutomatica": "It appears in this selector. When the scheduled time is reached, arrival and departure are recorded. If there is an expected delay, those minutes are added. They can also be recorded by hand. It does not hold the next manual station.",
     "cambiarGestion": "Operation:",
     "confirmarGestion": "Switch {estacion} to {gestion}?",
     "errorGestion": "Could not change the operation mode",
@@ -131,7 +131,14 @@
     "laLlegada": "the arrival",
     "laSalida": "the departure",
     "errorEstaciones": "Could not load the stations",
-    "errorRegistro": "Could not record the movement"
+    "errorRegistro": "Could not record the movement",
+    "anotarRetraso": "Record delay",
+    "minutosCortos": "min",
+    "minutosRetraso": "Expected delay in minutes",
+    "confirmarRetraso": "Record an expected delay of {minutos} min on train {tren}?",
+    "quitarRetraso": "Remove the expected delay from train {tren}?",
+    "retrasoInvalido": "The delay must be between {minimo} and {maximo} minutes",
+    "errorRetraso": "Could not record the delay"
   },
   "circulaciones": {
     "titulo": "Services",
@@ -250,8 +257,12 @@
     "grafico": "Train working graph",
     "ferrocarril": "Ferrocarril de La Granja",
     "leyenda": "Key",
-    "leyendaTren": "Service",
+    "leyendaTren": "Timetable",
+    "leyendaPrevista": "Expected time",
+    "leyendaReal": "Actual time",
     "leyendaCancelada": "Cancelled",
+    "prevista": "expected {hora}",
+    "real": "actual {hora}",
     "leyendaEje": "Time runs across. Stations of the line run up the page, with Granja at the bottom.",
     "vacio": "There are no services on this day",
     "error": "The graph could not be loaded",
@@ -268,6 +279,10 @@
     "CIRCULACION_NO_ENCONTRADA": "The service was not found.",
     "FALTA_ESTACION": "The station is missing",
     "GESTION_NO_VALIDA": "Operation must be manual or automatic",
-    "ESTACION_NO_GESTIONABLE": "This station cannot change operation mode from station control"
+    "ESTACION_NO_GESTIONABLE": "This station cannot change operation mode from station control",
+    "MOVIMIENTO_NO_VALIDO": "The movement is not valid",
+    "RETRASO_NO_VALIDO": "The delay must be between {minimo} and {maximo} minutes",
+    "ESTACION_NO_AUTOMATICA": "An expected delay can only be recorded at a manual or automatic station",
+    "HORA_NO_PROGRAMADA": "That stop has no scheduled time"
   }
 }

@@ -185,8 +185,16 @@
             <h6 class="mb-2"><i class="fas fa-info-circle"></i> <span data-i18n="malla.leyenda">Leyenda</span></h6>
             <div class="d-flex flex-wrap gap-4">
                 <div class="legend-item">
-                    <svg width="42" height="14" aria-hidden="true"><line x1="0" y1="7" x2="42" y2="7" stroke="#111" stroke-width="2"></line></svg>
-                    <span data-i18n="malla.leyendaTren">Circulación</span>
+                    <svg width="42" height="14" aria-hidden="true"><line x1="0" y1="7" x2="42" y2="7" stroke="#111" stroke-width="2.4"></line></svg>
+                    <span data-i18n="malla.leyendaTren">Horario</span>
+                </div>
+                <div class="legend-item">
+                    <svg width="42" height="14" aria-hidden="true"><line x1="0" y1="7" x2="42" y2="7" stroke="#ef6c00" stroke-width="1.8"></line></svg>
+                    <span data-i18n="malla.leyendaPrevista">Hora prevista</span>
+                </div>
+                <div class="legend-item">
+                    <svg width="42" height="14" aria-hidden="true"><line x1="0" y1="7" x2="42" y2="7" stroke="#1565c0" stroke-width="1.6"></line></svg>
+                    <span data-i18n="malla.leyendaReal">Resultado real</span>
                 </div>
                 <div class="legend-item">
                     <svg width="42" height="14" aria-hidden="true"><line x1="0" y1="7" x2="42" y2="7" stroke="#b71c1c" stroke-width="2" stroke-dasharray="5 3"></line></svg>
@@ -213,6 +221,11 @@
         const PX_MINUTO = 14;
         const SEPARACION_BANDA = 36;
         const HUECO_BANDA = 45;
+        const MARGEN_RETRASO = 2;
+        const COLOR_HORARIO = '#111';
+        const COLOR_PREVISTA = '#ef6c00';
+        const COLOR_REAL = '#1565c0';
+        const COLOR_CANCELADA = '#b71c1c';
         const SVG_NS = 'http://www.w3.org/2000/svg';
 
         let mallaOriginal = null;
@@ -279,23 +292,138 @@
             return elemento;
         }
 
-        function puntosTren(tren, indiceEstacion) {
-            const puntos = [];
+        function retrasoDe(parada) {
+            const previsto = Number(parada.retrasoPrevisto);
+            if (parada.retrasoPrevisto == null || parada.retrasoPrevisto === '' || !Number.isInteger(previsto) || previsto <= MARGEN_RETRASO) {
+                return 0;
+            }
+            return previsto;
+        }
+
+        function minutoEnGrafico(minuto, base) {
+            let diferencia = minuto - base;
+            if (diferencia > 12 * 60) {
+                diferencia -= 24 * 60;
+            } else if (diferencia < -12 * 60) {
+                diferencia += 24 * 60;
+            }
+            return base + diferencia;
+        }
+
+        function horaMas(hora, minutos) {
+            const base = minutosDia(hora);
+            if (base == null) {
+                return '';
+            }
+            const total = base + minutos;
+            const dia = ((total % (24 * 60)) + (24 * 60)) % (24 * 60);
+            return String(Math.floor(dia / 60)).padStart(2, '0') + ':' + String(dia % 60).padStart(2, '0');
+        }
+
+        function rangoHoras(llegada, salida) {
+            if (llegada && salida && llegada !== salida) {
+                return llegada + '–' + salida;
+            }
+            return salida || llegada || '';
+        }
+
+        function eventosTren(tren, indiceEstacion) {
+            const eventos = [];
             tren.paradas.forEach(function (parada) {
                 const indice = indiceEstacion.get(parada.estacionId);
                 if (indice == null) {
                     return;
                 }
-                const llegada = minutosDia(parada.horaLlegada);
-                const salida = minutosDia(parada.horaSalida);
-                if (llegada != null) {
-                    puntos.push({ minuto: llegada, indice: indice });
+                const extra = retrasoDe(parada);
+                [
+                    { hora: parada.horaLlegada, real: parada.horaRealLlegada },
+                    { hora: parada.horaSalida, real: parada.horaRealSalida }
+                ].forEach(function (movimiento) {
+                    const horario = minutosDia(movimiento.hora);
+                    if (horario == null) {
+                        return;
+                    }
+                    const realMinuto = minutosDia(movimiento.real);
+                    const evento = {
+                        indice: indice,
+                        horario: horario,
+                        previsto: extra ? horario + extra : null,
+                        real: realMinuto == null ? null : minutoEnGrafico(realMinuto, horario)
+                    };
+                    const ultimo = eventos[eventos.length - 1];
+                    if (ultimo && ultimo.indice === indice && ultimo.horario === horario && ultimo.previsto === evento.previsto && ultimo.real === evento.real) {
+                        return;
+                    }
+                    eventos.push(evento);
+                });
+            });
+            return eventos;
+        }
+
+        function polilineaPrevista(eventos) {
+            const trozos = [];
+            let actual = [];
+            function cerrar() {
+                if (actual.some(function (punto) { return punto.difiere; })) {
+                    trozos.push(actual);
                 }
-                if (salida != null && salida !== llegada) {
-                    puntos.push({ minuto: salida, indice: indice });
+                actual = [];
+            }
+            eventos.forEach(function (evento, indice) {
+                if (evento.previsto == null) {
+                    cerrar();
+                    return;
+                }
+                const punto = {
+                    minuto: evento.previsto,
+                    indice: evento.indice,
+                    difiere: evento.previsto !== evento.horario
+                };
+                if (actual.length && punto.minuto < actual[actual.length - 1].minuto) {
+                    cerrar();
+                }
+                if (!actual.length && indice > 0) {
+                    const anterior = eventos[indice - 1];
+                    if (anterior.horario <= punto.minuto) {
+                        actual.push({ minuto: anterior.horario, indice: anterior.indice, difiere: false });
+                    }
+                }
+                actual.push(punto);
+            });
+            cerrar();
+            return trozos;
+        }
+
+        function polilineaReal(eventos) {
+            const conocidos = [];
+            eventos.forEach(function (evento, indice) {
+                if (evento.real != null) {
+                    conocidos.push(indice);
                 }
             });
-            return puntos;
+            if (!conocidos.length) {
+                return [];
+            }
+            if (conocidos.length === 1) {
+                const evento = eventos[conocidos[0]];
+                return [[{ minuto: evento.real, indice: evento.indice }]];
+            }
+            const puntos = [];
+            for (let i = conocidos[0]; i <= conocidos[conocidos.length - 1]; i += 1) {
+                const evento = eventos[i];
+                puntos.push({
+                    minuto: evento.real != null ? evento.real : evento.horario,
+                    indice: evento.indice
+                });
+            }
+            for (let i = 1; i < puntos.length; i += 1) {
+                if (puntos[i].minuto < puntos[i - 1].minuto) {
+                    return [conocidos.map(function (indice) {
+                        return { minuto: eventos[indice].real, indice: eventos[indice].indice };
+                    })];
+                }
+            }
+            return [puntos];
         }
 
         function bandasDe(minutos) {
@@ -318,9 +446,6 @@
                 }
                 if (fin <= inicio) {
                     fin = Math.min(24 * 60, inicio + 60);
-                }
-                if (fin > 24 * 60) {
-                    fin = 24 * 60;
                 }
                 return { inicio: inicio, fin: fin };
             });
@@ -561,13 +686,21 @@
             });
         }
 
-        function horaParada(parada) {
-            const llegada = horaCorta(parada.horaLlegada);
-            const salida = horaCorta(parada.horaSalida);
-            if (llegada && salida && llegada !== salida) {
-                return llegada + '–' + salida;
+        function detalleParada(parada) {
+            const horario = rangoHoras(horaCorta(parada.horaLlegada), horaCorta(parada.horaSalida));
+            let linea = parada.nombre + ' ' + horario;
+            const extra = retrasoDe(parada);
+            if (extra) {
+                const prevista = rangoHoras(horaMas(parada.horaLlegada, extra), horaMas(parada.horaSalida, extra));
+                if (prevista && prevista !== horario) {
+                    linea += ' · ' + textoMalla('malla.prevista', 'prevista ' + prevista, { hora: prevista });
+                }
             }
-            return salida || llegada;
+            const real = rangoHoras(horaCorta(parada.horaRealLlegada), horaCorta(parada.horaRealSalida));
+            if (real) {
+                linea += ' · ' + textoMalla('malla.real', 'real ' + real, { hora: real });
+            }
+            return linea;
         }
 
         function dibujar() {
@@ -585,9 +718,18 @@
             }));
 
             const minutos = [];
+            const eventosPorTren = new Map();
             trenes.forEach(function (tren) {
-                puntosTren(tren, indiceEstacion).forEach(function (punto) {
-                    minutos.push(punto.minuto);
+                const eventos = eventosTren(tren, indiceEstacion);
+                eventosPorTren.set(tren, eventos);
+                eventos.forEach(function (evento) {
+                    minutos.push(evento.horario);
+                    if (evento.previsto != null) {
+                        minutos.push(evento.previsto);
+                    }
+                    if (evento.real != null) {
+                        minutos.push(evento.real);
+                    }
                 });
             });
             const bandas = minutos.length ? bandasDe(minutos) : bandasDe([0, 60]);
@@ -653,7 +795,7 @@
                             'font-size': 14,
                             'font-weight': 700
                         });
-                        etiqueta.textContent = String(Math.floor(minuto / 60)).padStart(2, '0');
+                        etiqueta.textContent = String(((Math.floor(minuto / 60) % 24) + 24) % 24).padStart(2, '0');
                         svg.appendChild(etiqueta);
                     } else if (minuto !== tramo.fin) {
                         const etiqueta = svgEl('text', {
@@ -663,7 +805,7 @@
                             'font-size': 9,
                             'text-anchor': 'middle'
                         });
-                        etiqueta.textContent = String(minuto % 60);
+                        etiqueta.textContent = String(((minuto % 60) + 60) % 60);
                         svg.appendChild(etiqueta);
                     }
                 }
@@ -691,15 +833,32 @@
                 }
             });
 
-            trenes.forEach(function (tren) {
-                const puntos = puntosTren(tren, indiceEstacion);
-                if (puntos.length < 2) {
+            function anadirTrazo(grupo, puntos, estilo) {
+                const compactos = [];
+                puntos.forEach(function (punto) {
+                    const ultimo = compactos[compactos.length - 1];
+                    if (ultimo && ultimo.minuto === punto.minuto && ultimo.indice === punto.indice) {
+                        return;
+                    }
+                    compactos.push(punto);
+                });
+                if (!compactos.length) {
                     return;
                 }
-                const cancelada = tren.estado === 'CANCELADO';
-                const color = cancelada ? '#b71c1c' : '#111';
+                if (compactos.length === 1) {
+                    const punto = compactos[0];
+                    grupo.appendChild(svgEl('circle', {
+                        cx: xDe(punto.minuto).toFixed(1),
+                        cy: yEstacion(punto.indice).toFixed(1),
+                        r: 4.5,
+                        fill: estilo.stroke,
+                        stroke: '#fff',
+                        'stroke-width': 1.4
+                    }));
+                    return;
+                }
                 const trozos = [];
-                puntos.forEach(function (punto) {
+                compactos.forEach(function (punto) {
                     const tramo = tramos.find(function (candidato) {
                         return punto.minuto >= candidato.inicio && punto.minuto <= candidato.fin;
                     });
@@ -710,33 +869,66 @@
                         ultimo.puntos.push(punto);
                     }
                 });
-
-                const grupo = svgEl('g', { cursor: 'pointer' });
                 trozos.forEach(function (trozo) {
                     if (trozo.puntos.length < 2) {
+                        const punto = trozo.puntos[0];
+                        grupo.appendChild(svgEl('circle', {
+                            cx: xDe(punto.minuto).toFixed(1),
+                            cy: yEstacion(punto.indice).toFixed(1),
+                            r: 4.5,
+                            fill: estilo.stroke,
+                            stroke: '#fff',
+                            'stroke-width': 1.4
+                        }));
                         return;
                     }
                     const d = trozo.puntos.map(function (punto, indice) {
                         const comando = indice === 0 ? 'M' : 'L';
                         return comando + xDe(punto.minuto).toFixed(1) + ' ' + yEstacion(punto.indice).toFixed(1);
                     }).join(' ');
-                    const trazo = svgEl('path', {
+                    grupo.appendChild(svgEl('path', {
                         d: d,
                         fill: 'none',
-                        stroke: color,
-                        'stroke-width': 1.7,
+                        stroke: estilo.stroke,
+                        'stroke-width': estilo.ancho,
                         'stroke-linejoin': 'round',
                         'stroke-linecap': 'round',
-                        'stroke-dasharray': cancelada ? '5 3' : null
-                    });
-                    const zona = svgEl('path', {
-                        d: d,
-                        fill: 'none',
-                        stroke: 'transparent',
-                        'stroke-width': 12
-                    });
-                    grupo.appendChild(trazo);
-                    grupo.appendChild(zona);
+                        'stroke-dasharray': estilo.discontinua || null,
+                        'data-width': estilo.ancho
+                    }));
+                    if (estilo.zona) {
+                        grupo.appendChild(svgEl('path', {
+                            d: d,
+                            fill: 'none',
+                            stroke: 'transparent',
+                            'stroke-width': 12
+                        }));
+                    }
+                });
+            }
+
+            trenes.forEach(function (tren) {
+                const eventos = eventosPorTren.get(tren) || [];
+                const puntos = eventos.map(function (evento) {
+                    return { minuto: evento.horario, indice: evento.indice };
+                });
+                if (puntos.length < 2) {
+                    return;
+                }
+                const cancelada = tren.estado === 'CANCELADO';
+                const color = cancelada ? COLOR_CANCELADA : COLOR_HORARIO;
+                const grupo = svgEl('g', { cursor: 'pointer' });
+                anadirTrazo(grupo, puntos, {
+                    stroke: color,
+                    ancho: '2.4',
+                    discontinua: cancelada ? '5 3' : null,
+                    zona: true
+                });
+                polilineaPrevista(eventos).forEach(function (trozo) {
+                    anadirTrazo(grupo, trozo, { stroke: COLOR_PREVISTA, ancho: '1.8', zona: true });
+                });
+                polilineaReal(eventos).forEach(function (trozo) {
+                    anadirTrazo(grupo, trozo, { stroke: COLOR_REAL, ancho: '1.6', zona: true });
                 });
 
                 const primero = puntos[0];
@@ -775,10 +967,14 @@
                 grupo.addEventListener('mouseenter', function (evento) {
                     quitarTooltip();
                     grupo.querySelectorAll('path').forEach(function (trazo) {
-                        if (trazo.getAttribute('stroke') !== 'transparent') {
-                            trazo.setAttribute('stroke', '#0d47a1');
-                            trazo.setAttribute('stroke-width', '2.8');
+                        const base = trazo.getAttribute('data-width');
+                        if (!base) {
+                            return;
                         }
+                        trazo.setAttribute('stroke-width', String(Number(base) + 1.1));
+                    });
+                    grupo.querySelectorAll('circle').forEach(function (circulo) {
+                        circulo.setAttribute('r', '5.6');
                     });
                     const aviso = document.createElement('div');
                     aviso.className = 'grafico-tooltip';
@@ -787,7 +983,7 @@
                             return {
                                 nombre: parada.nombre,
                                 minuto: minutosDia(parada.horaSalida) != null ? minutosDia(parada.horaSalida) : minutosDia(parada.horaLlegada),
-                                hora: horaParada(parada)
+                                detalle: detalleParada(parada)
                             };
                         })
                         .filter(function (parada) { return parada.minuto != null; })
@@ -802,7 +998,7 @@
                         })) + '</div>';
                     }
                     const paradas = viaje.map(function (parada) {
-                        return escapar(parada.nombre) + ' ' + escapar(parada.hora);
+                        return escapar(parada.detalle);
                     }).join('<br>');
                     const estadoHtml = (typeof htmlEstado === 'function')
                         ? htmlEstado(tren.estado)
@@ -826,10 +1022,14 @@
                 });
                 grupo.addEventListener('mouseleave', function () {
                     grupo.querySelectorAll('path').forEach(function (trazo) {
-                        if (trazo.getAttribute('stroke') !== 'transparent') {
-                            trazo.setAttribute('stroke', color);
-                            trazo.setAttribute('stroke-width', '1.7');
+                        const base = trazo.getAttribute('data-width');
+                        if (!base) {
+                            return;
                         }
+                        trazo.setAttribute('stroke-width', base);
+                    });
+                    grupo.querySelectorAll('circle').forEach(function (circulo) {
+                        circulo.setAttribute('r', '4.5');
                     });
                     quitarTooltip();
                 });

@@ -25,11 +25,9 @@ function margenHoras(valor) {
 
 function consultaMovimientos(esSalida) {
     const columnaHora = esSalida ? 'ise."horaProgramadaSalida"' : 'ise."horaProgramadaLlegada"';
-    const condicionParada = esSalida
-        ? `ise."horaProgramadaSalida" IS NOT NULL
-           AND ise."horaRealSalida" IS NULL`
-        : `ise."horaProgramadaLlegada" IS NOT NULL
-           AND ise."horaRealLlegada" IS NULL`;
+    const columnaReal = esSalida ? 'ise."horaRealSalida"' : 'ise."horaRealLlegada"';
+    const condicionParada = `${columnaHora} IS NOT NULL
+           AND (e.gestion = 'AUTOMATICA' OR ${columnaReal} IS NULL)`;
     const orden = columnaHora;
 
     return `
@@ -44,6 +42,9 @@ function consultaMovimientos(esSalida) {
             its.material,
             ise."horaProgramadaLlegada",
             ise."horaProgramadaSalida",
+            ise."horaRealLlegada",
+            ise."horaRealSalida",
+            ise."retrasoPrevisto",
             ise.orden
         FROM "Circulaciones" its
         INNER JOIN "CirculacionEstaciones" ise ON its.id = ise."circulacionId"
@@ -113,6 +114,14 @@ router.get('/llegadas', async (req, res) => {
     }
 });
 
+async function marcarHoraReal(parada, estacionId, columna) {
+    const estacion = await Estacion.findByPk(estacionId);
+    const automatica = estacion && estacion.activa === true && estacion.gestion === 'AUTOMATICA';
+    if (!parada[columna] || automatica) {
+        await parada.update({ [columna]: horaActual() });
+    }
+}
+
 async function buscarParada(circulacionId, estacionId) {
     if (!circulacionId || !estacionId) {
         return null;
@@ -140,9 +149,7 @@ router.post('/llegada', verificarAuth(['planificador', 'admin']), async (req, re
             return res.status(409).json({ codigo: 'CIRCULACION_CANCELADA', mensaje: 'La circulación está cancelada' });
         }
 
-        if (!parada.horaRealLlegada) {
-            await parada.update({ horaRealLlegada: horaActual() });
-        }
+        await marcarHoraReal(parada, estacionId, 'horaRealLlegada');
 
         const ultimaParada = await CirculacionEstacion.max('orden', {
             where: { circulacionId }
@@ -175,9 +182,7 @@ router.post('/salida', verificarAuth(['planificador', 'admin']), async (req, res
             return res.status(409).json({ codigo: 'CIRCULACION_CANCELADA', mensaje: 'La circulación está cancelada' });
         }
 
-        if (!parada.horaRealSalida) {
-            await parada.update({ horaRealSalida: horaActual() });
-        }
+        await marcarHoraReal(parada, estacionId, 'horaRealSalida');
 
         const ultimaParada = await CirculacionEstacion.max('orden', {
             where: { circulacionId }
@@ -197,6 +202,115 @@ router.post('/salida', verificarAuth(['planificador', 'admin']), async (req, res
 });
 
 const GESTIONES_CONTROL = ['MANUAL', 'AUTOMATICA'];
+const RETRASO_MINIMO = 3;
+const RETRASO_MAXIMO = 12 * 60;
+
+function partesHora(hora) {
+    const texto = String(hora || '').slice(0, 8);
+    const partes = texto.split(':');
+    if (partes.length < 2) {
+        return null;
+    }
+    const horas = Number(partes[0]);
+    const minutos = Number(partes[1]);
+    const segundos = Number(partes[2] || 0);
+    if (!Number.isInteger(horas) || !Number.isInteger(minutos) || !Number.isInteger(segundos)) {
+        return null;
+    }
+    return { horas, minutos, segundos };
+}
+
+function horaConRetraso(programada, minutosRetraso) {
+    const partes = partesHora(programada);
+    if (!partes) {
+        return null;
+    }
+    const total = partes.horas * 60 + partes.minutos + minutosRetraso;
+    const dia = ((total % (24 * 60)) + (24 * 60)) % (24 * 60);
+    const dosDigitos = (valor) => String(valor).padStart(2, '0');
+    return `${dosDigitos(Math.floor(dia / 60))}:${dosDigitos(dia % 60)}:${dosDigitos(partes.segundos)}`;
+}
+
+function minutosRetrasoValidos(valor) {
+    if (valor === null || valor === undefined || valor === '') {
+        return { minutos: null };
+    }
+    const numero = Number(valor);
+    if (!Number.isInteger(numero) || numero < RETRASO_MINIMO || numero > RETRASO_MAXIMO) {
+        return null;
+    }
+    return { minutos: numero };
+}
+
+function horasCoinciden(actual, esperada) {
+    if (!actual || !esperada) {
+        return false;
+    }
+    return String(actual).slice(0, 8) === String(esperada).slice(0, 8);
+}
+
+router.post('/retraso', verificarAuth(['planificador', 'admin']), async (req, res) => {
+    try {
+        const { circulacionId, estacionId } = req.body;
+        const retraso = minutosRetrasoValidos(req.body.minutos);
+
+        if (!estacionId) {
+            return res.status(400).json({ codigo: 'FALTA_ESTACION', mensaje: 'Falta la estación' });
+        }
+        if (!retraso) {
+            return res.status(400).json({
+                codigo: 'RETRASO_NO_VALIDO',
+                minimo: RETRASO_MINIMO,
+                maximo: RETRASO_MAXIMO,
+                mensaje: `El retraso tiene que ser entre ${RETRASO_MINIMO} y ${RETRASO_MAXIMO} minutos`
+            });
+        }
+
+        const estacion = await Estacion.findByPk(estacionId);
+        if (!estacion || estacion.activa !== true || !GESTIONES_CONTROL.includes(estacion.gestion)) {
+            return res.status(409).json({
+                codigo: 'ESTACION_NO_AUTOMATICA',
+                mensaje: 'El retraso previsto solo se anota en una estación de gestión manual o automática'
+            });
+        }
+
+        const parada = await buscarParada(circulacionId, estacionId);
+        if (!parada) {
+            return res.status(404).json({ codigo: 'PARADA_NO_ENCONTRADA', mensaje: 'Parada no encontrada' });
+        }
+
+        const circulacion = await Circulacion.findByPk(circulacionId);
+        if (!circulacion || circulacion.estado === 'CANCELADO') {
+            return res.status(409).json({ codigo: 'CIRCULACION_CANCELADA', mensaje: 'La circulación está cancelada' });
+        }
+
+        const cambios = { retrasoPrevisto: retraso.minutos };
+        if (estacion.gestion === 'AUTOMATICA') {
+            const anterior = Number.isInteger(parada.retrasoPrevisto) ? parada.retrasoPrevisto : 0;
+            const nuevo = retraso.minutos || 0;
+            ['Llegada', 'Salida'].forEach((lado) => {
+                const programada = parada['horaProgramada' + lado];
+                const real = parada['horaReal' + lado];
+                if (!programada || !real) {
+                    return;
+                }
+                if (horasCoinciden(real, horaConRetraso(programada, anterior))) {
+                    cambios['horaReal' + lado] = horaConRetraso(programada, nuevo);
+                }
+            });
+        }
+
+        await parada.update(cambios);
+        if (estacion.gestion === 'AUTOMATICA') {
+            await actualizarEstadosAutomaticos(circulacionId);
+        }
+
+        res.json({ mensaje: 'Retraso previsto anotado', retrasoPrevisto: parada.retrasoPrevisto });
+    } catch (error) {
+        logger.error(logLocation + 'Error al anotar el retraso:', error);
+        res.status(500).json({ mensaje: 'Error al anotar el retraso' });
+    }
+});
 
 router.put('/gestion', verificarAuth('planificador'), async (req, res) => {
     try {
@@ -235,8 +349,96 @@ router.put('/gestion', verificarAuth('planificador'), async (req, res) => {
 
 let marcadoEnCurso = null;
 
-function instanteProgramado(columna) {
-    return `((c.fecha AT TIME ZONE 'Europe/Madrid')::date + ise."${columna}") AT TIME ZONE 'Europe/Madrid'`;
+function instanteConRetraso(columna) {
+    return `(
+        (c.fecha AT TIME ZONE 'Europe/Madrid')::date
+        + ise."${columna}"
+        + (COALESCE(ise."retrasoPrevisto", 0) * INTERVAL '1 minute')
+    ) AT TIME ZONE 'Europe/Madrid'`;
+}
+
+function horaMarcadaConRetraso(columna) {
+    return `(
+        ise."${columna}"
+        + (COALESCE(ise."retrasoPrevisto", 0) * INTERVAL '1 minute')
+    )::time`;
+}
+
+function instanteCumplido(columnaReal, columnaProgramada) {
+    return `(
+        (c.fecha AT TIME ZONE 'Europe/Madrid')::date
+        + ise."${columnaReal}"
+        + CASE
+            WHEN ise."${columnaProgramada}" IS NOT NULL
+             AND ise."${columnaReal}" < ise."${columnaProgramada}"
+            THEN INTERVAL '1 day'
+            ELSE INTERVAL '0'
+          END
+    ) AT TIME ZONE 'Europe/Madrid' <= NOW()`;
+}
+
+async function actualizarEstadosAutomaticos(circulacionId, transaction) {
+    const filtro = circulacionId ? 'AND c.id = $1' : '';
+    const opciones = {};
+    if (transaction) {
+        opciones.transaction = transaction;
+    }
+    if (circulacionId) {
+        opciones.bind = [circulacionId];
+    }
+
+    await sequelize.query(`
+        UPDATE "Circulaciones" AS c
+        SET estado = 'EN_PROGRESO'
+        WHERE c.estado = 'PENDIENTE'
+        ${filtro}
+        AND EXISTS (
+            SELECT 1
+            FROM "CirculacionEstaciones" AS ise
+            INNER JOIN "Estacions" AS e ON e.id = ise."estacionId"
+            WHERE ise."circulacionId" = c.id
+            AND e.gestion = 'AUTOMATICA'
+            AND e.activa = true
+            AND ise.orden = (
+                SELECT MIN(orden) FROM "CirculacionEstaciones" AS primera
+                WHERE primera."circulacionId" = c.id
+            )
+            AND ise."horaRealSalida" IS NOT NULL
+            AND ${instanteCumplido('horaRealSalida', 'horaProgramadaSalida')}
+        )
+    `, opciones);
+
+    await sequelize.query(`
+        UPDATE "Circulaciones" AS c
+        SET estado = 'COMPLETADO'
+        WHERE c.estado IN ('PENDIENTE', 'EN_PROGRESO')
+        ${filtro}
+        AND EXISTS (
+            SELECT 1
+            FROM "CirculacionEstaciones" AS ise
+            INNER JOIN "Estacions" AS e ON e.id = ise."estacionId"
+            WHERE ise."circulacionId" = c.id
+            AND e.gestion = 'AUTOMATICA'
+            AND e.activa = true
+            AND ise.orden = (
+                SELECT MAX(orden) FROM "CirculacionEstaciones" AS ultima
+                WHERE ultima."circulacionId" = c.id
+            )
+            AND (
+                (
+                    ise."horaProgramadaLlegada" IS NOT NULL
+                    AND ise."horaRealLlegada" IS NOT NULL
+                    AND ${instanteCumplido('horaRealLlegada', 'horaProgramadaLlegada')}
+                )
+                OR (
+                    ise."horaProgramadaLlegada" IS NULL
+                    AND ise."horaProgramadaSalida" IS NOT NULL
+                    AND ise."horaRealSalida" IS NOT NULL
+                    AND ${instanteCumplido('horaRealSalida', 'horaProgramadaSalida')}
+                )
+            )
+        )
+    `, opciones);
 }
 
 async function aplicarGestionAutomatica() {
@@ -253,7 +455,7 @@ async function aplicarGestionAutomatica() {
         const marca = async (columnaReal, columnaProgramada) => {
             const respuesta = await sequelize.query(`
                 UPDATE "CirculacionEstaciones" AS ise
-                SET "${columnaReal}" = ise."${columnaProgramada}"
+                SET "${columnaReal}" = ${horaMarcadaConRetraso(columnaProgramada)}
                 FROM "Circulaciones" AS c, "Estacions" AS e
                 WHERE ise."circulacionId" = c.id
                 AND ise."estacionId" = e.id
@@ -262,60 +464,16 @@ async function aplicarGestionAutomatica() {
                 AND c.estado <> 'CANCELADO'
                 AND ise."${columnaProgramada}" IS NOT NULL
                 AND ise."${columnaReal}" IS NULL
-                AND ${instanteProgramado(columnaProgramada)} ${ventana}
+                AND ${instanteConRetraso(columnaProgramada)} ${ventana}
             `, { transaction });
             return filas(respuesta);
         };
 
         const llegadas = await marca('horaRealLlegada', 'horaProgramadaLlegada');
         const salidas = await marca('horaRealSalida', 'horaProgramadaSalida');
+        await actualizarEstadosAutomaticos(null, transaction);
 
-        const enProgreso = filas(await sequelize.query(`
-            UPDATE "Circulaciones" AS c
-            SET estado = 'EN_PROGRESO'
-            WHERE c.estado = 'PENDIENTE'
-            AND EXISTS (
-                SELECT 1
-                FROM "CirculacionEstaciones" AS ise
-                INNER JOIN "Estacions" AS e ON e.id = ise."estacionId"
-                WHERE ise."circulacionId" = c.id
-                AND e.gestion = 'AUTOMATICA'
-                AND e.activa = true
-                AND ise.orden = (
-                    SELECT MIN(orden) FROM "CirculacionEstaciones" AS primera
-                    WHERE primera."circulacionId" = c.id
-                )
-                AND ise."horaRealSalida" IS NOT NULL
-            )
-        `, { transaction }));
-
-        const completadas = filas(await sequelize.query(`
-            UPDATE "Circulaciones" AS c
-            SET estado = 'COMPLETADO'
-            WHERE c.estado IN ('PENDIENTE', 'EN_PROGRESO')
-            AND EXISTS (
-                SELECT 1
-                FROM "CirculacionEstaciones" AS ise
-                INNER JOIN "Estacions" AS e ON e.id = ise."estacionId"
-                WHERE ise."circulacionId" = c.id
-                AND e.gestion = 'AUTOMATICA'
-                AND e.activa = true
-                AND ise.orden = (
-                    SELECT MAX(orden) FROM "CirculacionEstaciones" AS ultima
-                    WHERE ultima."circulacionId" = c.id
-                )
-                AND (
-                    (ise."horaProgramadaLlegada" IS NOT NULL AND ise."horaRealLlegada" IS NOT NULL)
-                    OR (
-                        ise."horaProgramadaLlegada" IS NULL
-                        AND ise."horaProgramadaSalida" IS NOT NULL
-                        AND ise."horaRealSalida" IS NOT NULL
-                    )
-                )
-            )
-        `, { transaction }));
-
-        const total = llegadas + salidas + enProgreso + completadas;
+        const total = llegadas + salidas;
         if (total > 0) {
             logger.info(logLocation + `Gestión automática: ${llegadas} llegadas, ${salidas} salidas`);
         }

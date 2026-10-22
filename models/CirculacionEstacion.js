@@ -53,6 +53,11 @@ const CirculacionEstacion = sequelize.define('CirculacionEstacion', {
         allowNull: true,
         comment: 'Vía de la estación'
     },
+    retrasoPrevisto: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        comment: 'Minutos de retraso previsto en esta parada. Vacío si no hay aviso'
+    },
     observaciones: {
         type: DataTypes.TEXT,
         comment: 'Observaciones sobre la parada en esta estación'

@@ -435,7 +435,10 @@ function paradasMalla(circulacion) {
                 codigo: estacion.codigo,
                 orden: parada.orden || 0,
                 horaLlegada: parada.horaProgramadaLlegada || null,
-                horaSalida: parada.horaProgramadaSalida || null
+                horaSalida: parada.horaProgramadaSalida || null,
+                horaRealLlegada: parada.horaRealLlegada || null,
+                horaRealSalida: parada.horaRealSalida || null,
+                retrasoPrevisto: Number.isInteger(parada.retrasoPrevisto) ? parada.retrasoPrevisto : null
             };
         })
         .sort((a, b) => a.orden - b.orden);
@@ -519,7 +522,8 @@ async function obtenerMallaCirculaciones(req, res) {
                 model: Estacion,
                 as: 'estaciones',
                 through: {
-                    attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida']
+                    attributes: ['orden', 'horaProgramadaLlegada', 'horaProgramadaSalida',
+                        'horaRealLlegada', 'horaRealSalida', 'retrasoPrevisto']
                 }
             }],
             order: [['numero', 'ASC']]
@@ -650,7 +654,7 @@ function instanteProgramado(fechaCirculacion, hora) {
     return new Date(utc.getTime() - (visto - utc.getTime()));
 }
 
-function describirSituacion(estado, programada, real, fechaCirculacion) {
+function describirSituacion(estado, programada, real, fechaCirculacion, retrasoPrevisto) {
     if (estado === 'CANCELADO') {
         return { texto: 'Cancelado', retraso: false, cancelado: true, codigo: 'CANCELADO', minutos: 0 };
     }
@@ -668,6 +672,11 @@ function describirSituacion(estado, programada, real, fechaCirculacion) {
             return { texto: textoRetraso(diferencia), retraso: true, cancelado: false, codigo: 'RETRASO', minutos: diferencia };
         }
         return { texto: '', retraso: false, cancelado: false, codigo: '', minutos: 0 };
+    }
+
+    const previsto = Number(retrasoPrevisto);
+    if (retrasoPrevisto != null && retrasoPrevisto !== '' && Number.isInteger(previsto) && previsto > MARGEN_RETRASO_MINUTOS) {
+        return { texto: textoRetraso(previsto), retraso: true, cancelado: false, codigo: 'RETRASO', minutos: previsto };
     }
 
     const instante = instanteProgramado(fechaCirculacion, programada);
@@ -691,7 +700,13 @@ function paradasOrdenadas(circulacion) {
 }
 
 function filaVisor(circulacion, parada, hora, columnas) {
-    const situacion = describirSituacion(circulacion.estado, hora, columnas.horaReal, circulacion.fecha);
+    const situacion = describirSituacion(
+        circulacion.estado,
+        hora,
+        columnas.horaReal,
+        circulacion.fecha,
+        parada.retrasoPrevisto
+    );
     const observacion = situacion.texto || parada.observaciones || circulacion.observaciones || '';
 
     return {
@@ -738,6 +753,7 @@ router.get('/visor/:estacionCodigo', async (req, res) => {
                         'horaProgramadaSalida',
                         'horaRealLlegada',
                         'horaRealSalida',
+                        'retrasoPrevisto',
                         'via',
                         'observaciones'
                     ]

@@ -105,8 +105,8 @@
     "eliminar": "Elimina l'estació",
     "leyendaActiva": "La parada compta per al control. Si es desmarca, la gestió passa a sense gestió: no ix en el selector i no reté el tren.",
     "leyendaSin": "No ix en el selector del control i no reté el tren. Si passa un minut de l'hora programada sense marca, el visor la mostra amb retard.",
-    "leyendaManual": "Ix en el selector del control, on es registren l'arribada i l'eixida. L'estació manual següent no mostra el tren fins que ací es registra l'eixida.",
-    "leyendaAutomatica": "En arribar l'hora programada s'anoten l'arribada i l'eixida amb esta hora, llevat que en el control s'haja anotat abans. Ix en el control i no reté l'estació manual següent.",
+    "leyendaManual": "Ix en el selector del control, on es registren l'arribada i l'eixida. Es pot anotar un retard previst i el visor el mostra fins que es registra la passada. L'estació manual següent no mostra el tren fins que ací es registra l'eixida.",
+    "leyendaAutomatica": "En arribar l'hora programada s'anoten l'arribada i l'eixida. Si hi ha un retard previst, s'hi sumen eixos minuts. En el control també es poden registrar a mà. Ix en el control i no reté l'estació manual següent.",
     "confirmarEliminar": "Segur que vols eliminar esta estació?",
     "errorEliminar": "Error en eliminar l'estació",
     "errorGuardar": "Error en guardar l'estació"
@@ -116,8 +116,8 @@
     "estacion": "Estació:",
     "llegadas": "Arribades",
     "salidas": "Eixides",
-    "leyendaManual": "Ix en este selector. Ací es registren l'arribada i l'eixida. El tren apareix quan l'estació manual anterior ja ha registrat l'eixida.",
-    "leyendaAutomatica": "Ix en este selector. En arribar l'hora programada s'anoten soles l'arribada i l'eixida, llevat que ací es registre abans. No reté l'estació manual següent.",
+    "leyendaManual": "Ix en este selector. Ací es registren l'arribada i l'eixida. Es pot anotar un retard previst i el visor el mostra fins que es registra la passada. El tren apareix quan l'estació manual anterior ja ha registrat l'eixida.",
+    "leyendaAutomatica": "Ix en este selector. En arribar l'hora programada s'anoten l'arribada i l'eixida. Si hi ha un retard previst, s'hi sumen eixos minuts. També es poden registrar a mà. No reté l'estació manual següent.",
     "cambiarGestion": "Gestió:",
     "confirmarGestion": "Passar {estacion} a {gestion}?",
     "errorGestion": "No s'ha pogut canviar la gestió",
@@ -131,7 +131,14 @@
     "laLlegada": "l'arribada",
     "laSalida": "l'eixida",
     "errorEstaciones": "Error en carregar les estacions",
-    "errorRegistro": "No s'ha pogut registrar el moviment"
+    "errorRegistro": "No s'ha pogut registrar el moviment",
+    "anotarRetraso": "Anota el retard",
+    "minutosCortos": "min",
+    "minutosRetraso": "Minuts de retard previst",
+    "confirmarRetraso": "Anotar un retard previst de {minutos} min en el tren {tren}?",
+    "quitarRetraso": "Llevar el retard previst del tren {tren}?",
+    "retrasoInvalido": "El retard ha de ser entre {minimo} i {maximo} minuts",
+    "errorRetraso": "No s'ha pogut anotar el retard"
   },
   "circulaciones": {
     "titulo": "Circulacions",
@@ -250,8 +257,12 @@
     "grafico": "Gràfic de circulació de trens",
     "ferrocarril": "Ferrocarril de La Granja",
     "leyenda": "Llegenda",
-    "leyendaTren": "Circulació",
+    "leyendaTren": "Horari",
+    "leyendaPrevista": "Hora prevista",
+    "leyendaReal": "Resultat real",
     "leyendaCancelada": "Cancel·lada",
+    "prevista": "prevista {hora}",
+    "real": "real {hora}",
     "leyendaEje": "El temps va en horitzontal. Les estacions del recorregut van en vertical, amb Granja baix.",
     "vacio": "No hi ha circulacions per a este dia",
     "error": "No s'ha pogut carregar el gràfic",
@@ -268,6 +279,10 @@
     "CIRCULACION_NO_ENCONTRADA": "No s'ha trobat la circulació.",
     "FALTA_ESTACION": "Falta l'estació",
     "GESTION_NO_VALIDA": "La gestió ha de ser manual o automàtica",
-    "ESTACION_NO_GESTIONABLE": "L'estació no admet canvi de gestió des del control"
+    "ESTACION_NO_GESTIONABLE": "L'estació no admet canvi de gestió des del control",
+    "MOVIMIENTO_NO_VALIDO": "El moviment no és vàlid",
+    "RETRASO_NO_VALIDO": "El retard ha de ser entre {minimo} i {maximo} minuts",
+    "ESTACION_NO_AUTOMATICA": "El retard previst només s'anota en una estació de gestió manual o automàtica",
+    "HORA_NO_PROGRAMADA": "Esta parada no té hora programada"
   }
 }

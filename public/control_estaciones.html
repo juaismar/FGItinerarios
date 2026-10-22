@@ -39,9 +39,9 @@
         <strong data-i18n="comun.leyenda">Leyenda</strong>
         <dl class="row mb-0 mt-2">
             <dt class="col-sm-3" data-i18n="gestion.MANUAL">Gestión manual</dt>
-            <dd class="col-sm-9" data-i18n="control.leyendaManual">Sale en este selector. Aquí se registran la llegada y la salida. El tren aparece cuando la estación manual anterior ya ha registrado la salida.</dd>
+            <dd class="col-sm-9" data-i18n="control.leyendaManual">Sale en este selector. Aquí se registran la llegada y la salida. Se puede anotar un retraso previsto y el visor lo muestra hasta que se registra la pasada. El tren aparece cuando la estación manual anterior ya ha registrado la salida.</dd>
             <dt class="col-sm-3" data-i18n="gestion.AUTOMATICA">Gestión automática</dt>
-            <dd class="col-sm-9" data-i18n="control.leyendaAutomatica">Sale en este selector. Al llegar la hora programada se anotan solas la llegada y la salida, salvo que aquí se registre antes. No retiene a la siguiente estación manual.</dd>
+            <dd class="col-sm-9" data-i18n="control.leyendaAutomatica">Sale en este selector. Al llegar la hora programada se anotan la llegada y la salida. Si hay un retraso previsto, se suman esos minutos. También se pueden registrar a mano. No retiene a la siguiente estación manual.</dd>
             <dt class="col-sm-3" data-i18n="gestion.SIN_GESTION">Sin gestión</dt>
             <dd class="col-sm-9 mb-0" data-i18n="control.leyendaSin">No aparece en el selector y no retiene al tren. Si pasa la hora sin marca, el visor la muestra retrasada.</dd>
         </dl>
@@ -96,6 +96,8 @@
         if (window.aplicarIdioma) {
             aplicarIdioma(document.getElementById('main-content'));
         }
+        const RETRASO_MINIMO = 3;
+        const RETRASO_MAXIMO = 720;
         let cargando = false;
         let cambiandoGestion = false;
         let estacionesControl = [];
@@ -219,6 +221,9 @@
             if (cargando && !forzar) {
                 return;
             }
+            if (!forzar && document.activeElement && document.activeElement.classList.contains('retraso-minutos')) {
+                return;
+            }
             cargando = true;
 
             Promise.all([
@@ -270,17 +275,26 @@
                 const hora = accion === 'llegada'
                     ? (item.horaProgramadaLlegada || item.horaProgramadaSalida)
                     : (item.horaProgramadaSalida || item.horaProgramadaLlegada);
+                const fila = document.createElement('tr');
                 const textoBoton = accion === 'llegada'
                     ? texto('control.registrarLlegada', 'Registrar llegada')
                     : texto('control.registrarSalida', 'Registrar salida');
-                const fila = document.createElement('tr');
+                const previsto = Number(item.retrasoPrevisto);
+                const valor = Number.isInteger(previsto) && previsto >= RETRASO_MINIMO ? String(previsto) : '';
+                const accionHtml =
+                    '<div class="d-flex align-items-center gap-1 flex-wrap">' +
+                    '<button type="button" class="btn btn-sm btn-primary registrar-movimiento" data-accion="' + accion + '" data-id="' + item.id + '">' + textoBoton + '</button>' +
+                    '<input type="number" class="form-control form-control-sm retraso-minutos" min="' + RETRASO_MINIMO + '" max="' + RETRASO_MAXIMO + '" step="1" value="' + valor + '" style="width: 72px;" aria-label="' + texto('control.minutosRetraso', 'Minutos de retraso previsto') + '">' +
+                    '<span>' + texto('control.minutosCortos', 'min') + '</span>' +
+                    '<button type="button" class="btn btn-sm btn-warning anotar-retraso" data-accion="' + accion + '" data-id="' + item.id + '">' + texto('control.anotarRetraso', 'Anotar retraso') + '</button>' +
+                    '</div>';
                 fila.innerHTML =
                     '<td>' + item.numero + '</td>' +
                     '<td>' + item.origen + '</td>' +
                     '<td>' + item.destino + '</td>' +
                     '<td>' + formatearHora(hora) + '</td>' +
                     '<td>' + (estados[item.estado] || item.estado) + '</td>' +
-                    '<td><button type="button" class="btn btn-sm btn-primary registrar-movimiento" data-accion="' + accion + '" data-id="' + item.id + '">' + textoBoton + '</button></td>';
+                    '<td>' + accionHtml + '</td>';
                 tbody.appendChild(fila);
             });
         }
@@ -348,6 +362,63 @@
         });
 
         $(document).off('fechaPlanificadorCambiada.controlEstacion');
+
+        $(document).off('click.controlEstacion', '.anotar-retraso').on('click.controlEstacion', '.anotar-retraso', function () {
+            const boton = $(this);
+            const circulacionId = boton.data('id');
+            const estacionId = $('#estacionSelector').val();
+            const entrada = boton.closest('td').find('.retraso-minutos');
+            const textoValor = String(entrada.val()).trim();
+            const quitar = textoValor === '';
+            const minutos = Number(textoValor);
+            const tren = boton.closest('tr').children().eq(0).text();
+
+            if (!quitar && (!Number.isInteger(minutos) || minutos < RETRASO_MINIMO || minutos > RETRASO_MAXIMO)) {
+                alert(texto('control.retrasoInvalido', 'El retraso tiene que ser entre 3 y 720 minutos', {
+                    minimo: RETRASO_MINIMO,
+                    maximo: RETRASO_MAXIMO
+                }));
+                return;
+            }
+
+            const pregunta = quitar
+                ? texto('control.quitarRetraso', '¿Quitar el retraso previsto del tren ' + tren + '?', { tren: tren })
+                : texto('control.confirmarRetraso', '¿Anotar un retraso previsto de ' + minutos + ' min en el tren ' + tren + '?', {
+                    minutos: minutos,
+                    tren: tren
+                });
+            if (!confirm(pregunta)) {
+                return;
+            }
+
+            boton.prop('disabled', true);
+            fetch('/api/controlEstacion/retraso', {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({
+                    circulacionId: circulacionId,
+                    estacionId: estacionId,
+                    minutos: quitar ? null : minutos
+                })
+            })
+                .then(function (response) {
+                    if (response.status === 401) {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                    if (!response.ok) {
+                        return response.json().then(function (error) {
+                            throw new Error(mensajeApi(error, texto('control.errorRetraso', 'No se pudo anotar el retraso')));
+                        });
+                    }
+                    cargarMovimientos(true);
+                })
+                .catch(function (error) {
+                    console.error(error);
+                    alert(error.message);
+                    boton.prop('disabled', false);
+                });
+        });
 
         $(document).off('click.controlEstacion', '.registrar-movimiento').on('click.controlEstacion', '.registrar-movimiento', function () {
             const boton = $(this);

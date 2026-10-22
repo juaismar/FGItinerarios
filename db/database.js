@@ -58,6 +58,31 @@ const sequelize = new Sequelize(
   }
 );
 
+async function migrarRetrasoPrevisto() {
+  const tablas = await sequelize.query(
+    `SELECT to_regclass('public."CirculacionEstaciones"') AS nombre`,
+    { type: sequelize.QueryTypes.SELECT }
+  );
+  if (!tablas[0] || !tablas[0].nombre) {
+    return;
+  }
+
+  const columnas = await sequelize.query(
+    `SELECT column_name
+     FROM information_schema.columns
+     WHERE table_schema = 'public'
+       AND table_name = 'CirculacionEstaciones'
+       AND column_name = 'retrasoPrevisto'`,
+    { type: sequelize.QueryTypes.SELECT }
+  );
+  if (columnas.length === 0) {
+    await sequelize.query(
+      `ALTER TABLE "CirculacionEstaciones" ADD COLUMN "retrasoPrevisto" INTEGER`
+    );
+    logger.info('Columna retrasoPrevisto añadida a las paradas');
+  }
+}
+
 async function migrarGestionEstaciones() {
   const tablas = await sequelize.query(
     `SELECT to_regclass('public."Estacions"') AS nombre`,
@@ -114,6 +139,7 @@ async function inicializarConexion() {
     require('../models/CirculacionEstacion');
 
     await migrarGestionEstaciones();
+    await migrarRetrasoPrevisto();
 
     // Sincronizar modelos
     await sequelize.sync({ force: false, alter: false });
