@@ -33,7 +33,7 @@ async function seedEstaciones() {
                     codigo: 'G',
                     ubicacion: '-',
                     activa: true,
-                    gestion: 'MANUAL'
+                    gestion: 'AUTOMATICA'
                 },
                 {
                     id: 2,
@@ -41,7 +41,7 @@ async function seedEstaciones() {
                     codigo: 'A',
                     ubicacion: '-',
                     activa: true,
-                    gestion: 'AUTOMATICA'
+                    gestion: 'SIN_GESTION'
                 },
                 {
                     id: 3,
@@ -49,7 +49,7 @@ async function seedEstaciones() {
                     codigo: 'F',
                     ubicacion: '-',
                     activa: true,
-                    gestion: 'AUTOMATICA'
+                    gestion: 'SIN_GESTION'
                 },
                 {
                     id: 4,
@@ -57,7 +57,7 @@ async function seedEstaciones() {
                     codigo: 'P',
                     ubicacion: '-',
                     activa: true,
-                    gestion: 'AUTOMATICA'
+                    gestion: 'SIN_GESTION'
                 },
                 {
                     id: 5,
@@ -65,7 +65,7 @@ async function seedEstaciones() {
                     codigo: 'M',
                     ubicacion: '-',
                     activa: true,
-                    gestion: 'AUTOMATICA'
+                    gestion: 'SIN_GESTION'
                 },
                 {
                     id: 6,
@@ -73,7 +73,7 @@ async function seedEstaciones() {
                     codigo: 'R',
                     ubicacion: '-',
                     activa: true,
-                    gestion: 'MANUAL'
+                    gestion: 'AUTOMATICA'
                 },
                 {
                     id: 7,
