@@ -114,11 +114,14 @@ FGItinerarios/
 ├── models/          # Itinerario, Circulacion, Estacion, Usuario
 ├── public/          # Interfaz (HTML, CSS y JS)
 ├── logger.js
+├── openapi.yaml     # Descripción OpenAPI de la API
 ├── router.js        # API y ficheros estáticos
 └── server.js
 ```
 
 ## API
+
+La descripción completa está en [`openapi.yaml`](openapi.yaml) (OpenAPI 3). Con el servidor en marcha se consulta en `http://localhost:3000/api/documentation`.
 
 | Ruta | Recurso |
 | --- | --- |

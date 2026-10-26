@@ -1,7 +1,10 @@
 const express = require('express');
+const fs = require('fs');
 const router = express.Router();
 const logger = require('./logger').logger;
 const path = require('path');
+const yaml = require('js-yaml');
+const swaggerUi = require('swagger-ui-express');
 
 const logLocation = 'router.js: ';
 
@@ -37,6 +40,14 @@ router.use('/api/usuarios', usuariosRoutes);
 router.use('/api/estaciones', estacionesRoutes);
 router.use('/api/panel', panel);
 router.use('/api/controlEstacion', controlEstacion);
+
+const especificacionApi = yaml.load(
+    fs.readFileSync(path.join(__dirname, 'openapi.yaml'), 'utf8')
+);
+router.use('/api/documentation', swaggerUi.serve, swaggerUi.setup(especificacionApi, {
+    customSiteTitle: 'FG Itinerarios API',
+    swaggerOptions: { persistAuthorization: true }
+}));
 
 // Ruta para servir el index.html
 router.get('/', (req, res) => {

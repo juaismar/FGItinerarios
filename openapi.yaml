@@ -1,0 +1,1581 @@
+openapi: 3.0.3
+info:
+  title: FG Itinerarios
+  version: 1.0.0
+  description: |
+    API de planificación y seguimiento de circulaciones.
+
+    El acceso con cuenta usa un JWT en la cabecera `Authorization: Bearer <token>`,
+    obtenido en `POST /api/usuarios/login`.
+
+    Roles:
+
+    - **admin**: usuarios, alta y edición de estaciones e itinerarios, listado paginado de estaciones.
+    - **planificador**: circulaciones, malla, control de estación y panel.
+    - **admin y planificador**: listado de estaciones y consulta de itinerarios.
+    - **público**: login y visor.
+
+    Un 401 indica que falta el token o no es válido. Un 403 indica que el rol no puede usar esa ruta.
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+
+tags:
+  - name: Usuarios
+  - name: Estaciones
+  - name: Itinerarios
+  - name: Circulaciones
+  - name: Visor
+  - name: Control
+  - name: Panel
+
+paths:
+  /api/usuarios/login:
+    post:
+      tags: [Usuarios]
+      summary: Iniciar sesión
+      description: Público. Devuelve el usuario y el token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+                  token:
+                    type: string
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '400':
+          description: Error al procesar el login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+
+  /api/usuarios/perfil:
+    get:
+      tags: [Usuarios]
+      summary: Perfil de la sesión
+      description: Cualquier usuario autenticado.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario de la sesión
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+
+  /api/usuarios/paginated:
+    get:
+      tags: [Usuarios]
+      summary: Listado paginado de usuarios
+      description: Rol admin. Respuesta de DataTables.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Draw'
+        - $ref: '#/components/parameters/Start'
+        - $ref: '#/components/parameters/Length'
+      responses:
+        '200':
+          description: Página de usuarios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaDataTables'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/usuarios:
+    post:
+      tags: [Usuarios]
+      summary: Crear usuario
+      description: Rol admin.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, email, password, rol]
+              properties:
+                nombre:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 6
+                rol:
+                  type: string
+                  enum: [admin, planificador]
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/usuarios/{id}:
+    put:
+      tags: [Usuarios]
+      summary: Actualizar usuario
+      description: Rol admin. No cambia la contraseña.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                rol:
+                  type: string
+                  enum: [admin, planificador]
+                activo:
+                  type: boolean
+      responses:
+        '204':
+          description: Actualizado
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar usuario
+      description: Rol admin.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Eliminado
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/estaciones:
+    get:
+      tags: [Estaciones]
+      summary: Listar estaciones
+      description: Rol admin o planificador. Ordenadas por nombre.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Estaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Estacion'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    post:
+      tags: [Estaciones]
+      summary: Crear estación
+      description: Rol admin. Una estación inactiva queda en `SIN_GESTION`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstacionEscritura'
+      responses:
+        '201':
+          description: Estación creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estacion'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/estaciones/paginated:
+    get:
+      tags: [Estaciones]
+      summary: Listado paginado de estaciones
+      description: Rol admin. Respuesta de DataTables.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Draw'
+        - $ref: '#/components/parameters/Start'
+        - $ref: '#/components/parameters/Length'
+      responses:
+        '200':
+          description: Página de estaciones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaDataTables'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/estaciones/{id}:
+    put:
+      tags: [Estaciones]
+      summary: Actualizar estación
+      description: Rol admin.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstacionEscritura'
+      responses:
+        '204':
+          description: Actualizada
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    delete:
+      tags: [Estaciones]
+      summary: Eliminar estación
+      description: Rol admin.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Eliminada
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/itinerarios:
+    get:
+      tags: [Itinerarios]
+      summary: Listar itinerarios
+      description: Rol admin o planificador. Ordenados por hora descendente.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Itinerarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Itinerario'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    post:
+      tags: [Itinerarios]
+      summary: Crear itinerario
+      description: Rol admin. El número es único. `fecha` es la hora del tren, no un día.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItinerarioEscritura'
+      responses:
+        '201':
+          description: Itinerario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Itinerario'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/itinerarios/paginated:
+    get:
+      tags: [Itinerarios]
+      summary: Listado paginado de itinerarios
+      description: Rol admin o planificador. Respuesta de DataTables.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Draw'
+        - $ref: '#/components/parameters/Start'
+        - $ref: '#/components/parameters/Length'
+        - name: cs_DateStart
+          in: query
+          schema:
+            type: string
+          description: Hora inicial, `HH:MM:SS`
+        - name: cs_DateEnd
+          in: query
+          schema:
+            type: string
+          description: Hora final, exclusiva
+        - name: cs_Origen
+          in: query
+          schema:
+            type: string
+        - name: cs_Destino
+          in: query
+          schema:
+            type: string
+        - name: cs_Tipo
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Página de itinerarios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaDataTables'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/itinerarios/{id}:
+    put:
+      tags: [Itinerarios]
+      summary: Actualizar itinerario
+      description: Rol admin. Si llega `estaciones`, sustituye las paradas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItinerarioEscritura'
+      responses:
+        '204':
+          description: Actualizado
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    delete:
+      tags: [Itinerarios]
+      summary: Eliminar itinerario
+      description: Rol admin. Borra también sus paradas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Eliminado
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/itinerarios/{id}/estaciones:
+    get:
+      tags: [Itinerarios]
+      summary: Paradas de un itinerario
+      description: Rol admin o planificador.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Paradas ordenadas. Lista vacía si no hay.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parada'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/circulaciones:
+    get:
+      tags: [Circulaciones]
+      summary: Circulaciones de un día
+      description: Rol planificador. Sin `date` usa el día actual del servidor.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Día en `YYYY-MM-DD`
+      responses:
+        '200':
+          description: Circulaciones del día
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Circulacion'
+        '400':
+          description: Fecha no válida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTexto'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    post:
+      tags: [Circulaciones]
+      summary: Crear circulación
+      description: Rol planificador. Tren custom, con sus paradas en `estaciones`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CirculacionEscritura'
+      responses:
+        '201':
+          description: Circulación creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Circulacion'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/circulaciones/paginated:
+    get:
+      tags: [Circulaciones]
+      summary: Listado paginado de circulaciones
+      description: Rol planificador. Respuesta de DataTables.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Draw'
+        - $ref: '#/components/parameters/Start'
+        - $ref: '#/components/parameters/Length'
+        - name: cs_DateStart
+          in: query
+          schema:
+            type: string
+          description: Inicio del día, `YYYY-MM-DD HH:MM:SS`
+        - name: cs_DateEnd
+          in: query
+          schema:
+            type: string
+          description: Fin del día, exclusivo
+      responses:
+        '200':
+          description: Página de circulaciones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaDataTables'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/circulaciones/mallacirculaciones:
+    get:
+      tags: [Circulaciones]
+      summary: Datos de la malla
+      description: Rol planificador. Horario, hora real y retraso previsto de cada parada.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fecha
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Día en Europe/Madrid. Si falta o no es `YYYY-MM-DD`, usa hoy en esa zona.
+      responses:
+        '200':
+          description: Malla del día
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Malla'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/circulaciones/select:
+    post:
+      tags: [Circulaciones]
+      summary: Crear circulaciones desde itinerarios
+      description: Rol planificador. Copia las paradas de cada itinerario al día indicado.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [itinerarioIds, fecha]
+              properties:
+                itinerarioIds:
+                  type: array
+                  items:
+                    type: integer
+                fecha:
+                  type: string
+                  description: Día de las circulaciones
+      responses:
+        '201':
+          description: Circulaciones creadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                  circulaciones:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Circulacion'
+        '400':
+          description: Faltan itinerarios o la fecha
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTexto'
+        '404':
+          description: Algún itinerario no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTexto'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/circulaciones/visor/estaciones:
+    get:
+      tags: [Visor]
+      summary: Estaciones del selector del visor
+      description: Público. Solo código y nombre.
+      responses:
+        '200':
+          description: Estaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    codigo:
+                      type: string
+                    nombre:
+                      type: string
+
+  /api/circulaciones/visor/{estacionCodigo}:
+    get:
+      tags: [Visor]
+      summary: Llegadas y salidas del visor
+      description: |
+        Público. Día completo en Europe/Madrid. La columna de hora es la programada.
+        `observaciones` muestra el retraso, la nota de la parada o la de la circulación.
+      parameters:
+        - name: estacionCodigo
+          in: path
+          required: true
+          schema:
+            type: string
+          example: G
+        - name: fecha
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Día en Europe/Madrid. Si falta, usa hoy.
+      responses:
+        '200':
+          description: Tablón de la estación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Visor'
+        '404':
+          description: Estación no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTexto'
+
+  /api/circulaciones/{id}:
+    get:
+      tags: [Circulaciones]
+      summary: Obtener una circulación
+      description: Rol planificador. Incluye las estaciones.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Circulación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Circulacion'
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTexto'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    put:
+      tags: [Circulaciones]
+      summary: Actualizar circulación
+      description: Rol planificador. Si llega `estaciones`, sustituye las paradas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CirculacionEscritura'
+      responses:
+        '204':
+          description: Actualizada
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+    delete:
+      tags: [Circulaciones]
+      summary: Eliminar circulación
+      description: Rol planificador. Borra también sus paradas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Eliminada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTexto'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/circulaciones/{id}/estaciones:
+    get:
+      tags: [Circulaciones]
+      summary: Paradas de una circulación
+      description: Rol planificador.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Paradas ordenadas. Lista vacía si no hay.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Parada'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/circulaciones/{id}/cancelar:
+    post:
+      tags: [Circulaciones]
+      summary: Cancelar circulación
+      description: Rol planificador. El cuerpo va vacío.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Cancelada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                  estado:
+                    type: string
+                    enum: [CANCELADO]
+        '404':
+          description: No encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/controlEstacion/llegadas:
+    get:
+      tags: [Control]
+      summary: Llegadas pendientes en una estación
+      description: |
+        Rol planificador. Estación manual o automática y activa.
+        En manual solo entran las que aún no tienen hora real.
+        En automática se mantienen dentro del margen aunque ya estén marcadas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EstacionControl'
+        - $ref: '#/components/parameters/Ahora'
+        - $ref: '#/components/parameters/Horas'
+      responses:
+        '200':
+          description: Llegadas dentro del margen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MovimientoControl'
+        '400':
+          description: Falta la estación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/controlEstacion/salidas:
+    get:
+      tags: [Control]
+      summary: Salidas pendientes en una estación
+      description: Rol planificador. Mismas reglas que las llegadas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/EstacionControl'
+        - $ref: '#/components/parameters/Ahora'
+        - $ref: '#/components/parameters/Horas'
+      responses:
+        '200':
+          description: Salidas dentro del margen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MovimientoControl'
+        '400':
+          description: Falta la estación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/controlEstacion/llegada:
+    post:
+      tags: [Control]
+      summary: Registrar llegada
+      description: |
+        Rol planificador. Sella la hora actual.
+        En una estación automática puede sobrescribir una hora ya marcada.
+        Si es la última parada, la circulación pasa a `COMPLETADO`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Movimiento'
+      responses:
+        '200':
+          description: Llegada registrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                  horaRealLlegada:
+                    type: string
+                    example: '21:12:00'
+        '404':
+          description: Parada no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '409':
+          description: Circulación cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/controlEstacion/salida:
+    post:
+      tags: [Control]
+      summary: Registrar salida
+      description: Rol planificador. Igual que la llegada, sobre `horaRealSalida`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Movimiento'
+      responses:
+        '200':
+          description: Salida registrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                  horaRealSalida:
+                    type: string
+                    example: '21:14:00'
+        '404':
+          description: Parada no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '409':
+          description: Circulación cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/controlEstacion/retraso:
+    post:
+      tags: [Control]
+      summary: Anotar o quitar el retraso previsto
+      description: |
+        Rol planificador. Un número entre 3 y 720 minutos anota el aviso.
+        `null` lo quita. No se guarda en la hora real.
+        En una estación automática, si la hora real coincidía con el aviso anterior,
+        se recalcula sumando los minutos nuevos a la hora programada.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [circulacionId, estacionId]
+              properties:
+                circulacionId:
+                  type: integer
+                estacionId:
+                  type: integer
+                minutos:
+                  type: integer
+                  nullable: true
+                  minimum: 3
+                  maximum: 720
+                  description: Vacío o null quita el aviso
+      responses:
+        '200':
+          description: Aviso guardado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                  retrasoPrevisto:
+                    type: integer
+                    nullable: true
+        '400':
+          description: Falta la estación o los minutos no son válidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '404':
+          description: Parada no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '409':
+          description: Estación no gestionable o circulación cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/controlEstacion/gestion:
+    put:
+      tags: [Control]
+      summary: Cambiar la gestión de una estación
+      description: Rol planificador. Solo entre `MANUAL` y `AUTOMATICA`, en una estación activa.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estacionId, gestion]
+              properties:
+                estacionId:
+                  type: integer
+                gestion:
+                  type: string
+                  enum: [MANUAL, AUTOMATICA]
+      responses:
+        '200':
+          description: Gestión actual
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  gestion:
+                    type: string
+                    enum: [MANUAL, AUTOMATICA]
+        '400':
+          description: Falta la estación o la gestión no es válida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '404':
+          description: La estación no admite el cambio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorCodigo'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+  /api/panel/paginated:
+    get:
+      tags: [Panel]
+      summary: Paradas de circulaciones paginadas
+      description: Rol planificador. Respuesta de DataTables sobre las paradas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Draw'
+        - $ref: '#/components/parameters/Start'
+        - $ref: '#/components/parameters/Length'
+        - name: cs_DateStart
+          in: query
+          schema:
+            type: string
+        - name: cs_DateEnd
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Página de paradas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginaDataTables'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/Prohibido'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    Draw:
+      name: draw
+      in: query
+      schema:
+        type: integer
+      description: Contador de DataTables
+    Start:
+      name: start
+      in: query
+      schema:
+        type: integer
+      description: Primer registro de la página
+    Length:
+      name: length
+      in: query
+      schema:
+        type: integer
+      description: Tamaño de página
+    EstacionControl:
+      name: cs_EstacionId
+      in: query
+      required: true
+      schema:
+        type: integer
+    Ahora:
+      name: cs_Ahora
+      in: query
+      schema:
+        type: string
+        format: date-time
+      description: Instante de referencia. Si falta o no es válido, usa la hora del servidor.
+    Horas:
+      name: cs_Horas
+      in: query
+      schema:
+        type: number
+        minimum: 0
+        maximum: 24
+        default: 2
+      description: Margen, en horas, alrededor de `cs_Ahora`. Por defecto 2, máximo 24.
+  responses:
+    NoAutenticado:
+      description: Falta el token o no es válido
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              mensaje:
+                type: string
+                example: Por favor autentíquese.
+    Prohibido:
+      description: El rol no puede usar esta ruta
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              mensaje:
+                type: string
+  schemas:
+    ErrorMensaje:
+      type: object
+      properties:
+        mensaje:
+          type: string
+    ErrorTexto:
+      type: object
+      properties:
+        error:
+          type: string
+    ErrorCodigo:
+      type: object
+      properties:
+        codigo:
+          type: string
+        mensaje:
+          type: string
+        minimo:
+          type: integer
+        maximo:
+          type: integer
+    PaginaDataTables:
+      type: object
+      properties:
+        draw:
+          type: integer
+        recordsTotal:
+          type: integer
+        recordsFiltered:
+          type: integer
+        data:
+          type: array
+          items:
+            type: object
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        email:
+          type: string
+          format: email
+        rol:
+          type: string
+          enum: [admin, planificador]
+        activo:
+          type: boolean
+        ultimoAcceso:
+          type: string
+          format: date-time
+          nullable: true
+    Estacion:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        codigo:
+          type: string
+        ubicacion:
+          type: string
+          nullable: true
+        activa:
+          type: boolean
+        gestion:
+          type: string
+          enum: [SIN_GESTION, MANUAL, AUTOMATICA]
+    EstacionEscritura:
+      type: object
+      required: [nombre, codigo]
+      properties:
+        nombre:
+          type: string
+        codigo:
+          type: string
+        ubicacion:
+          type: string
+        activa:
+          type: boolean
+        gestion:
+          type: string
+          enum: [SIN_GESTION, MANUAL, AUTOMATICA]
+    Itinerario:
+      type: object
+      properties:
+        id:
+          type: integer
+        numero:
+          type: string
+        origen:
+          type: string
+        destino:
+          type: string
+        fecha:
+          type: string
+          description: Hora del tren, `HH:MM:SS`
+          example: '21:10:00'
+        tipo:
+          type: string
+          nullable: true
+        material:
+          type: string
+          nullable: true
+        observaciones:
+          type: string
+          nullable: true
+    ItinerarioEscritura:
+      type: object
+      properties:
+        numero:
+          type: string
+        origen:
+          type: string
+        destino:
+          type: string
+        fecha:
+          type: string
+          description: Hora del tren, `HH:MM:SS`
+        tipo:
+          type: string
+        material:
+          type: string
+        observaciones:
+          type: string
+        estaciones:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParadaEscritura'
+    Circulacion:
+      type: object
+      properties:
+        id:
+          type: integer
+        numero:
+          type: string
+        origen:
+          type: string
+        destino:
+          type: string
+        fecha:
+          type: string
+          format: date-time
+        tipo:
+          type: string
+          nullable: true
+        material:
+          type: string
+          nullable: true
+        observaciones:
+          type: string
+          nullable: true
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROGRESO, COMPLETADO, CANCELADO]
+    CirculacionEscritura:
+      type: object
+      properties:
+        numero:
+          type: string
+        origen:
+          type: string
+        destino:
+          type: string
+        fecha:
+          type: string
+          format: date-time
+        tipo:
+          type: string
+        material:
+          type: string
+        observaciones:
+          type: string
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROGRESO, COMPLETADO, CANCELADO]
+        estaciones:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParadaEscritura'
+    Parada:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Identificador de la estación
+        nombre:
+          type: string
+        codigo:
+          type: string
+        orden:
+          type: integer
+        horaProgramadaLlegada:
+          type: string
+          nullable: true
+          example: '21:16:00'
+        horaProgramadaSalida:
+          type: string
+          nullable: true
+        horaRealLlegada:
+          type: string
+          nullable: true
+        horaRealSalida:
+          type: string
+          nullable: true
+        observaciones:
+          type: string
+          nullable: true
+    ParadaEscritura:
+      type: object
+      properties:
+        estacionId:
+          type: integer
+        orden:
+          type: integer
+        horaProgramadaLlegada:
+          type: string
+          nullable: true
+        horaProgramadaSalida:
+          type: string
+          nullable: true
+        horaRealLlegada:
+          type: string
+          nullable: true
+        horaRealSalida:
+          type: string
+          nullable: true
+        observaciones:
+          type: string
+          nullable: true
+    Movimiento:
+      type: object
+      required: [circulacionId, estacionId]
+      properties:
+        circulacionId:
+          type: integer
+        estacionId:
+          type: integer
+    MovimientoControl:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Identificador de la circulación
+        numero:
+          type: string
+        origen:
+          type: string
+        destino:
+          type: string
+        fecha:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PROGRESO, COMPLETADO]
+        tipo:
+          type: string
+          nullable: true
+        material:
+          type: string
+          nullable: true
+        horaProgramadaLlegada:
+          type: string
+          nullable: true
+        horaProgramadaSalida:
+          type: string
+          nullable: true
+        horaRealLlegada:
+          type: string
+          nullable: true
+        horaRealSalida:
+          type: string
+          nullable: true
+        retrasoPrevisto:
+          type: integer
+          nullable: true
+        orden:
+          type: integer
+    Malla:
+      type: object
+      properties:
+        fecha:
+          type: string
+          format: date
+        estaciones:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              nombre:
+                type: string
+              codigo:
+                type: string
+        trenes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              numero:
+                type: string
+              origen:
+                type: string
+              destino:
+                type: string
+              tipo:
+                type: string
+                nullable: true
+              estado:
+                type: string
+                enum: [PENDIENTE, EN_PROGRESO, COMPLETADO, CANCELADO]
+              paradas:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    estacionId:
+                      type: integer
+                    nombre:
+                      type: string
+                    codigo:
+                      type: string
+                    orden:
+                      type: integer
+                    horaLlegada:
+                      type: string
+                      nullable: true
+                      description: Hora programada de llegada
+                    horaSalida:
+                      type: string
+                      nullable: true
+                      description: Hora programada de salida
+                    horaRealLlegada:
+                      type: string
+                      nullable: true
+                    horaRealSalida:
+                      type: string
+                      nullable: true
+                    retrasoPrevisto:
+                      type: integer
+                      nullable: true
+    Visor:
+      type: object
+      properties:
+        estacion:
+          type: object
+          properties:
+            nombre:
+              type: string
+            codigo:
+              type: string
+        salidas:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilaVisor'
+        llegadas:
+          type: array
+          items:
+            $ref: '#/components/schemas/FilaVisor'
+    FilaVisor:
+      type: object
+      properties:
+        hora:
+          type: string
+          description: Hora programada
+          example: '21:10'
+        tren:
+          type: string
+        numero:
+          type: string
+        via:
+          type: string
+        observaciones:
+          type: string
+        codigo:
+          type: string
+          description: "`RETRASO`, `CANCELADO` o vacío"
+        minutos:
+          type: integer
+        retraso:
+          type: boolean
+        cancelado:
+          type: boolean
+        destino:
+          type: string
+          description: Presente en las salidas
+        procedencia:
+          type: string
+          description: Presente en las llegadas

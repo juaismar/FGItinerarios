@@ -19,11 +19,13 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "js_ssp": "^1.0.3",
+    "js-yaml": "^5.5.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.0",
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.3",
     "sequelize-paginate": "^1.1.6",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.8.2"
   },
   "devDependencies": {
