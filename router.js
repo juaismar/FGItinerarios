@@ -7,8 +7,7 @@ const logLocation = 'router.js: ';
 
 // Control de peticiones
 router.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    logger.info(`${logLocation}Accediendo a: ${req.method} ${req.originalUrl}`);
+    logger.debug(`${logLocation}Accediendo a: ${req.method} ${req.originalUrl}`);
     
     // Capturar respuestas 404
     res.on('finish', () => {

@@ -57,6 +57,7 @@ Crea un archivo `.env` en la raíz. En desarrollo basta con el secreto del token
 
 ```bash
 JWT_SECRET=cambia-este-valor
+LOG_LEVEL=info
 ```
 
 ## Arranque
@@ -88,6 +89,19 @@ DB_NAME=
 DB_HOST=
 DB_PORT=5432
 ```
+
+## Logs
+
+Winston (`logger.js`) escribe en la consola del proceso. No hay fichero de log. El nivel por defecto es `info`; `LOG_LEVEL` lo cambia (`error`, `warn`, `info`, `debug`).
+
+| Nivel | Cuándo |
+| --- | --- |
+| error | Fallo al atender una petición, al arrancar o al cerrar |
+| warn | Login rechazado, token ausente o no válido, rol insuficiente, ruta no encontrada |
+| info | Arranque, cierre, seed, migraciones y cambios del servicio: circulaciones creadas, gestión de una estación, marcado automático |
+| debug | Cada petición HTTP. Con `info` no se muestra |
+
+El hash de la contraseña no se escribe en el log.
 
 ## Estructura
 

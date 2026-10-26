@@ -50,7 +50,7 @@ async function copiarItinerario(itinerarioOriginalId, circulacionId) {
             
             logger.info(logLocation + `Estaciones copiadas del itinerario ${itinerarioOriginalId} al ${circulacionId}`);
         } else {
-            console.log(`No se encontraron estaciones para el itinerario ${itinerarioOriginalId}`);
+            logger.warn(logLocation + `El itinerario ${itinerarioOriginalId} no tiene estaciones`);
         }
     } catch (error) {
         logger.error(logLocation + `Error al copiar estaciones del itinerario ${itinerarioOriginalId}:`, error);
@@ -339,13 +339,13 @@ router.post('/select', verificarAuth('planificador'), async (req, res) => {
                     
                     // Validar que la fecha sea válida
                     if (isNaN(fechaObj.getTime())) {
-                        console.log('Fecha inválida, usando fecha original');
+                        logger.warn(logLocation + `Fecha no válida al crear la circulación ${itinerario.numero}`);
                         return fechaObj;
                     }
                     
                     // Validar que los componentes de tiempo sean válidos
                     if (isNaN(hora) || isNaN(minuto) || isNaN(segundo)) {
-                        console.log('Tiempo inválido, usando fecha original');
+                        logger.warn(logLocation + `Hora no válida al crear la circulación ${itinerario.numero}`);
                         return fechaObj;
                     }
                     

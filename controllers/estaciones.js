@@ -49,7 +49,6 @@ router.get('/', verificarAuth(['admin', 'planificador']), async (req, res) => {
             order: [['nombre', 'ASC']]
         });
         
-        logger.info(logLocation + 'Estaciones obtenidas exitosamente');
         res.json(estaciones);
     } catch (error) {
         logger.error(logLocation + 'Error al obtener estaciones: ' + error);

@@ -16,6 +16,7 @@ router.post('/login', async (req, res) => {
     const usuario = await Usuario.findOne({ where: { email } });
     
     if (!usuario || !(await usuario.verificarPassword(password))) {
+      logger.warn(logLocation + `Login rechazado para ${email || 'sin email'}`);
       return res.status(401).json({ codigo: 'CREDENCIALES_INVALIDAS', mensaje: 'Credenciales inválidas' });
     }
 
@@ -24,8 +25,10 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: usuario.id }, process.env.JWT_SECRET);
 
+    logger.info(logLocation + `Login de ${usuario.email} (${usuario.rol})`);
     res.json({ usuario, token });
   } catch (error) {
+    logger.error(logLocation + 'Error en el login:', error);
     res.status(400).json({ codigo: 'ERROR_LOGIN', mensaje: 'Error en el login' });
   }
 });
@@ -61,7 +64,7 @@ router.post('/', verificarAuth('admin'), async (req, res) => {
   try {
     const { nombre, email, password, rol } = req.body;
     const usuario = await Usuario.create({ nombre, email, password, rol });
-    logger.info(logLocation + 'Usuario creado exitosamente:', usuario);
+    logger.info(logLocation + `Usuario creado: ${usuario.email} (${usuario.rol})`);
     res.status(201).json(usuario);
   } catch (error) {
     logger.error(logLocation + 'Error al crear usuario:', error);

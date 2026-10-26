@@ -1,10 +1,12 @@
 const winston = require('winston')
 //const LokiTransport = require('winston-loki')
 
-const logger = winston.createLogger()
+const nivel = process.env.LOG_LEVEL || 'info'
+
+const logger = winston.createLogger({ level: nivel })
 
 logger.add(new winston.transports.Console({
-  level: 'info',
+  level: nivel,
   format: winston.format.combine(
     winston.format.colorize(),
     winston.format.timestamp(),

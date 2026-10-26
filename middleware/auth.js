@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
 const Usuario = require('../models/Usuario');
+const logger = require('../logger').logger;
+
+const logLocation = 'auth.js: ';
 
 const verificarAuth = (rolesPermitidos = null) => {
     return async (req, res, next) => {
@@ -9,6 +12,7 @@ const verificarAuth = (rolesPermitidos = null) => {
             const token = req.header('Authorization')?.replace('Bearer ', '');
 
             if (!token) {
+                logger.warn(`${logLocation}Petición sin token: ${req.method} ${req.originalUrl}`);
                 return res.status(401).json({ mensaje: 'Por favor autentíquese.' });
             }
             
@@ -17,6 +21,7 @@ const verificarAuth = (rolesPermitidos = null) => {
             const usuario = await Usuario.findByPk(decoded.id);
 
             if (!usuario) {
+                logger.warn(`${logLocation}Token sin usuario: ${req.method} ${req.originalUrl}`);
                 return res.status(401).json({ mensaje: 'Usuario no encontrado.' });
             }
 
@@ -27,6 +32,7 @@ const verificarAuth = (rolesPermitidos = null) => {
                 const roles = Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos];
                 
                 if (!roles.includes(usuario.rol)) {
+                    logger.warn(`${logLocation}${usuario.email} (${usuario.rol}) no puede ${req.method} ${req.originalUrl}`);
                     return res.status(403).json({ 
                         mensaje: `Acceso denegado. Se requieren privilegios de ${roles.join(' o ')}.` 
                     });
@@ -38,6 +44,7 @@ const verificarAuth = (rolesPermitidos = null) => {
             req.token = token;
             next();
         } catch (error) {
+            logger.warn(`${logLocation}Token no válido: ${req.method} ${req.originalUrl}`);
             res.status(401).json({ mensaje: 'Por favor autentíquese.' });
         }
     };
