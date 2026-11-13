@@ -58,70 +58,6 @@ const sequelize = new Sequelize(
   }
 );
 
-async function migrarRetrasoPrevisto() {
-  const tablas = await sequelize.query(
-    `SELECT to_regclass('public."CirculacionEstaciones"') AS nombre`,
-    { type: sequelize.QueryTypes.SELECT }
-  );
-  if (!tablas[0] || !tablas[0].nombre) {
-    return;
-  }
-
-  const columnas = await sequelize.query(
-    `SELECT column_name
-     FROM information_schema.columns
-     WHERE table_schema = 'public'
-       AND table_name = 'CirculacionEstaciones'
-       AND column_name = 'retrasoPrevisto'`,
-    { type: sequelize.QueryTypes.SELECT }
-  );
-  if (columnas.length === 0) {
-    await sequelize.query(
-      `ALTER TABLE "CirculacionEstaciones" ADD COLUMN "retrasoPrevisto" INTEGER`
-    );
-    logger.info('Columna retrasoPrevisto añadida a las paradas');
-  }
-}
-
-async function migrarGestionEstaciones() {
-  const tablas = await sequelize.query(
-    `SELECT to_regclass('public."Estacions"') AS nombre`,
-    { type: sequelize.QueryTypes.SELECT }
-  );
-  if (!tablas[0] || !tablas[0].nombre) {
-    return;
-  }
-
-  const columnas = await sequelize.query(
-    `SELECT column_name
-     FROM information_schema.columns
-     WHERE table_schema = 'public'
-       AND table_name = 'Estacions'
-       AND column_name IN ('gestionado', 'gestion')`,
-    { type: sequelize.QueryTypes.SELECT }
-  );
-  const nombres = columnas.map(columna => columna.column_name);
-
-  if (!nombres.includes('gestion')) {
-    await sequelize.query(
-      `ALTER TABLE "Estacions" ADD COLUMN gestion VARCHAR(20) NOT NULL DEFAULT 'SIN_GESTION'`
-    );
-  }
-
-  if (nombres.includes('gestionado')) {
-    await sequelize.query(`
-      UPDATE "Estacions"
-      SET gestion = CASE
-        WHEN gestionado IS TRUE THEN 'MANUAL'
-        WHEN codigo IN ('A', 'F', 'P', 'M') THEN 'AUTOMATICA'
-        ELSE 'SIN_GESTION'
-      END
-    `);
-    await sequelize.query(`ALTER TABLE "Estacions" DROP COLUMN gestionado`);
-    logger.info('Gestión de estaciones migrada a sin gestión, manual y automática');
-  }
-}
-
 // Función para inicializar la conexión
 async function inicializarConexion() {
   try {
@@ -137,9 +73,6 @@ async function inicializarConexion() {
     require('../models/ItinerarioEstacion');
     require('../models/Circulacion');
     require('../models/CirculacionEstacion');
-
-    await migrarGestionEstaciones();
-    await migrarRetrasoPrevisto();
 
     // Sincronizar modelos
     await sequelize.sync({ force: false, alter: false });
