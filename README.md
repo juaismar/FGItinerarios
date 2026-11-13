@@ -57,7 +57,6 @@ Crea un archivo `.env` en la raíz. En desarrollo basta con el secreto del token
 
 ```bash
 JWT_SECRET=cambia-este-valor
-LOG_LEVEL=info
 ```
 
 ## Arranque
@@ -83,6 +82,7 @@ Define `FGItinerarios_ENV=production` y estas variables:
 JWT_SECRET=
 PORT=3000
 CORS_ORIGIN=https://tu-dominio
+LOG_DIR=/var/log/fgitinerarios
 DB_USER=
 DB_PASSWORD=
 DB_NAME=
@@ -92,14 +92,23 @@ DB_PORT=5432
 
 ## Logs
 
-Winston (`logger.js`) escribe en la consola del proceso. No hay fichero de log. El nivel por defecto es `info`; `LOG_LEVEL` lo cambia (`error`, `warn`, `info`, `debug`).
+Winston (`logger.js`) escribe en la consola y en fichero. La consola sigue activa para que el servicio del sistema recoja la misma salida.
+
+En producción (`FGItinerarios_ENV=production`) el nivel es `info`. En desarrollo el nivel por defecto es `debug`.
+
+El directorio es `LOG_DIR`. Si no se indica, en Linux en producción es `/var/log/fgitinerarios` y en el resto de casos la carpeta `logs/` del proyecto. El usuario del servicio tiene que poder crear ese directorio. Si no puede, los ficheros quedan en `logs/`.
+
+| Fichero | Contenido | Conservación |
+| --- | --- | --- |
+| `fgitinerarios-AAAA-MM-DD.log` | A partir del nivel activo | 30 días. Al cambiar el día, el anterior se comprime y, pasado el plazo, se borra |
+| `error-AAAA-MM-DD.log` | Solo errores | No se borra |
 
 | Nivel | Cuándo |
 | --- | --- |
 | error | Fallo al atender una petición, al arrancar o al cerrar |
 | warn | Login rechazado, token ausente o no válido, rol insuficiente, ruta no encontrada |
 | info | Arranque, cierre, seed, migraciones y cambios del servicio: circulaciones creadas, gestión de una estación, marcado automático |
-| debug | Cada petición HTTP. Con `info` no se muestra |
+| debug | Cada petición HTTP. En producción no se registra |
 
 El hash de la contraseña no se escribe en el log.
 
