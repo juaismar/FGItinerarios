@@ -73,6 +73,5 @@ async function prepararParadas(estaciones, origen, destino) {
 
 
 module.exports = {
-    orientarParadas,
-    prepararParadas,
+    prepararParadas
 };
