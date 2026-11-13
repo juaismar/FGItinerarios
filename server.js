@@ -3,7 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const { inicializarConexion, ejecutarSeed, cerrarConexion, getSequelize } = require('./db/database');
 const { aplicarGestionAutomatica } = require('./controllers/controlEstacion');
-const { corregirRecorridosInvertidos } = require('./utils/orientarParadas');
 const logger = require('./logger').logger;
 
 // Determinar el entorno
@@ -53,12 +52,6 @@ async function iniciarServidor() {
     
     // Ejecutar seed en desarrollo
     await ejecutarSeed();
-
-    try {
-      await corregirRecorridosInvertidos();
-    } catch (error) {
-      logger.error(logLocation + 'Error al orientar recorridos: ' + error);
-    }
 
     try {
       await aplicarGestionAutomatica();
